@@ -1,0 +1,92 @@
+import ParliamentView from "./ParliamentView.tsx";
+import GermanyMap from "./GermanyMap.tsx";
+import {useEffect, useMemo, useState} from "react";
+import {ElectionResult, Party, VoteEntry} from "../../types/ElectionTypes.tsx";
+import electionData from '../../data/exampleElectionData.json';
+import partyData from '../../data/partyData.json';
+import {applyFilters} from "../util/FilterUtil.tsx";
+import {FilterRule} from "../../types/FilterRule.tsx";
+import GermanyStateSelection from "./GermanyStateSelection.tsx";
+
+function OverviewLayout() {
+    const [parties, setParties] = useState<Party[]>([]);
+    const [voteEntries, setVoteEntries] = useState<VoteEntry[]>([]);
+    const [filters, setFilters] = useState<FilterRule[]>([]);
+    // const [electionResult, setElectionResult] = useState<ElectionResult[]>([]);
+
+    // Load initial data
+    useEffect(() => {
+        // Load vote results
+        const initialVoteResultData = electionData.map(entry => ({
+            ...entry,
+            gender: entry.gender as 'm' | 'w',
+            active: true
+        }));
+        setVoteEntries(initialVoteResultData);
+
+        // load party data
+        const initialPartyData = partyData.map(entry => ({
+            ...entry,
+        }));
+        setParties(initialPartyData);
+    }, []);
+
+    const electionResults = useMemo(() => {
+        console.log("Applying filters to retrieve election results")
+        const filteredVoteEntries = applyFilters(voteEntries, filters);
+        console.log("VoteEntries", filteredVoteEntries);
+        const _electionResults: Record<string, ElectionResult> = {}
+        let totalVotes = 0;
+        filteredVoteEntries.forEach((voteEntry: VoteEntry) => {
+            totalVotes += voteEntry.votes
+            if (!_electionResults[voteEntry.party]) {
+                _electionResults[voteEntry.party] = {
+                    partyAbbreviation: voteEntry.party,
+                    votes: voteEntry.votes,
+                    percentage: 0
+                };
+            } else {
+                _electionResults[voteEntry.party].votes += voteEntry.votes;
+            }
+        })
+        if(totalVotes > 0) {
+            for (const key in _electionResults) {
+                _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
+            }
+        }
+        console.log("Election results ", _electionResults);
+        return Object.values(_electionResults)
+    }, [voteEntries, filters])
+
+    const addFilter = function (newFilter: FilterRule) {
+        console.log("Adding filter", newFilter)
+        setFilters((prev) => [...prev, newFilter]);
+    }
+
+    const removeFilter = function (filterId: string) {
+        setFilters((prev) => prev.filter((f) => f.id !== filterId));
+    }
+
+    return (
+        <div className="container-fluid vh-100 d-flex flex-column">
+            <div className="row flex-fill">  {/* Upper Half */}
+                <div className="col-md-6 d-flex align-items-center justify-content-center">
+                    <GermanyStateSelection addFilter={addFilter} removeFilter={removeFilter}/>
+                </div>
+                <div className="col-md-6 d-flex align-items-center justify-content-center">
+                    <ParliamentView electionResults={electionResults} parties={parties}/>
+                </div>
+            </div>
+            <div className="row flex-fill">  {/* Lower Half */}
+                <div className="col-md-6 d-flex align-items-center justify-content-center">
+                    Section 3
+                </div>
+                <div className="col-md-6 d-flex align-items-center justify-content-center">
+                    Section 4
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default OverviewLayout;

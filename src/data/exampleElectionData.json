@@ -1,0 +1,42 @@
+[
+  {
+    "state": "Niedersachsen",
+    "gender": "m",
+    "ageGroup": "18-25",
+    "party": "CDU",
+    "votes": 21045,
+    "active": true
+  },
+  {
+    "state": "Hessen",
+    "gender": "m",
+    "ageGroup": "26-35",
+    "party": "SPD",
+    "votes": 21045,
+    "active": true
+  },
+  {
+    "state": "Hamburg",
+    "gender": "w",
+    "ageGroup": "18-25",
+    "party": "GRÜNE",
+    "votes": 21045,
+    "active": true
+  },
+  {
+    "state": "Brandenburg",
+    "gender": "m",
+    "ageGroup": "46-55",
+    "party": "AfD",
+    "votes": 21045,
+    "active": true
+  },
+  {
+    "state": "Berlin",
+    "gender": "w",
+    "ageGroup": "56-65",
+    "party": "FDP",
+    "votes": 21045,
+    "active": true
+  }
+]

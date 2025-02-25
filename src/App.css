@@ -1,0 +1,12 @@
+.chart-container {
+    width: 200px;
+    height: 100px; /* Half of the width to create the upper view */
+    overflow: hidden; /* Hides the lower half of the circle */
+    position: relative;
+}
+
+.half-pie-chart {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%; /* Makes it a full circle */
+}
