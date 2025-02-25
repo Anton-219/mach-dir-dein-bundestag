@@ -1,50 +1,69 @@
-import React, {ChangeEvent} from "react";
+import {useState} from "react";
 import {FilterRule} from "../../types/FilterRule.tsx";
-import {
-    ComposableMap,
-    Geographies,
-    Geography,
-} from 'react-simple-maps';
-
-const germanStates = [
-    "Baden-Württemberg", "Bayern", "Berlin", "Brandenburg",
-    "Bremen", "Hamburg", "Hessen", "Niedersachsen",
-    "Mecklenburg-Vorpommern", "Nordrhein-Westfalen", "Rheinland-Pfalz", "Saarland",
-    "Sachsen", "Sachsen-Anhalt", "Schleswig-Holstein", "Thüringen"
-];
-
+import GermanyGeoJson from "../../data/germany_states_map.geo.json"
+import {ComposableMap, Geographies, Geography,} from 'react-simple-maps';
 
 interface GermanyMapProps {
     addFilter: (filterRule: FilterRule) => void;
     removeFilter: (filterId: string) => void;
 }
 
-const GermanyMap: React.FC<GermanyMapProps> = ({addFilter, removeFilter}: GermanyMapProps) => {
-// Handler that logs the clicked state's name
+type ActiveStates = {
+    [key: string]: boolean;
+};
+
+const GermanyMap = function ({addFilter, removeFilter}: GermanyMapProps) {
+    const [activeStates, setActiveStates] = useState<ActiveStates>({});
+
     const handleStateClick = (stateName: string) => {
-        console.log(`State clicked: ${stateName}`);
+        const isActive = !activeStates[stateName];
+        if (isActive) {
+            addFilter({
+                id: stateName, filter: (entry) => {
+                    console.log(`Checking ${entry.state} against ${stateName}, are they equal? ${entry.state !== stateName}`)
+                    return entry.state !== stateName
+                }
+            });
+        } else {
+            removeFilter(stateName);
+        }
+        setActiveStates(prev => ({
+            ...prev,
+            [stateName]: isActive
+        }));
     };
 
+    const getFillColor = (stateName: string) => {
+        return activeStates[stateName] ? "#D6D6DA" : "#343434";
+    };
     return (
         <ComposableMap
             projection="geoMercator"
-            projectionConfig={{ scale: 2200, center: [10, 51] }} // adjust these for best view
+            projectionConfig={{scale: 2600, center: [10, 51]}} // adjust these for best view
         >
-            <Geographies geography={geoUrl}>
-                {({ geographies }) =>
+            <Geographies geography={GermanyGeoJson}>
+                {({geographies}) =>
                     geographies.map((geo) => {
-                        // Depending on the GeoJSON, the property name may vary.
-                        // Adjust 'NAME_1' if necessary.
-                        const stateName = geo.properties.NAME_1 || geo.properties.NAME || 'Unknown';
+                        const stateName = geo.properties.name;
                         return (
                             <Geography
                                 key={geo.rsmKey}
                                 geography={geo}
                                 onClick={() => handleStateClick(stateName)}
+                                stroke="#000000"
                                 style={{
-                                    default: { fill: "#D6D6DA", outline: "none" },
-                                    hover: { fill: "#F53", outline: "none" },
-                                    pressed: { fill: "#E42", outline: "none" },
+                                    default: {
+                                        fill: getFillColor(stateName),
+                                        transition: "fill 0.1s"
+                                    },
+                                    hover: {
+                                        fill: activeStates[stateName] ? "#8d8d8d" : "#515151",
+                                        outline: "none"
+                                    },
+                                    pressed: {
+                                        fill: activeStates[stateName] ? "#777777" : "#3d3d3d",
+                                        outline: "none"
+                                    }
                                 }}
                             />
                         );

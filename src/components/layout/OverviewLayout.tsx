@@ -1,12 +1,11 @@
 import ParliamentView from "./ParliamentView.tsx";
-import GermanyMap from "./GermanyMap.tsx";
 import {useEffect, useMemo, useState} from "react";
 import {ElectionResult, Party, VoteEntry} from "../../types/ElectionTypes.tsx";
-import electionData from '../../data/exampleElectionData.json';
+import electionData from '../../data/second_votes.json';
 import partyData from '../../data/partyData.json';
 import {applyFilters} from "../util/FilterUtil.tsx";
 import {FilterRule} from "../../types/FilterRule.tsx";
-import GermanyStateSelection from "./GermanyStateSelection.tsx";
+import GermanyMap from "./GermanyMap.tsx";
 
 function OverviewLayout() {
     const [parties, setParties] = useState<Party[]>([]);
@@ -20,6 +19,9 @@ function OverviewLayout() {
         const initialVoteResultData = electionData.map(entry => ({
             ...entry,
             gender: entry.gender as 'm' | 'w',
+            ageGroup: entry.ageGroup as '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+',
+            voteType: entry.voteType as '1' | '2',
+            electionMethod: entry.electionMethod as 'postal' | 'in-person',
             active: true
         }));
         setVoteEntries(initialVoteResultData);
@@ -49,7 +51,7 @@ function OverviewLayout() {
                 _electionResults[voteEntry.party].votes += voteEntry.votes;
             }
         })
-        if(totalVotes > 0) {
+        if (totalVotes > 0) {
             for (const key in _electionResults) {
                 _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
             }
@@ -71,7 +73,7 @@ function OverviewLayout() {
         <div className="container-fluid vh-100 d-flex flex-column">
             <div className="row flex-fill">  {/* Upper Half */}
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <GermanyStateSelection addFilter={addFilter} removeFilter={removeFilter}/>
+                    <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
                     <ParliamentView electionResults={electionResults} parties={parties}/>

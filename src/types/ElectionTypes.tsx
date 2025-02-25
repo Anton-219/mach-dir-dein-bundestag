@@ -7,19 +7,21 @@ export interface Party {
 export interface VoteEntry {
     state: string;
     gender: 'm' | 'w';
-    ageGroup: string;
+    ageGroup: '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+';
     party: string;
+    voteType: '1' | '2';
+    electionMethod: "postal" | "in-person";
     votes: number;
-    active: boolean;
 }
 
-export interface ElectionResult{
+
+export interface ElectionResult {
     partyAbbreviation: string;
     votes: number;
     percentage: number;
 }
 
-export interface SeatResult{
+export interface SeatResult {
     partyAbbreviation: string;
     seatNumber: number;
 }
