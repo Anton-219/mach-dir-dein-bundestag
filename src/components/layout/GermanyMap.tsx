@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {FilterRule} from "../../types/FilterRule.tsx";
+import {ActiveStates, FilterRule} from "../../types/FilterRule.tsx";
 import GermanyGeoJson from "../../data/germany_states_map.geo.json"
 import {ComposableMap, Geographies, Geography,} from 'react-simple-maps';
 
@@ -8,9 +8,6 @@ interface GermanyMapProps {
     removeFilter: (filterId: string) => void;
 }
 
-type ActiveStates = {
-    [key: string]: boolean;
-};
 
 const GermanyMap = function ({addFilter, removeFilter}: GermanyMapProps) {
     const [activeStates, setActiveStates] = useState<ActiveStates>({});

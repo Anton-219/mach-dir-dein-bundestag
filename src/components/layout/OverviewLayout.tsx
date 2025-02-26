@@ -6,6 +6,7 @@ import partyData from '../../data/partyData.json';
 import {applyFilters} from "../util/FilterUtil.tsx";
 import {FilterRule} from "../../types/FilterRule.tsx";
 import GermanyMap from "./GermanyMap.tsx";
+import FilterCategories from "./FilterCategories.tsx";
 
 function OverviewLayout() {
     const [parties, setParties] = useState<Party[]>([]);
@@ -73,10 +74,10 @@ function OverviewLayout() {
         <div className="container-fluid vh-100 d-flex flex-column">
             <div className="row flex-fill">  {/* Upper Half */}
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
+                    <ParliamentView electionResults={electionResults} parties={parties}/>
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <ParliamentView electionResults={electionResults} parties={parties}/>
+                    <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
                 </div>
             </div>
             <div className="row flex-fill">  {/* Lower Half */}
@@ -84,7 +85,7 @@ function OverviewLayout() {
                     Section 3
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    Section 4
+                    <FilterCategories addFilter={addFilter} removeFilter={removeFilter}/>
                 </div>
             </div>
         </div>
