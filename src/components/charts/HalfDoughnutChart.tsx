@@ -16,12 +16,13 @@ function HalfDoughnutChart({seatResult, parties, cutout=30}: HalfPieChartProps) 
         return "#ab59d4"
     };
 
+    const sortedSeatResults = [...seatResult].sort((a, b) => a.seatPosition - b.seatPosition);
     const data = {
-        labels: seatResult.map(p => p.partyAbbreviation),
+        labels: sortedSeatResults.map(p => p.partyAbbreviation),
         datasets: [
             {
-                data: seatResult.map(p => p.seatNumber),
-                backgroundColor: seatResult.map(p => selectColor(p.partyAbbreviation)),
+                data: sortedSeatResults.map(p => p.seatNumber),
+                backgroundColor: sortedSeatResults.map(p => selectColor(p.partyAbbreviation)),
             },
         ],
     };

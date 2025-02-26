@@ -2,126 +2,103 @@
   {
     "name": "Sozialdemokratische Partei Deutschlands",
     "abbreviation": "SPD",
-    "color": "#E3000F"
+    "color": "#E3000F",
+    "seatPosition": -15
   },
   {
     "name": "Christlich Demokratische Union Deutschlands",
     "abbreviation": "CDU",
-    "color": "#000000"
+    "color": "#000000",
+    "seatPosition": 33
   },
   {
     "name": "Christlich-Soziale Union in Bayern",
     "abbreviation": "CSU",
-    "color": "#0570C9"
+    "color": "#0570C9",
+    "seatPosition": 35
   },
   {
     "name": "Bündnis 90/Die Grünen",
     "abbreviation": "GRÜNE",
-    "color": "#1AA037"
+    "color": "#1AA037",
+    "seatPosition": -40
   },
   {
     "name": "Die Linke",
     "abbreviation": "DIE LINKE",
-    "color": "#e300d8"
+    "color": "#e300d8",
+    "seatPosition": -60
   },
   {
     "name": "Freie Demokratische Partei",
     "abbreviation": "FDP",
-    "color": "#FFEF00"
+    "color": "#FFEF00",
+    "seatPosition": 30
   },
   {
     "name": "Alternative für Deutschland",
     "abbreviation": "AfD",
-    "color": "#0489DB"
+    "color": "#cceeff",
+    "seatPosition": 99
   },
   {
     "name": "Partei für Arbeit, Rechtsstaat, Tierschutz, Elitenförderung und basisdemokratische Initiative",
     "abbreviation": "Die PARTEI",
-    "color": "#B92837"
+    "color": "#B92837",
+    "seatPosition": -30
   },
   {
     "name": "Piratenpartei Deutschland",
     "abbreviation": "PIRATEN",
-    "color": "#FE7400"
+    "color": "#FE7400",
+    "seatPosition": -10
   },
   {
     "name": "Freie Wähler",
     "abbreviation": "FREIE WÄHLER",
-    "color": "#063E8F"
+    "color": "#063E8F",
+    "seatPosition": 5
   },
   {
     "name": "Ökologisch-Demokratische Partei",
     "abbreviation": "ÖDP",
-    "color": "#EE7100"
+    "color": "#EE7100",
+    "seatPosition": 10
   },
   {
     "name": "Nationaldemokratische Partei Deutschlands",
     "abbreviation": "NPD",
-    "color": "#EB0019"
-  },
-  {
-    "name": "Bayernpartei",
-    "abbreviation": "BP",
-    "color": "#0080FF"
-  },
-  {
-    "name": "Die Republikaner",
-    "abbreviation": "REP",
-    "color": "#004385"
+    "color": "#EB0019",
+    "seatPosition": 100
   },
   {
     "name": "Südschleswigscher Wählerverband",
     "abbreviation": "SSW",
-    "color": "#00277E"
-  },
-  {
-    "name": "Deutsche Kommunistische Partei",
-    "abbreviation": "DKP",
-    "color": "#E30018"
-  },
-  {
-    "name": "Liberal-Konservative Reformer",
-    "abbreviation": "LKR",
-    "color": "#FE8100"
-  },
-  {
-    "name": "Marxistisch-Leninistische Partei Deutschlands",
-    "abbreviation": "MLPD",
-    "color": "#ED0008"
+    "color": "#00277E",
+    "seatPosition": 1
   },
   {
     "name": "Partei Mensch Umwelt Tierschutz",
     "abbreviation": "Tierschutzpartei",
-    "color": "#002B6C"
-  },
-  {
-    "name": "V-Partei³",
-    "abbreviation": "V-Partei³",
-    "color": "#93B90E"
-  },
-  {
-    "name": "Bürgerbewegung pro Deutschland",
-    "abbreviation": "pro Deutschland",
-    "color": "#25457D"
-  },
-  {
-    "name": "Bürgerrechtsbewegung Solidarität",
-    "abbreviation": "BüSo",
-    "color": "#004B91"
+    "color": "#002B6C",
+    "seatPosition": -20
   },
   {
     "name": "Bündnis Sahra Wagenknecht",
     "abbreviation": "BSW",
-    "color": "#800080"
+    "color": "#800080",
+    "seatPosition": -70
   },
   {
     "name": "Basisdemokratische Partei Deutschland",
     "abbreviation": "dieBasis",
-    "color": "#FFFFFF"
+    "color": "#FFFFFF",
+    "seatPosition": -25
   },
   {
     "name": "Sonstige",
     "abbreviation": "Sonstige",
-    "color": "#808080"
+    "color": "#808080",
+    "seatPosition": 0
   }
 ]

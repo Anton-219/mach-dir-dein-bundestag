@@ -4,25 +4,21 @@ import {minPercentage, PARLIAMENT_SEATS} from "../../Constants.tsx";
 
 interface ParliamentViewProps {
     electionResults: ElectionResult[];
-    parties: Party[];
+    parties: Record<string, Party>;
 }
 
 function ParliamentView({electionResults, parties}: ParliamentViewProps) {
-    const partyMap: Record<string, Party> = {}
-    parties.forEach((party) => {
-        partyMap[party.abbreviation] = party;
-    });
-
     const seatResult: SeatResult[] = electionResults
         .filter(r => r.percentage > minPercentage)
         .map(r => ({
                 partyAbbreviation: r.partyAbbreviation,
-                seatNumber: Math.round(r.percentage * PARLIAMENT_SEATS)
+                seatNumber: Math.round(r.percentage * PARLIAMENT_SEATS),
+                seatPosition: r.seatPosition,
             })
         );
 
     return <HalfDoughnutChart
-        parties={partyMap}
+        parties={parties}
         seatResult={seatResult}
     />;
 }

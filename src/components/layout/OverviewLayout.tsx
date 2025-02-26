@@ -9,7 +9,7 @@ import GermanyMap from "./GermanyMap.tsx";
 import FilterCategories from "./FilterCategories.tsx";
 
 function OverviewLayout() {
-    const [parties, setParties] = useState<Party[]>([]);
+    const [parties, setParties] = useState<Record<string, Party>>({});
     const [voteEntries, setVoteEntries] = useState<VoteEntry[]>([]);
     const [filters, setFilters] = useState<FilterRule[]>([]);
     // const [electionResult, setElectionResult] = useState<ElectionResult[]>([]);
@@ -23,14 +23,14 @@ function OverviewLayout() {
             ageGroup: entry.ageGroup as '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+',
             voteType: entry.voteType as '1' | '2',
             electionMethod: entry.electionMethod as 'postal' | 'in-person',
-            active: true
         }));
         setVoteEntries(initialVoteResultData);
 
         // load party data
-        const initialPartyData = partyData.map(entry => ({
-            ...entry,
-        }));
+        const initialPartyData = partyData.reduce((acc, entry) => {
+            acc[entry.abbreviation] = entry;
+            return acc;
+        }, {} as Record<string, Party>);
         setParties(initialPartyData);
     }, []);
 
@@ -46,7 +46,8 @@ function OverviewLayout() {
                 _electionResults[voteEntry.party] = {
                     partyAbbreviation: voteEntry.party,
                     votes: voteEntry.votes,
-                    percentage: 0
+                    percentage: 0,
+                    seatPosition: parties[voteEntry.party].seatPosition,
                 };
             } else {
                 _electionResults[voteEntry.party].votes += voteEntry.votes;
@@ -57,9 +58,8 @@ function OverviewLayout() {
                 _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
             }
         }
-        console.log("Election results ", _electionResults);
         return Object.values(_electionResults)
-    }, [voteEntries, filters])
+    }, [parties, voteEntries, filters])
 
     const addFilter = function (newFilter: FilterRule) {
         console.log("Adding filter", newFilter)
