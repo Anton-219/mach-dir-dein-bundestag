@@ -13,7 +13,7 @@ import {applyFilters} from "../util/FilterUtil.tsx";
 import {FilterRule} from "../../types/FilterRule.tsx";
 import GermanyMap from "./GermanyMap.tsx";
 import FilterCategories from "./FilterCategories.tsx";
-import {VoteReformSeatCalculator} from "../election/seatCalculators/VoteReformSeatCalculator.tsx";
+import {VoteReformSeatCalculator} from "../parliament/seatCalculators/VoteReformSeatCalculator.tsx";
 
 function OverviewLayout() {
     const [parties, setParties] = useState<Record<string, Party>>({});

@@ -5,7 +5,7 @@ import {
     Party,
     SeatResult
 } from "../../types/ElectionTypes.tsx";
-import SeatCalculatorStrategy from "../election/seatCalculators/SeatCalculatorStrategy.tsx";
+import SeatCalculatorStrategy from "../parliament/seatCalculators/SeatCalculatorStrategy.tsx";
 
 interface ParliamentViewProps {
     electionResults: ElectionResult[];
