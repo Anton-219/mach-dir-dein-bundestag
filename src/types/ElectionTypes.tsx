@@ -5,6 +5,11 @@ export interface Party {
     seatPosition: number; // The value from -100 to 100 where this party would be in the parliament. -100 = left, 100 = right.
 }
 
+export interface DirectMandateWinner {
+    party: string,
+    districtsWon: number
+}
+
 export interface VoteEntry {
     state: string;
     gender: 'm' | 'w';
