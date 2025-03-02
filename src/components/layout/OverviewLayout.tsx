@@ -1,17 +1,25 @@
 import ParliamentView from "./ParliamentView.tsx";
 import {useEffect, useMemo, useState} from "react";
-import {ElectionResult, Party, VoteEntry} from "../../types/ElectionTypes.tsx";
+import {
+    DirectMandateWinner,
+    ElectionResult,
+    Party,
+    VoteEntry
+} from "../../types/ElectionTypes.tsx";
 import electionData from '../../data/second_votes.json';
+import directMandateWinnerData from '../../data/election_results_direktmandate.json';
 import partyData from '../../data/partyData.json';
 import {applyFilters} from "../util/FilterUtil.tsx";
 import {FilterRule} from "../../types/FilterRule.tsx";
 import GermanyMap from "./GermanyMap.tsx";
 import FilterCategories from "./FilterCategories.tsx";
+import {VoteReformSeatCalculator} from "../parliament/seatCalculators/VoteReformSeatCalculator.tsx";
 
 function OverviewLayout() {
     const [parties, setParties] = useState<Record<string, Party>>({});
     const [voteEntries, setVoteEntries] = useState<VoteEntry[]>([]);
     const [filters, setFilters] = useState<FilterRule[]>([]);
+    const [directMandateWinners, setDirectMandateWinners] = useState<DirectMandateWinner[]>([]);
     // const [electionResult, setElectionResult] = useState<ElectionResult[]>([]);
 
     // Load initial data
@@ -32,12 +40,18 @@ function OverviewLayout() {
             return acc;
         }, {} as Record<string, Party>);
         setParties(initialPartyData);
+
+        const initialDirectMandateWinners = directMandateWinnerData.map(x => {
+            return {
+                party: x.party,
+                districtsWon: x.districts_won
+            }
+        });
+        setDirectMandateWinners(initialDirectMandateWinners);
+
     }, []);
 
-    const electionResults = useMemo(() => {
-        console.log("Applying filters to retrieve election results")
-        const filteredVoteEntries = applyFilters(voteEntries, filters);
-        console.log("VoteEntries", filteredVoteEntries);
+    function calculateElectionResults(filteredVoteEntries: VoteEntry[]) {
         const _electionResults: Record<string, ElectionResult> = {}
         let totalVotes = 0;
         filteredVoteEntries.forEach((voteEntry: VoteEntry) => {
@@ -53,11 +67,19 @@ function OverviewLayout() {
                 _electionResults[voteEntry.party].votes += voteEntry.votes;
             }
         })
+        console.log("Total votes received", totalVotes)
         if (totalVotes > 0) {
             for (const key in _electionResults) {
                 _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
             }
         }
+        return _electionResults;
+    }
+
+    const electionResults = useMemo(() => {
+        const filteredVoteEntries = applyFilters(voteEntries, filters);
+        const _electionResults = calculateElectionResults(filteredVoteEntries);
+        console.log("ElectionResults", _electionResults);
         return Object.values(_electionResults)
     }, [parties, voteEntries, filters])
 
@@ -74,7 +96,11 @@ function OverviewLayout() {
         <div className="container-fluid vh-100 d-flex flex-column">
             <div className="row flex-fill">  {/* Upper Half */}
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <ParliamentView electionResults={electionResults} parties={parties}/>
+                    <ParliamentView electionResults={electionResults}
+                                    parties={parties}
+                                    seatCalculator={new VoteReformSeatCalculator()}
+                                    directMandateWinners={directMandateWinners}
+                    />
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
                     <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
