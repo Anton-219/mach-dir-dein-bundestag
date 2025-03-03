@@ -50,7 +50,7 @@ export class VoteReformSeatCalculator implements SeatCalculatorStrategy {
 
         return filteredResults.map(r => ({
                 partyAbbreviation: r.partyAbbreviation,
-                seatNumber: seatCount[r.partyAbbreviation],
+                seats: seatCount[r.partyAbbreviation],
                 seatPosition: r.seatPosition,
             })
         );
