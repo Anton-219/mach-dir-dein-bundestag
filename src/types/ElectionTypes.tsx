@@ -30,6 +30,6 @@ export interface ElectionResult {
 
 export interface SeatResult {
     partyAbbreviation: string;
-    seatNumber: number;
+    seats: number;
     seatPosition: number;
 }

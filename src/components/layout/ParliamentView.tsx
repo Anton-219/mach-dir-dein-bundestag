@@ -1,23 +1,12 @@
 import HalfDoughnutChart from "../charts/HalfDoughnutChart.tsx";
-import {
-    DirectMandateWinner,
-    ElectionResult,
-    Party,
-    SeatResult
-} from "../../types/ElectionTypes.tsx";
-import SeatCalculatorStrategy from "../parliament/seatCalculators/SeatCalculatorStrategy.tsx";
+import {Party, SeatResult} from "../../types/ElectionTypes.tsx";
 
 interface ParliamentViewProps {
-    electionResults: ElectionResult[];
+    seatResult: SeatResult[];
     parties: Record<string, Party>;
-    seatCalculator: SeatCalculatorStrategy;
-    directMandateWinners: DirectMandateWinner[];
 }
 
-function ParliamentView({electionResults, parties, seatCalculator, directMandateWinners}: ParliamentViewProps) {
-    console.log("Election Result ", electionResults);
-    const seatResult: SeatResult[] = seatCalculator.calculate(electionResults, directMandateWinners)
-
+function ParliamentView({seatResult, parties}: ParliamentViewProps) {
     return <HalfDoughnutChart
         parties={parties}
         seatResults={seatResult}
