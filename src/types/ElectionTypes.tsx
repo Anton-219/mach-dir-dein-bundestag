@@ -10,19 +10,21 @@ export interface DirectMandateWinner {
     districtsWon: number
 }
 
+export type AgeGroup = '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+';
+
 export interface VoteEntry {
     state: string;
     gender: 'm' | 'w';
-    ageGroup: '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+';
+    ageGroup: AgeGroup;
     party: string; // This is actually the abbreviation of the party
     voteType: '1' | '2';
     electionMethod: "postal" | "in-person";
     votes: number;
 }
 
-export interface StatVoteEntry {
+export interface StatVotes {
     gender: 'm' | 'w';
-    ageGroup: '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+';
+    ageGroup: AgeGroup;
     party: string;
     votes: number;
 }

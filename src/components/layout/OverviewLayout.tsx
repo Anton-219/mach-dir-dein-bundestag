@@ -1,9 +1,18 @@
 import ParliamentView from "./ParliamentView.tsx";
 import {useEffect, useMemo, useState} from "react";
-import {DirectMandateWinner, ElectionResult, Party, SeatResult, VoteEntry} from "../../types/ElectionTypes.tsx";
+import {
+    AgeGroup,
+    DirectMandateWinner,
+    ElectionResult,
+    Party,
+    SeatResult,
+    StatVotes,
+    VoteEntry
+} from "../../types/ElectionTypes.tsx";
 import electionData from '../../data/second_votes.json';
 import directMandateWinnerData from '../../data/election_results_direktmandate.json';
 import partyData from '../../data/partyData.json';
+import voteData from '../../data/stat_votes.json'
 import {applyFilters} from "../util/FilterUtil.tsx";
 import {FilterRule} from "../../types/FilterRule.tsx";
 import GermanyMap from "./GermanyMap.tsx";
@@ -14,9 +23,10 @@ import CoalitionList from "./CoalitionList.tsx";
 
 function OverviewLayout() {
     const [parties, setParties] = useState<Record<string, Party>>({});
+    const [directMandateWinners, setDirectMandateWinners] = useState<DirectMandateWinner[]>([]);
+    const [statVotes, setStatVotes] = useState<StatVotes[]>([]);
     const [voteEntries, setVoteEntries] = useState<VoteEntry[]>([]);
     const [filters, setFilters] = useState<FilterRule[]>([]);
-    const [directMandateWinners, setDirectMandateWinners] = useState<DirectMandateWinner[]>([]);
     const [totalSeats, setTotalSeats] = useState<number>(0);
     const [seatResults, setSeatResults] = useState<SeatResult[]>([]);
 
@@ -26,7 +36,7 @@ function OverviewLayout() {
         const initialVoteResultData = electionData.map(entry => ({
             ...entry,
             gender: entry.gender as 'm' | 'w',
-            ageGroup: entry.ageGroup as '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+',
+            ageGroup: entry.ageGroup as AgeGroup,
             voteType: entry.voteType as '1' | '2',
             electionMethod: entry.electionMethod as 'postal' | 'in-person',
         }));
@@ -46,6 +56,16 @@ function OverviewLayout() {
             }
         });
         setDirectMandateWinners(initialDirectMandateWinners);
+
+        const initialVoteData = voteData.map(x => {
+            return {
+                gender: x.gender as 'm' | 'w',
+                ageGroup: x.ageGroup as AgeGroup,
+                party: x.party,
+                votes: x.votes,
+            }
+        });
+        setStatVotes(initialVoteData);
     }, []);
 
     // Update Election Results when a filter is added/removed
@@ -119,7 +139,7 @@ function OverviewLayout() {
                     <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties}/>
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <FilterCategories addFilter={addFilter} removeFilter={removeFilter}/>
+                    <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes}/>
                 </div>
             </div>
         </div>
