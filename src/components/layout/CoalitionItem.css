@@ -1,0 +1,25 @@
+/* src/components/CoalitionList.css */
+.coalition-item {
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0rem;
+    margin-bottom: 1.5rem;
+}
+
+.party-list {
+    padding-bottom: 0;
+    margin-bottom: 0 !important;
+}
+
+.party-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #212529;
+}
+
+.color-swatch {
+    min-width: 1rem;
+    height: 1rem;
+    border-radius: 2px;
+    border: 1px solid #dee2e6;
+}

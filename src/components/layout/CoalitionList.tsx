@@ -1,7 +1,6 @@
 import {Party, SeatResult} from "../../types/ElectionTypes.tsx";
 import {useCoalitionCalculator} from "../parliament/CoalitionCalculator.tsx";
-import {Bar} from "react-chartjs-2";
-
+import CoalitionItem from "./CoalitionItem.tsx";
 
 function mergeCduCsuSeatResults(seats: SeatResult[]): SeatResult[] {
     console.log("Received seatResults", seats);
@@ -30,95 +29,36 @@ function mergeCduCsuSeatResults(seats: SeatResult[]): SeatResult[] {
     return Array.from(merged.values());
 }
 
-
 interface CoalitionListProps {
     seats: SeatResult[];
     totalSeats: number;
     parties: Record<string, Party>
 }
-
-function CoalitionList({seats, totalSeats, parties}: CoalitionListProps) {
+function CoalitionList({ seats, totalSeats, parties }: CoalitionListProps) {
     const threshold = Math.ceil((totalSeats + 1) / 2);
-    const coalitions: SeatResult[][] = useCoalitionCalculator(mergeCduCsuSeatResults(seats), threshold);
-
-    const getPartyColor = (abbreviation: string) => {
-        return parties[abbreviation]?.color || '#cccccc';
-    };
-
+    const coalitions: SeatResult[][] = useCoalitionCalculator(
+        mergeCduCsuSeatResults(seats),
+        threshold
+    );
     return (
-        <div className="coalition-list">
-            {coalitions.map((coalition, index) => {
-                const sortedCoalition = [...coalition].sort((a, b) => a.seatPosition - b.seatPosition);
-                const coalitionTotal = sortedCoalition.reduce((sum, party) => sum + party.seats, 0);
-                const remainingSeats = totalSeats - coalitionTotal;
-
-                // Dataset configuration
-                const datasets = sortedCoalition.map(party => ({
-                    label: party.partyAbbreviation,
-                    data: [party.seats],
-                    backgroundColor: getPartyColor(party.partyAbbreviation),
-                    borderWidth: 0,
-                    stack: 'coalition',
-                }));
-
-                // Add remaining seats as white segment
-                if (remainingSeats > 0) {
-                    datasets.push({
-                        label: 'Remaining',
-                        data: [remainingSeats],
-                        backgroundColor: '#ffffff',
-                        borderWidth: 0,
-                        stack: 'coalition',
-                    });
-                }
-
-                // Chart options
-                const options = {
-                    indexAxis: 'y' as const,
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            stacked: true,
-                            max: totalSeats,
-                            display: false,
-                        },
-                        y: {
-                            display: false,
-                        },
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false },
-                        annotation: {
-                            annotations: {
-                                midline: {
-                                    type: 'line',
-                                    mode: 'vertical',
-                                    scaleID: 'x',
-                                    value: totalSeats / 2,
-                                    borderColor: '#000',
-                                    borderWidth: 2,
-                                },
-                            },
-                        },
-                    },
-                };
-
-                const data = {
-                    labels: [''],
-                    datasets: datasets,
-                };
-
-                return (
-                    <div key={index} className="mb-4" style={{ height: '60px' }}>
-                        <Bar options={options} data={data} />
+        // The outer div provides a scrollable container (using Bootstrap's overflow-auto)
+        // and sets a max height so that if the content exceeds it, scrolling is enabled.
+        <div className="coalition-list overflow-auto" style={{ maxHeight: '500px' }}>
+            {/* Use Bootstrap row with two columns */}
+            <div className="row row-cols-2">
+                {coalitions.map((coalition, index) => (
+                    <div key={`coalition-item-${index}`} className="col">
+                        <CoalitionItem
+                            key={`coalition-item-${index}`}
+                            totalSeats={totalSeats}
+                            coalition={coalition}
+                            parties={parties}
+                        />
                     </div>
-                );
-            })}
+                ))}
+            </div>
         </div>
     );
-
 }
 
 export default CoalitionList;
