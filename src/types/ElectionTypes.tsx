@@ -20,6 +20,13 @@ export interface VoteEntry {
     votes: number;
 }
 
+export interface StatVoteEntry {
+    gender: 'm' | 'w';
+    ageGroup: '18-24' | '25-34' | '35-44' | '45-54' | '55-64' | '65+';
+    party: string;
+    votes: number;
+}
+
 // The election result of a single party
 export interface ElectionResult {
     partyAbbreviation: string;
