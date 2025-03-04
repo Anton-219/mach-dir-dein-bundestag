@@ -5,7 +5,7 @@ import {Party, SeatResult} from "../../types/ElectionTypes.tsx";
 import './CoalitionItem.css'
 
 interface CoalitionItemProps {
-    key: string,
+    idKey: string,
     totalSeats: number,
     coalition: SeatResult[],
     parties: Record<string, Party>,
@@ -14,7 +14,7 @@ interface CoalitionItemProps {
 Chart.register(ChartAnnotation);
 
 
-function CoalitionItem({key, totalSeats, coalition, parties}: CoalitionItemProps) {
+function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemProps) {
     const coalitionTotal = coalition.reduce((sum, party) => sum + party.seats, 0);
     const remainingSeats = totalSeats - coalitionTotal;
 
@@ -108,7 +108,7 @@ function CoalitionItem({key, totalSeats, coalition, parties}: CoalitionItemProps
     };
 
     return (
-        <div key={`coalition-item-${key}`}>
+        <div key={`coalition-item-${idKey}`}>
             <div className="d-flex flex-wrap gap-3 mb-2 party-list">
                 {coalition.map((seatResult) => (
                     seatResult && (
@@ -121,7 +121,7 @@ function CoalitionItem({key, totalSeats, coalition, parties}: CoalitionItemProps
                     )
                 ))}
             </div>
-            <div key={`coalition-item-bar-${key}`} className="mb-4"
+            <div key={`coalition-item-bar-${idKey}`} className="mb-4"
                  style={{height: '60px'}}>
                 <Bar options={options} data={data}/>
             </div>

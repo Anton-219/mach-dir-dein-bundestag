@@ -49,7 +49,7 @@ function CoalitionList({ seats, totalSeats, parties }: CoalitionListProps) {
                 {coalitions.map((coalition, index) => (
                     <div key={`coalition-item-${index}`} className="col">
                         <CoalitionItem
-                            key={`coalition-item-${index}`}
+                            idKey={`coalition-item-${index}`}
                             totalSeats={totalSeats}
                             coalition={coalition}
                             parties={parties}
