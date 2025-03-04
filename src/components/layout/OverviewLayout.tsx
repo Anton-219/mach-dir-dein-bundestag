@@ -1,11 +1,6 @@
 import ParliamentView from "./ParliamentView.tsx";
 import {useEffect, useMemo, useState} from "react";
-import {
-    DirectMandateWinner,
-    ElectionResult,
-    Party,
-    VoteEntry
-} from "../../types/ElectionTypes.tsx";
+import {DirectMandateWinner, ElectionResult, Party, SeatResult, VoteEntry} from "../../types/ElectionTypes.tsx";
 import electionData from '../../data/second_votes.json';
 import directMandateWinnerData from '../../data/election_results_direktmandate.json';
 import partyData from '../../data/partyData.json';
@@ -14,15 +9,18 @@ import {FilterRule} from "../../types/FilterRule.tsx";
 import GermanyMap from "./GermanyMap.tsx";
 import FilterCategories from "./FilterCategories.tsx";
 import {VoteReformSeatCalculator} from "../parliament/seatCalculators/VoteReformSeatCalculator.tsx";
+import CoalitionList from "./CoalitionList.tsx";
+
 
 function OverviewLayout() {
     const [parties, setParties] = useState<Record<string, Party>>({});
     const [voteEntries, setVoteEntries] = useState<VoteEntry[]>([]);
     const [filters, setFilters] = useState<FilterRule[]>([]);
     const [directMandateWinners, setDirectMandateWinners] = useState<DirectMandateWinner[]>([]);
-    // const [electionResult, setElectionResult] = useState<ElectionResult[]>([]);
+    const [totalSeats, setTotalSeats] = useState<number>(0);
+    const [seatResults, setSeatResults] = useState<SeatResult[]>([]);
 
-    // Load initial data
+    // Loading initial data
     useEffect(() => {
         // Load vote results
         const initialVoteResultData = electionData.map(entry => ({
@@ -48,40 +46,54 @@ function OverviewLayout() {
             }
         });
         setDirectMandateWinners(initialDirectMandateWinners);
-
     }, []);
 
-    function calculateElectionResults(filteredVoteEntries: VoteEntry[]) {
-        const _electionResults: Record<string, ElectionResult> = {}
-        let totalVotes = 0;
-        filteredVoteEntries.forEach((voteEntry: VoteEntry) => {
-            totalVotes += voteEntry.votes
-            if (!_electionResults[voteEntry.party]) {
-                _electionResults[voteEntry.party] = {
-                    partyAbbreviation: voteEntry.party,
-                    votes: voteEntry.votes,
-                    percentage: 0,
-                    seatPosition: parties[voteEntry.party].seatPosition,
-                };
-            } else {
-                _electionResults[voteEntry.party].votes += voteEntry.votes;
-            }
-        })
-        console.log("Total votes received", totalVotes)
-        if (totalVotes > 0) {
-            for (const key in _electionResults) {
-                _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
-            }
-        }
-        return _electionResults;
-    }
-
+    // Update Election Results when a filter is added/removed
     const electionResults = useMemo(() => {
+        const calculateElectionResults = function (filteredVoteEntries: VoteEntry[]) {
+            const _electionResults: Record<string, ElectionResult> = {}
+            let totalVotes = 0;
+            filteredVoteEntries.forEach((voteEntry: VoteEntry) => {
+                totalVotes += voteEntry.votes
+                if (!_electionResults[voteEntry.party]) {
+                    _electionResults[voteEntry.party] = {
+                        partyAbbreviation: voteEntry.party,
+                        votes: voteEntry.votes,
+                        percentage: 0,
+                        seatPosition: parties[voteEntry.party].seatPosition,
+                    };
+                } else {
+                    _electionResults[voteEntry.party].votes += voteEntry.votes;
+                }
+            })
+            console.log("Total votes received", totalVotes)
+            if (totalVotes > 0) {
+                for (const key in _electionResults) {
+                    _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
+                }
+            }
+            return _electionResults;
+        }
+
         const filteredVoteEntries = applyFilters(voteEntries, filters);
         const _electionResults = calculateElectionResults(filteredVoteEntries);
         console.log("ElectionResults", _electionResults);
         return Object.values(_electionResults)
-    }, [parties, voteEntries, filters])
+    }, [voteEntries, filters, parties])
+
+    // Update the seatResults when the calculator or the election results changed
+    const seatCalculator = useMemo(() => new VoteReformSeatCalculator(), []);
+    useEffect(() => {
+        const results = seatCalculator.calculate(electionResults, directMandateWinners);
+        setSeatResults(results);
+    }, [directMandateWinners, electionResults, seatCalculator]);
+
+    // Update the totalSeats when the Seats are rearranged
+    useEffect(() => {
+        const total = seatResults.map(x => x.seats).reduce((sum, seats) => sum + seats, 0);
+        setTotalSeats(total);
+    }, [seatResults]);
+
 
     const addFilter = function (newFilter: FilterRule) {
         console.log("Adding filter", newFilter)
@@ -96,11 +108,7 @@ function OverviewLayout() {
         <div className="container-fluid vh-100 d-flex flex-column">
             <div className="row flex-fill">  {/* Upper Half */}
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <ParliamentView electionResults={electionResults}
-                                    parties={parties}
-                                    seatCalculator={new VoteReformSeatCalculator()}
-                                    directMandateWinners={directMandateWinners}
-                    />
+                    <ParliamentView seatResult={seatResults} parties={parties}/>
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
                     <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
@@ -108,7 +116,7 @@ function OverviewLayout() {
             </div>
             <div className="row flex-fill">  {/* Lower Half */}
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    Section 3
+                    <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties}/>
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
                     <FilterCategories addFilter={addFilter} removeFilter={removeFilter}/>

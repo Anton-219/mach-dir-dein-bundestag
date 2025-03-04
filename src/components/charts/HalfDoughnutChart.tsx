@@ -15,14 +15,14 @@ function HalfDoughnutChart({seatResults, parties, cutout = 30}: HalfPieChartProp
         }
     };
 
-    const totalSeats = seatResults.reduce((sum, result) => sum + result.seatNumber, 0)
+    const totalSeats = seatResults.reduce((sum, result) => sum + result.seats, 0)
     console.log("Total seats ", totalSeats);
     const sortedSeatResults = [...seatResults].sort((a, b) => a.seatPosition - b.seatPosition);
     const data = {
         labels: sortedSeatResults.map(p => p.partyAbbreviation),
         datasets: [
             {
-                data: sortedSeatResults.map(p => p.seatNumber),
+                data: sortedSeatResults.map(p => p.seats),
                 backgroundColor: sortedSeatResults.map(p => selectColor(p.partyAbbreviation)),
             },
         ],
@@ -31,7 +31,7 @@ function HalfDoughnutChart({seatResults, parties, cutout = 30}: HalfPieChartProp
     const plugins = [{
         id: 'centerText',
         afterDraw: (chart) => {
-            const { ctx } = chart;
+            const {ctx} = chart;
             const meta = chart.getDatasetMeta(0);
             if (!meta || meta.data.length === 0) return;
 
@@ -67,7 +67,7 @@ function HalfDoughnutChart({seatResults, parties, cutout = 30}: HalfPieChartProp
 
     return (
         <div className="container my-4" key="HalfDoughnutChart">
-            <Doughnut data={data} options={options} plugins={plugins} />
+            <Doughnut data={data} options={options} plugins={plugins}/>
         </div>
     );
 }

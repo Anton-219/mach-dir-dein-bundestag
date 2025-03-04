@@ -12,6 +12,12 @@
     "seatPosition": 33
   },
   {
+    "name": "Unionsfraktionen",
+    "abbreviation": "CDU+CSU",
+    "color": "#000000",
+    "seatPosition": 33
+  },
+  {
     "name": "Christlich-Soziale Union in Bayern",
     "abbreviation": "CSU",
     "color": "#0570C9",
