@@ -30,6 +30,7 @@ function HalfDoughnutChart({seatResults, parties, cutout = 30}: HalfPieChartProp
 
     const plugins = [{
         id: 'centerText',
+        // @ts-expect-error It is too hard for me to find the type of chart ¯\_(ツ)_/¯
         afterDraw: (chart) => {
             const {ctx} = chart;
             const meta = chart.getDatasetMeta(0);
