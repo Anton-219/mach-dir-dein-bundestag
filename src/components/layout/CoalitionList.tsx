@@ -34,7 +34,8 @@ interface CoalitionListProps {
     totalSeats: number;
     parties: Record<string, Party>
 }
-function CoalitionList({ seats, totalSeats, parties }: CoalitionListProps) {
+
+function CoalitionList({seats, totalSeats, parties}: CoalitionListProps) {
     const threshold = Math.ceil((totalSeats + 1) / 2);
     const coalitions: SeatResult[][] = useCoalitionCalculator(
         mergeCduCsuSeatResults(seats),
@@ -43,11 +44,11 @@ function CoalitionList({ seats, totalSeats, parties }: CoalitionListProps) {
     return (
         // The outer div provides a scrollable container (using Bootstrap's overflow-auto)
         // and sets a max height so that if the content exceeds it, scrolling is enabled.
-        <div className="coalition-list overflow-auto" style={{ maxHeight: '500px' }}>
+        <div className="coalition-list overflow-auto" style={{maxHeight: '500px', width: '100%'}}>
             {/* Use Bootstrap row with two columns */}
             <div className="row row-cols-2">
                 {coalitions.map((coalition, index) => (
-                    <div key={`coalition-item-${index}`} className="col">
+                    <div key={`coalition-item-${index}`} className="col" style={{width: '45s%'}}>
                         <CoalitionItem
                             idKey={`coalition-item-${index}`}
                             totalSeats={totalSeats}
