@@ -129,20 +129,19 @@ function OverviewLayout() {
     }
 
     return (
-        <div className="container my-4">
+        <div className="container-fluid px-4 my-4">
             <div className="row mb-4">
                 <div className="col-12">
                     <h1 className="text-center">Create Your Bundestag</h1>
                 </div>
             </div>
 
-            {/* Combined Row for Parliament/Coalition (Left) and Map (Right) */}
-            {/* Using d-flex might help equalize heights, but Bootstrap's default column behavior in a row often suffices */}
+            {/* Combined Row for Parliament/Coalition (Left), Map (Middle), and Filters (Right) */}
             <div className="row mb-4">
 
                 {/* Left Column (Parliament + Coalition) */}
                 {/* Use flex column to stack items vertically */}
-                <div className="col-md-6 d-flex flex-column">
+                <div className="col-md-5 d-flex flex-column">
 
                     {/* Parliament View Card (Top Left) */}
                     <div className="card shadow-sm mb-4"> {/* Added mb-4 here */}
@@ -165,38 +164,30 @@ function OverviewLayout() {
 
                 </div> {/* End Left Column */}
 
-                {/* Right Column (Map) */}
-                {/* Use d-flex to potentially help stretching, h-100 on the card itself */}
-                <div className="col-md-5 d-flex">
-
-                    {/* Germany Map Card (Full Height Right) */}
-                    {/* h-100 makes the card try to match the height of the tallest sibling column in the row */}
-                    <div className="card shadow-sm h-100 w-100"> {/* Added w-100 to ensure width is filled */}
-                        {/* Make card-body fill the card height */}
+                {/* Middle Column (Map) */}
+                <div className="col-md-4 d-flex">
+                    {/* Germany Map Card */}
+                    <div className="card shadow-sm h-100 w-100">
                         <div className="card-body d-flex flex-column">
-                            <h5 className="card-title">Map Filters</h5> {/* Optional: Add title */}
-                            {/* Make map container fill the body */}
-                            <div className="flex-grow-1" style={{minHeight: '300px'}}> {/* Increased minHeight to make map bigger */}
+                            <h5 className="card-title">Map Filters</h5>
+                            <div className="flex-grow-1" style={{minHeight: '450px'}}>
                                 <GermanyMap addFilter={addFilter} removeFilter={removeFilter} />
                             </div>
                         </div>
                     </div>
+                </div> {/* End Middle Column */}
 
-                </div> {/* End Right Column */}
-
-            </div> {/* End Combined Row */}
-
-
-            {/* Third row - Filter Options */}
-            <div className="row">
-                <div className="col-12">
-                    <div className="card shadow-sm">
+                {/* Right Column (Filter Categories) */}
+                <div className="col-md-3 d-flex">
+                    <div className="card shadow-sm h-100 w-100">
                         <div className="card-body">
+                            <h5 className="card-title">Filter Options</h5>
                             <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes} />
                         </div>
                     </div>
-                </div>
-            </div>
+                </div> {/* End Right Column */}
+
+            </div> {/* End Combined Row */}
         </div>
     );
 }
