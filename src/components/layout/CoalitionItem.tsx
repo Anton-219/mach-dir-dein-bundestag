@@ -1,6 +1,4 @@
 import {Bar} from "react-chartjs-2";
-import {Chart} from "chart.js";
-import ChartAnnotation from 'chartjs-plugin-annotation';
 import {Party, SeatResult} from "../../types/ElectionTypes.tsx";
 import './CoalitionItem.css'
 
@@ -10,8 +8,6 @@ interface CoalitionItemProps {
     coalition: SeatResult[],
     parties: Record<string, Party>,
 }
-
-Chart.register(ChartAnnotation);
 
 
 function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemProps) {
@@ -83,7 +79,7 @@ function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemPro
                         value: totalSeats / 2,
                         borderColor: '#a80000',
                         borderWidth: 2,
-                        borderDash: [2,2],
+                        borderDash: [2, 2],
                     },
                     border: {
                         type: 'box',
@@ -123,7 +119,12 @@ function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemPro
                         seatResult && (
                             <div key={`coalition-item-header-${seatResult.partyAbbreviation}`}
                                  className="d-flex align-items-center badge"
-                                 style={{backgroundColor: getPartyColor(seatResult.partyAbbreviation), color: '#fff', fontSize: '0.7rem', padding: '0.2rem 0.4rem'}}>
+                                 style={{
+                                     backgroundColor: getPartyColor(seatResult.partyAbbreviation),
+                                     color: '#fff',
+                                     fontSize: '0.7rem',
+                                     padding: '0.2rem 0.4rem'
+                                 }}>
                                 <span className="party-name">
                                     {seatResult.partyAbbreviation} ({seatResult.seats})
                                 </span>
@@ -131,7 +132,8 @@ function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemPro
                         )
                     ))}
                 </div>
-                <span className="badge bg-secondary" style={{fontSize: '0.7rem', padding: '0.2rem 0.4rem'}}>{coalitionTotal} / {totalSeats}</span>
+                <span className="badge bg-secondary"
+                      style={{fontSize: '0.7rem', padding: '0.2rem 0.4rem'}}>{coalitionTotal} / {totalSeats}</span>
             </div>
             <div key={`coalition-item-bar-${idKey}`} className="mb-1"
                  style={{height: '30px'}}>

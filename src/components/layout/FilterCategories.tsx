@@ -1,12 +1,9 @@
 import React, {ChangeEvent, useMemo, useState} from "react";
 import {ActiveStates, FilterRule} from "../../types/FilterRule.tsx";
 import {StatVotes} from "../../types/ElectionTypes.tsx";
-import {Chart} from "chart.js";
-import ChartAnnotation from "chartjs-plugin-annotation";
 import {Bar} from "react-chartjs-2";
 import {humanizeNumber} from "../util/Humanize.tsx";
 
-Chart.register(ChartAnnotation);
 
 interface FilterCategoriesProps {
     addFilter: (filterRule: FilterRule) => void;
@@ -77,28 +74,6 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
             ]
         };
 
-        const customTextPlugin = {
-            id: 'customTextPlugin',
-            afterDraw: (chart: any) => {
-                const {ctx, chartArea} = chart;
-                ctx.save();
-                ctx.font = 'bold 14px sans-serif';
-                ctx.fillStyle = '#343434';
-
-                // Draw "Male" at bottom left
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'bottom';
-                // ctx.fillText('Male', chartArea.left + 10, chartArea.bottom - 10);
-
-                // Draw "Female" at bottom right
-                ctx.textAlign = 'right';
-                // ctx.fillText('Female', chartArea.right - 10, chartArea.bottom - 10);
-                ctx.restore();
-            }
-        };
-
-        Chart.register(customTextPlugin);
-
         const options = {
             indexAxis: 'y' as const,
             responsive: true,
@@ -168,6 +143,7 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
                 legend: false,
                 annotation: {},
                 customTextPlugin: {},
+                BackgroundIconPlugin: {}
             }
         };
         return {chartData: data, chartOptions: options};
