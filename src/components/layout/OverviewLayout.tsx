@@ -142,7 +142,7 @@ function OverviewLayout() {
 
                 {/* Left Column (Parliament + Coalition) */}
                 {/* Use flex column to stack items vertically */}
-                <div className="col-md-8 d-flex flex-column">
+                <div className="col-md-6 d-flex flex-column">
 
                     {/* Parliament View Card (Top Left) */}
                     <div className="card shadow-sm mb-4"> {/* Added mb-4 here */}
@@ -167,7 +167,7 @@ function OverviewLayout() {
 
                 {/* Right Column (Map) */}
                 {/* Use d-flex to potentially help stretching, h-100 on the card itself */}
-                <div className="col-md-4 d-flex">
+                <div className="col-md-5 d-flex">
 
                     {/* Germany Map Card (Full Height Right) */}
                     {/* h-100 makes the card try to match the height of the tallest sibling column in the row */}
@@ -176,7 +176,7 @@ function OverviewLayout() {
                         <div className="card-body d-flex flex-column">
                             <h5 className="card-title">Map Filters</h5> {/* Optional: Add title */}
                             {/* Make map container fill the body */}
-                            <div className="flex-grow-1" style={{minHeight: '300px'}}> {/* Added minHeight to ensure map is visible */}
+                            <div className="flex-grow-1" style={{minHeight: '300px'}}> {/* Increased minHeight to make map bigger */}
                                 <GermanyMap addFilter={addFilter} removeFilter={removeFilter} />
                             </div>
                         </div>
