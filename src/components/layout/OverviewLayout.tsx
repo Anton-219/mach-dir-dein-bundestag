@@ -125,44 +125,49 @@ function OverviewLayout() {
     }
 
     return (
-        <div className="container-fluid vh-100 d-flex flex-column py-3">
-            <div className="row mb-3">
+        <div className="container my-4">
+            <div className="row mb-4">
                 <div className="col-12">
                     <h1 className="text-center">Create Your Bundestag</h1>
                 </div>
             </div>
-            {/* 
-              * LAYOUT SIZE ADJUSTMENT:
-              * Upper row height is set to 40vh to ensure it doesn't overlap with lower components
-              * Adjust this value if you need more/less space for the upper components
-            */}
-            <div className="row" style={{height: '40vh'}}>  {/* Upper Half - reduced height */}
-                <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <div className="w-100 h-100 p-2">
-                        <ParliamentView seatResult={seatResults} parties={parties}/>
-                    </div>
-                </div>
-                <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <div className="w-100 h-100 p-2">
-                        <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
+
+             {/*First row - Parliament View (larger) */}
+            <div className="row mb-4">
+                <div className="col-12">
+                    <div className="card shadow-sm">
+                        <div className="card-body" style={{height: '35vh'}}>
+                            <ParliamentView seatResult={seatResults} parties={parties}/>
+                        </div>
                     </div>
                 </div>
             </div>
-            {/* 
-              * LAYOUT SIZE ADJUSTMENT:
-              * Lower row height is set to 40vh to ensure it doesn't overlap with upper components
-              * A margin-top is added to create space between the rows
-              * Adjust these values if you need more/less space for the lower components
-            */}
-            <div className="row mt-3" style={{height: '40vh'}}>  {/* Lower Half - reduced height with margin top */}
-                <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <div className="w-100 h-100 p-2">
-                        <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties}/>
+
+            {/* Second row - Coalition List and Germany Map */}
+            <div className="row mb-4">
+                <div className="col-md-8">
+                    <div className="card shadow-sm h-100">
+                        <div className="card-body">
+                            <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties}/>
+                        </div>
                     </div>
                 </div>
-                <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <div className="w-100 h-100 p-2">
-                        <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes}/>
+                <div className="col-md-4">
+                    <div className="card shadow-sm h-100">
+                        <div className="card-body">
+                            <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Third row - Filter Options */}
+            <div className="row">
+                <div className="col-12">
+                    <div className="card shadow-sm">
+                        <div className="card-body">
+                            <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes}/>
+                        </div>
                     </div>
                 </div>
             </div>
