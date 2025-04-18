@@ -1,5 +1,5 @@
 import ParliamentView from "./ParliamentView.tsx";
-import {useEffect, useMemo, useState} from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     AgeGroup,
     DirectMandateWinner,
@@ -13,11 +13,11 @@ import electionData from '../../data/second_votes.json';
 import directMandateWinnerData from '../../data/election_results_direktmandate.json';
 import partyData from '../../data/partyData.json';
 import voteData from '../../data/stat_votes.json'
-import {applyFilters} from "../util/FilterUtil.tsx";
-import {FilterRule} from "../../types/FilterRule.tsx";
+import { applyFilters } from "../util/FilterUtil.tsx";
+import { FilterRule } from "../../types/FilterRule.tsx";
 import GermanyMap from "./GermanyMap.tsx";
 import FilterCategories from "./FilterCategories.tsx";
-import {VoteReformSeatCalculator} from "../parliament/seatCalculators/VoteReformSeatCalculator.tsx";
+import { VoteReformSeatCalculator } from "../parliament/seatCalculators/VoteReformSeatCalculator.tsx";
 import CoalitionList from "./CoalitionList.tsx";
 
 
@@ -30,6 +30,7 @@ function OverviewLayout() {
     const [totalSeats, setTotalSeats] = useState<number>(0);
     const [seatResults, setSeatResults] = useState<SeatResult[]>([]);
 
+    // --- (Data loading useEffect and calculation memos remain the same) ---
     // Loading initial data
     useEffect(() => {
         // Load vote results
@@ -80,13 +81,13 @@ function OverviewLayout() {
                         partyAbbreviation: voteEntry.party,
                         votes: voteEntry.votes,
                         percentage: 0,
-                        seatPosition: parties[voteEntry.party].seatPosition,
+                        seatPosition: parties[voteEntry.party]?.seatPosition ?? 999, // Use fallback position
                     };
                 } else {
                     _electionResults[voteEntry.party].votes += voteEntry.votes;
                 }
             })
-            console.log("Total votes received", totalVotes)
+            // console.log("Total votes received", totalVotes)
             if (totalVotes > 0) {
                 for (const key in _electionResults) {
                     _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
@@ -97,16 +98,19 @@ function OverviewLayout() {
 
         const filteredVoteEntries = applyFilters(voteEntries, filters);
         const _electionResults = calculateElectionResults(filteredVoteEntries);
-        console.log("ElectionResults", _electionResults);
+        // console.log("ElectionResults", _electionResults);
         return Object.values(_electionResults)
     }, [voteEntries, filters, parties])
 
     // Update the seatResults when the calculator or the election results changed
     const seatCalculator = useMemo(() => new VoteReformSeatCalculator(), []);
     useEffect(() => {
-        const results = seatCalculator.calculate(electionResults, directMandateWinners);
-        setSeatResults(results);
-    }, [directMandateWinners, electionResults, seatCalculator]);
+        // Ensure parties data is loaded before calculating, or handle potential missing seatPosition
+        if(Object.keys(parties).length > 0) {
+            const results = seatCalculator.calculate(electionResults, directMandateWinners);
+            setSeatResults(results);
+        }
+    }, [directMandateWinners, electionResults, seatCalculator, parties]); // Add parties dependency
 
     // Update the totalSeats when the Seats are rearranged
     useEffect(() => {
@@ -132,41 +136,63 @@ function OverviewLayout() {
                 </div>
             </div>
 
-             {/*First row - Parliament View (larger) */}
+            {/* Combined Row for Parliament/Coalition (Left) and Map (Right) */}
+            {/* Using d-flex might help equalize heights, but Bootstrap's default column behavior in a row often suffices */}
             <div className="row mb-4">
-                <div className="col-12">
-                    <div className="card shadow-sm">
-                        <div className="card-body" style={{height: '35vh'}}>
-                            <ParliamentView seatResult={seatResults} parties={parties}/>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* Second row - Coalition List and Germany Map */}
-            <div className="row mb-4">
-                <div className="col-md-8">
-                    <div className="card shadow-sm h-100">
-                        <div className="card-body">
-                            <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties}/>
+                {/* Left Column (Parliament + Coalition) */}
+                {/* Use flex column to stack items vertically */}
+                <div className="col-md-8 d-flex flex-column">
+
+                    {/* Parliament View Card (Top Left) */}
+                    <div className="card shadow-sm mb-4"> {/* Added mb-4 here */}
+                        <div className="card-body" style={{ height: '35vh', minHeight: '250px' }}> {/* Added minHeight */}
+                            <ParliamentView seatResult={seatResults} parties={parties} />
                         </div>
                     </div>
-                </div>
-                <div className="col-md-4">
-                    <div className="card shadow-sm h-100">
-                        <div className="card-body">
-                            <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
+
+                    {/* Coalition List Card (Bottom Left) */}
+                    {/* Use flex-grow-1 to allow this card to fill remaining vertical space if needed, or h-100 */}
+                    {/* Let's try without explicit grow first, relying on content height */}
+                    <div className="card shadow-sm flex-grow-1"> {/* Added flex-grow-1 */}
+                        <div className="card-body d-flex flex-column"> {/* Allow body to flex */}
+                            <h5 className="card-title">Coalition Options</h5> {/* Optional: Add title */}
+                            <div className="flex-grow-1"> {/* Make inner div grow */}
+                                <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+
+                </div> {/* End Left Column */}
+
+                {/* Right Column (Map) */}
+                {/* Use d-flex to potentially help stretching, h-100 on the card itself */}
+                <div className="col-md-4 d-flex">
+
+                    {/* Germany Map Card (Full Height Right) */}
+                    {/* h-100 makes the card try to match the height of the tallest sibling column in the row */}
+                    <div className="card shadow-sm h-100 w-100"> {/* Added w-100 to ensure width is filled */}
+                        {/* Make card-body fill the card height */}
+                        <div className="card-body d-flex flex-column">
+                            <h5 className="card-title">Map Filters</h5> {/* Optional: Add title */}
+                            {/* Make map container fill the body */}
+                            <div className="flex-grow-1" style={{minHeight: '300px'}}> {/* Added minHeight to ensure map is visible */}
+                                <GermanyMap addFilter={addFilter} removeFilter={removeFilter} />
+                            </div>
+                        </div>
+                    </div>
+
+                </div> {/* End Right Column */}
+
+            </div> {/* End Combined Row */}
+
 
             {/* Third row - Filter Options */}
             <div className="row">
                 <div className="col-12">
                     <div className="card shadow-sm">
                         <div className="card-body">
-                            <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes}/>
+                            <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes} />
                         </div>
                     </div>
                 </div>
