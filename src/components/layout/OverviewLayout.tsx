@@ -125,21 +125,45 @@ function OverviewLayout() {
     }
 
     return (
-        <div className="container-fluid vh-100 d-flex flex-column">
-            <div className="row flex-fill">  {/* Upper Half */}
-                <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <ParliamentView seatResult={seatResults} parties={parties}/>
-                </div>
-                <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
+        <div className="container-fluid vh-100 d-flex flex-column py-3">
+            <div className="row mb-3">
+                <div className="col-12">
+                    <h1 className="text-center">Create Your Bundestag</h1>
                 </div>
             </div>
-            <div className="row flex-fill">  {/* Lower Half */}
+            {/* 
+              * LAYOUT SIZE ADJUSTMENT:
+              * Upper row height is set to 40vh to ensure it doesn't overlap with lower components
+              * Adjust this value if you need more/less space for the upper components
+            */}
+            <div className="row" style={{height: '40vh'}}>  {/* Upper Half - reduced height */}
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties}/>
+                    <div className="w-100 h-100 p-2">
+                        <ParliamentView seatResult={seatResults} parties={parties}/>
+                    </div>
                 </div>
                 <div className="col-md-6 d-flex align-items-center justify-content-center">
-                    <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes}/>
+                    <div className="w-100 h-100 p-2">
+                        <GermanyMap addFilter={addFilter} removeFilter={removeFilter}/>
+                    </div>
+                </div>
+            </div>
+            {/* 
+              * LAYOUT SIZE ADJUSTMENT:
+              * Lower row height is set to 40vh to ensure it doesn't overlap with upper components
+              * A margin-top is added to create space between the rows
+              * Adjust these values if you need more/less space for the lower components
+            */}
+            <div className="row mt-3" style={{height: '40vh'}}>  {/* Lower Half - reduced height with margin top */}
+                <div className="col-md-6 d-flex align-items-center justify-content-center">
+                    <div className="w-100 h-100 p-2">
+                        <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties}/>
+                    </div>
+                </div>
+                <div className="col-md-6 d-flex align-items-center justify-content-center">
+                    <div className="w-100 h-100 p-2">
+                        <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes}/>
+                    </div>
                 </div>
             </div>
         </div>

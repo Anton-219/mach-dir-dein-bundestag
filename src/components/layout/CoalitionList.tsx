@@ -6,7 +6,7 @@ function mergeCduCsuSeatResults(seats: SeatResult[]): SeatResult[] {
     console.log("Received seatResults", seats);
     const merged = new Map<string, SeatResult>();
     if (seats.filter(x => x.partyAbbreviation === 'CDU' || x.partyAbbreviation === 'CSU').length < 2) {
-        // If one of the CDU/CSU parties is not present then we do not have to merge anything.
+        // If one of the CDU/CSU parties is not present, then we do not have to merge anything.
         return seats;
     }
     for (const seat of seats) {
@@ -42,13 +42,17 @@ function CoalitionList({seats, totalSeats, parties}: CoalitionListProps) {
         threshold
     );
     return (
-        // The outer div provides a scrollable container (using Bootstrap's overflow-auto)
-        // and sets a max height so that if the content exceeds it, scrolling is enabled.
-        <div className="coalition-list overflow-auto" style={{maxHeight: '500px', width: '100%'}}>
-            {/* Use Bootstrap row with two columns */}
-            <div className="row row-cols-2">
+        // The outer div provides a scrollable container with improved styling for 1920x1080 screens
+        // COALITION LIST SIZE ADJUSTMENT:
+        // maxHeight is set to 350px to reduce the overall size of the coalition list
+        // Adjust this value if you need more/less space for the coalition list
+        <div className="coalition-list overflow-auto border rounded shadow-sm p-2 bg-white" 
+             style={{maxHeight: '350px', width: '100%'}}>
+            <h5 className="mb-2">Possible Coalitions</h5>
+            {/* Use Bootstrap row with two columns and improved spacing */}
+            <div className="row row-cols-2 g-2">
                 {coalitions.map((coalition, index) => (
-                    <div key={`coalition-item-${index}`} className="col" style={{width: '45s%'}}>
+                    <div key={`coalition-item-${index}`} className="col" style={{width: '45%'}}>
                         <CoalitionItem
                             idKey={`coalition-item-${index}`}
                             totalSeats={totalSeats}

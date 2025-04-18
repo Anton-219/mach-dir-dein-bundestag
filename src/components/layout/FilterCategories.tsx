@@ -53,7 +53,7 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
             labels: ageGroups,
             datasets: [
                 {
-                    label: 'Male',
+                    // label: 'Male',
                     data: ageGroups.map(ageGroup => -genderAgeGroupTotals.m[ageGroup] || 0),
                     backgroundColor: ageGroups.map((_, index) =>
                         selectedBars.has(`0-${index}`)
@@ -88,11 +88,11 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
                 // Draw "Male" at bottom left
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'bottom';
-                ctx.fillText('Male', chartArea.left + 10, chartArea.bottom - 10);
+                // ctx.fillText('Male', chartArea.left + 10, chartArea.bottom - 10);
 
                 // Draw "Female" at bottom right
                 ctx.textAlign = 'right';
-                ctx.fillText('Female', chartArea.right - 10, chartArea.bottom - 10);
+                // ctx.fillText('Female', chartArea.right - 10, chartArea.bottom - 10);
                 ctx.restore();
             }
         };
@@ -205,21 +205,33 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
     }
 
     return (
-        <div className="p-3" style={{width: '100%'}}>
+        <div className="overflow-auto border rounded shadow-sm p-2 bg-white" 
+             style={{width: '100%', maxHeight: '350px'}}>
+            {/* 
+              FILTER OPTIONS SIZE ADJUSTMENT:
+              maxHeight is set to 350px to reduce the overall size of the filter options
+              Padding is reduced from p-3 to p-2
+              Adjust these values if you need more/less space for the filter options
+            */}
+            <h5 className="mb-2">Filter Options</h5>
             {filterGroups.map(({category, values, getLabel}) => (
-                <div key={category} className="mb-4">
-                    <h5 className="mb-2 text-capitalize fw-bold">
+                <div key={category} className="mb-3">
+                    <h6 className="mb-1 text-capitalize fw-bold">
                         {category.replace(/([A-Z])/g, ' $1').trim()}
-                    </h5>
+                    </h6>
                     <div className="d-flex flex-wrap gap-2">
                         {createListElements(values, category, getLabel)}
                     </div>
                 </div>
             ))}
-            {/* Age Group Chart */}
-            <div className="mb-4">
-                <h5 className="mb-2 text-capitalize fw-bold">Age Group</h5>
-                <div style={{height: '600px'}}>
+            <div className="mb-3">
+                <h6 className="mb-1 text-capitalize fw-bold">Age Group</h6>
+                {/* 
+                  AGE GROUP CHART SIZE ADJUSTMENT:
+                  Height is reduced from 300px to 250px to make the chart more compact
+                  Adjust this value if you need more/less space for the age group chart
+                */}
+                <div style={{height: '250px'}} className="border rounded shadow-sm p-2">
                     <Bar data={chartData} options={chartOptions}/>
                 </div>
             </div>
