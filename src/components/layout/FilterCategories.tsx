@@ -14,14 +14,11 @@ interface FilterCategoriesProps {
     statVotes: StatVotes[];
 }
 
-
-
 type FilterCategory = 'gender' | 'ageGroup' | 'electionMethod';
-
-
 
 function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategoriesProps) {
     const [activeStates, setActiveStates] = useState<ActiveStates>({});
+    const [selectedBars, setSelectedBars] = useState<Set<string>>(new Set());
 
     const handleFilterClick = (category: FilterCategory, value: string, event: ChangeEvent<HTMLInputElement>) => {
         const filterId = `${category}-${value}`;
@@ -51,30 +48,57 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
         });
 
 
-        const ageGroups = ['18-24', '25-34', '35-44', '45-54', '55-64', '65+'];
+        const ageGroups = ['65+', '55-64', '45-54', '35-44', '25-34', '18-24'];
         const data = {
             labels: ageGroups,
             datasets: [
                 {
                     label: 'Male',
                     data: ageGroups.map(ageGroup => -genderAgeGroupTotals.m[ageGroup] || 0),
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1,
-                    categoryPercentage: 0.8, // Adjusts the space between categories (age groups)
-                    barPercentage: 1,
+                    backgroundColor: ageGroups.map((_, index) =>
+                        selectedBars.has(`0-${index}`)
+                            ? "#D6D6DA" // Selected color
+                            : "#343434"// Default color
+                    ),
+                    categoryPercentage: 0.6,
+                    barPercentage: 0.8,
                 },
                 {
                     label: 'Female',
                     data: ageGroups.map(ageGroup => genderAgeGroupTotals.w[ageGroup] || 0),
-                    backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1,
-                    categoryPercentage: 0.8, // Adjusts the space between categories (age groups)
-                    barPercentage: 1,
+                    backgroundColor: ageGroups.map((_, index) =>
+                        selectedBars.has(`1-${index}`)
+                            ? "#D6D6DA" // Selected color
+                            : "#343434"// Default color
+                    ),
+                    categoryPercentage: 0.6,
+                    barPercentage: 0.8,
                 }
             ]
         };
+
+        const customTextPlugin = {
+            id: 'customTextPlugin',
+            afterDraw: (chart: any) => {
+                const {ctx, chartArea} = chart;
+                ctx.save();
+                ctx.font = 'bold 14px sans-serif';
+                ctx.fillStyle = '#343434';
+
+                // Draw "Male" at bottom left
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText('Male', chartArea.left + 10, chartArea.bottom - 10);
+
+                // Draw "Female" at bottom right
+                ctx.textAlign = 'right';
+                ctx.fillText('Female', chartArea.right - 10, chartArea.bottom - 10);
+                ctx.restore();
+            }
+        };
+
+        Chart.register(customTextPlugin);
+
         const options = {
             indexAxis: 'y' as const,
             responsive: true,
@@ -83,6 +107,19 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
                 console.log('click', elements[0]); // this works
                 if (elements.length > 0) {
                     const {datasetIndex, index} = elements[0];
+                    const barKey = `${datasetIndex}-${index}`;
+
+                    // Toggle selection state
+                    setSelectedBars(prev => {
+                        const next = new Set(prev);
+                        if (next.has(barKey)) {
+                            next.delete(barKey);
+                        } else {
+                            next.add(barKey);
+                        }
+                        return next;
+                    });
+
                     const gender = datasetIndex === 0 ? 'm' : 'w';
                     const ageGroup = ageGroups[index];
                     const filterId = `ageGender-${ageGroup}-${gender}`;
@@ -128,10 +165,13 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
                         }
                     }
                 },
+                legend: false,
+                annotation: {},
+                customTextPlugin: {},
             }
         };
         return {chartData: data, chartOptions: options};
-    }, [statVotes, activeStates, addFilter, removeFilter]);
+    }, [statVotes, selectedBars, activeStates, addFilter, removeFilter]);
 
     const filterGroups = [
         {
@@ -165,8 +205,8 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
     }
 
     return (
-        <div className="p-3" style={{width: '100%' }}>
-            {filterGroups.map(({ category, values, getLabel }) => (
+        <div className="p-3" style={{width: '100%'}}>
+            {filterGroups.map(({category, values, getLabel}) => (
                 <div key={category} className="mb-4">
                     <h5 className="mb-2 text-capitalize fw-bold">
                         {category.replace(/([A-Z])/g, ' $1').trim()}
@@ -179,8 +219,8 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
             {/* Age Group Chart */}
             <div className="mb-4">
                 <h5 className="mb-2 text-capitalize fw-bold">Age Group</h5>
-                <div style={{ height: '600px' }}>
-                    <Bar data={chartData} options={chartOptions} />
+                <div style={{height: '600px'}}>
+                    <Bar data={chartData} options={chartOptions}/>
                 </div>
             </div>
 
