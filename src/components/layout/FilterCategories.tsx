@@ -178,6 +178,11 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
             category: 'electionMethod' as const,
             values: ['postal', 'in-person'] as const,
             getLabel: (v: string) => v === 'postal' ? 'Postal Vote' : 'In-Person'
+        },
+        {
+            category: 'gender' as const,
+            values: ['m', 'w'] as const,
+            getLabel: (v: string) => v === 'm' ? 'male' : 'female'
         }
     ];
 
@@ -205,15 +210,15 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
     }
 
     return (
-        <div className="overflow-auto border rounded shadow-sm p-2 bg-white" 
-             style={{width: '100%', maxHeight: '350px'}}>
+        <div className="overflow-auto p-2" 
+             style={{width: '100%', maxHeight: '450px'}}>
             {/* 
               FILTER OPTIONS SIZE ADJUSTMENT:
-              maxHeight is set to 350px to reduce the overall size of the filter options
+              maxHeight is set to 450px to match the GermanyMap height
+              Border, shadow, and bg-white removed as they're provided by the parent card
               Padding is reduced from p-3 to p-2
               Adjust these values if you need more/less space for the filter options
             */}
-            <h5 className="mb-2">Filter Options</h5>
             {filterGroups.map(({category, values, getLabel}) => (
                 <div key={category} className="mb-3">
                     <h6 className="mb-1 text-capitalize fw-bold">
