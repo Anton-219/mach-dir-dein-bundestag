@@ -2,6 +2,17 @@
 
 This document contains a prioritized list of improvement tasks for the Bundestag Visualization project. Each task is marked with a checkbox that can be checked off when completed.
 
+## Short introduction to Project
+Here is a superficial description of this project:
+
+This project visualizes the German Bundestag based on demographic election results. Users can toggle different demographics, such as gender, age groups, and the proportion in each federal state.
+
+Depending on the selected options, the composition of the Bundestag and potential coalition options will be adjusted. These options are displayed in bar charts, with the colors corresponding to the respective parties to facilitate visualization.
+
+The goal of the project is to visualize the representatives in clearly defined categories and to allow users to create their individual Bundestag composition.
+
+At the top of the page is the title "Create Your Bundestag". The entire interface is designed to fit on a single-page view.
+
 ## Architecture and State Management
 
 1. [ ] Implement a proper state management solution (Redux or Context API)
@@ -97,12 +108,6 @@ This document contains a prioritized list of improvement tasks for the Bundestag
     - [ ] Provide usage examples
 
 ## Accessibility and UI/UX
-
-18. [ ] Improve accessibility
-    - [ ] Add proper ARIA attributes
-    - [ ] Ensure keyboard navigation
-    - [ ] Implement focus management
-    - [ ] Add screen reader support
 
 19. [ ] Optimize layout for 1920x1080 screens
     - [ ] Reduce component sizes to fit within a single screen
