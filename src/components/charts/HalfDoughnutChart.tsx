@@ -64,6 +64,7 @@ function HalfDoughnutChart({seatResults, parties, cutout = 30}: HalfPieChartProp
                 position: 'bottom',
             }
         },
+
     };
 
     return (
