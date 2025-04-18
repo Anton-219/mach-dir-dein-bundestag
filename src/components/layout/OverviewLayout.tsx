@@ -151,12 +151,12 @@ function OverviewLayout() {
                     </div>
 
                     {/* Coalition List Card (Bottom Left) */}
-                    {/* Use flex-grow-1 to allow this card to fill remaining vertical space if needed, or h-100 */}
-                    {/* Let's try without explicit grow first, relying on content height */}
+                    {/* Use flex-grow-1 to allow this card to fill the remaining vertical space if needed, or h-100 */}
+                    {/* Let's try without explicit growth first, relying on content height */}
                     <div className="card shadow-sm flex-grow-1"> {/* Added flex-grow-1 */}
-                        <div className="card-body d-flex flex-column"> {/* Allow body to flex */}
-                            <h5 className="card-title">Coalition Options</h5> {/* Optional: Add title */}
-                            <div className="flex-grow-1"> {/* Make inner div grow */}
+                        <div className="card-body d-flex flex-column"> {/* Allow the body to flex */}
+                            <div className="flex-grow-1"> {/* Make the inner div grow */}
+                                <h5 className="mb-2">Possible Coalitions</h5>
                                 <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties} />
                             </div>
                         </div>

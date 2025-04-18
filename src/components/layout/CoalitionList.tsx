@@ -46,13 +46,12 @@ function CoalitionList({seats, totalSeats, parties}: CoalitionListProps) {
         // COALITION LIST SIZE ADJUSTMENT:
         // maxHeight is set to 350px to reduce the overall size of the coalition list
         // Adjust this value if you need more/less space for the coalition list
-        <div className="coalition-list overflow-auto border rounded shadow-sm p-2 bg-white" 
-             style={{maxHeight: '350px', width: '100%'}}>
-            <h5 className="mb-2">Possible Coalitions</h5>
-            {/* Use Bootstrap row with two columns and improved spacing */}
-            <div className="row row-cols-2 g-2">
+        <div className="coalition-list overflow-auto p-2 bg-white border shadow-sm"
+             style={{ maxHeight: '350px', width: '100%' }}>
+            {/* You can increase g-2 to g-3 or higher for more spacing */}
+            <div className="row row-cols-2 g-3">
                 {coalitions.map((coalition, index) => (
-                    <div key={`coalition-item-${index}`} className="col" style={{width: '45%'}}>
+                    <div key={`coalition-item-${index}`} className="col">
                         <CoalitionItem
                             idKey={`coalition-item-${index}`}
                             totalSeats={totalSeats}
