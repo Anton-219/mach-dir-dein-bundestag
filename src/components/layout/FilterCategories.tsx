@@ -187,13 +187,13 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
 
     return (
         <div className="overflow-auto p-2" 
-             style={{width: '100%', maxHeight: '450px'}}>
+             style={{width: '100%', height: '100%'}}>
             {/* 
               FILTER OPTIONS SIZE ADJUSTMENT:
-              maxHeight is set to 450px to match the GermanyMap height
+              Removed maxHeight to allow component to shrink when needed
+              Using height: 100% to take full available height of parent container
               Border, shadow, and bg-white removed as they're provided by the parent card
               Padding is reduced from p-3 to p-2
-              Adjust these values if you need more/less space for the filter options
             */}
             {filterGroups.map(({category, values, getLabel}) => (
                 <div key={category} className="mb-3">
@@ -209,10 +209,11 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
                 <h6 className="mb-1 text-capitalize fw-bold">Age Group</h6>
                 {/* 
                   AGE GROUP CHART SIZE ADJUSTMENT:
-                  Height is reduced from 300px to 250px to make the chart more compact
-                  Adjust this value if you need more/less space for the age group chart
+                  Using min-height instead of fixed height to allow chart to shrink
+                  Added flex-shrink-1 to allow chart to shrink when needed
+                  Adjust min-height value if chart becomes too small
                 */}
-                <div style={{height: '250px'}} className="border rounded shadow-sm p-2">
+                <div style={{minHeight: '250px', flexShrink: 1}} className="border rounded shadow-sm p-2">
                     <Bar data={chartData} options={chartOptions}/>
                 </div>
             </div>

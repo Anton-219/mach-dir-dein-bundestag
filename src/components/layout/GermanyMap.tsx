@@ -45,9 +45,9 @@ const GermanyMap = function ({ addFilter, removeFilter }: GermanyMapProps) {
         alignItems: 'stretch', // Vertically center
         justifyContent: 'center', // Horizontally center (optional, but often desired)
         width: '100%', // Take full available width
-        height: '70%', // Crucial: Make this container take up vertical space
-        // Or use a specific height like '500px', '80vh', etc.
-        // Ensure the PARENT of GermanyMap provides this height.
+        height: '100%', // Take full available height of parent container
+        minHeight: '0', // Allow shrinking below content height
+        // Removed fixed height percentage to allow component to shrink
     };
 
     return (

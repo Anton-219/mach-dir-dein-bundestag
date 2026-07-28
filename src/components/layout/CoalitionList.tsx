@@ -44,10 +44,11 @@ function CoalitionList({seats, totalSeats, parties}: CoalitionListProps) {
     return (
         // The outer div provides a scrollable container with improved styling for 1920x1080 screens
         // COALITION LIST SIZE ADJUSTMENT:
-        // maxHeight is set to 350px to reduce the overall size of the coalition list
-        // Adjust this value if you need more/less space for the coalition list
+        // Removed maxHeight to allow component to shrink when needed
+        // Using height: 100% to take full available height of parent container
+        // Adjust these values if needed for better layout
         <div className="coalition-list overflow-auto p-2 bg-white border shadow-sm"
-             style={{ maxHeight: '350px', width: '100%' }}>
+             style={{ height: '100%', width: '100%' }}>
             {/* You can increase g-2 to g-3 or higher for more spacing */}
             <div className="row row-cols-2 g-3">
                 {coalitions.map((coalition, index) => (

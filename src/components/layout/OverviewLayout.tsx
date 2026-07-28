@@ -20,7 +20,6 @@ import FilterCategories from "./FilterCategories.tsx";
 import { VoteReformSeatCalculator } from "../parliament/seatCalculators/VoteReformSeatCalculator.tsx";
 import CoalitionList from "./CoalitionList.tsx";
 
-
 function OverviewLayout() {
     const [parties, setParties] = useState<Record<string, Party>>({});
     const [directMandateWinners, setDirectMandateWinners] = useState<DirectMandateWinner[]>([]);
@@ -30,10 +29,8 @@ function OverviewLayout() {
     const [totalSeats, setTotalSeats] = useState<number>(0);
     const [seatResults, setSeatResults] = useState<SeatResult[]>([]);
 
-    // --- (Data loading useEffect and calculation memos remain the same) ---
-    // Loading initial data
+    // --- Data loading and calculations remain the same ---
     useEffect(() => {
-        // Load vote results
         const initialVoteResultData = electionData.map(entry => ({
             ...entry,
             gender: entry.gender as 'm' | 'w',
@@ -43,7 +40,6 @@ function OverviewLayout() {
         }));
         setVoteEntries(initialVoteResultData);
 
-        // load party data
         const initialPartyData = partyData.reduce((acc, entry) => {
             acc[entry.abbreviation] = entry;
             return acc;
@@ -69,7 +65,6 @@ function OverviewLayout() {
         setStatVotes(initialVoteData);
     }, []);
 
-    // Update Election Results when a filter is added/removed
     const electionResults = useMemo(() => {
         const calculateElectionResults = function (filteredVoteEntries: VoteEntry[]) {
             const _electionResults: Record<string, ElectionResult> = {}
@@ -81,13 +76,12 @@ function OverviewLayout() {
                         partyAbbreviation: voteEntry.party,
                         votes: voteEntry.votes,
                         percentage: 0,
-                        seatPosition: parties[voteEntry.party]?.seatPosition ?? 999, // Use fallback position
+                        seatPosition: parties[voteEntry.party]?.seatPosition ?? 999,
                     };
                 } else {
                     _electionResults[voteEntry.party].votes += voteEntry.votes;
                 }
             })
-            // console.log("Total votes received", totalVotes)
             if (totalVotes > 0) {
                 for (const key in _electionResults) {
                     _electionResults[key].percentage = _electionResults[key].votes / totalVotes;
@@ -98,26 +92,21 @@ function OverviewLayout() {
 
         const filteredVoteEntries = applyFilters(voteEntries, filters);
         const _electionResults = calculateElectionResults(filteredVoteEntries);
-        // console.log("ElectionResults", _electionResults);
         return Object.values(_electionResults)
     }, [voteEntries, filters, parties])
 
-    // Update the seatResults when the calculator or the election results changed
     const seatCalculator = useMemo(() => new VoteReformSeatCalculator(), []);
     useEffect(() => {
-        // Ensure parties data is loaded before calculating, or handle potential missing seatPosition
         if(Object.keys(parties).length > 0) {
             const results = seatCalculator.calculate(electionResults, directMandateWinners);
             setSeatResults(results);
         }
-    }, [directMandateWinners, electionResults, seatCalculator, parties]); // Add parties dependency
+    }, [directMandateWinners, electionResults, seatCalculator, parties]);
 
-    // Update the totalSeats when the Seats are rearranged
     useEffect(() => {
         const total = seatResults.map(x => x.seats).reduce((sum, seats) => sum + seats, 0);
         setTotalSeats(total);
     }, [seatResults]);
-
 
     const addFilter = function (newFilter: FilterRule) {
         console.log("Adding filter", newFilter)
@@ -128,35 +117,51 @@ function OverviewLayout() {
         setFilters((prev) => prev.filter((f) => f.id !== filterId));
     }
 
+    // --- Define a minimum height for the ParliamentView area ---
+    // You might need to adjust this value based on your ParliamentView's actual content
+    // and how small you're willing to let it get. Test different values.
+    const parliamentMinHeight = '300px'; // Example: minimum height of 300px
+    // Or use viewport units: const parliamentMinHeight = '30vh';
+
     return (
-        <div className="container-fluid px-4 my-4">
-            <div className="row mb-4">
+        // Main container setup for full height flex
+        <div className="d-flex flex-column vh-100 px-4 pt-4">
+
+            {/* Title Row (takes natural height) */}
+            <div className="row mb-4 flex-shrink-0"> {/* Added flex-shrink-0 */}
                 <div className="col-12">
-                    <h1 className="text-center">Create Your Bundestag</h1>
+                    <h1 className="text-center fs-3">Create Your Bundestag</h1>
                 </div>
             </div>
 
-            {/* Combined Row for Parliament/Coalition (Left), Map (Middle), and Filters (Right) */}
-            <div className="row mb-4">
+            {/* Main Content Row */}
+            {/* Use flex-grow-1 to take remaining vertical space */}
+            {/* REMOVED overflow-hidden to allow scrolling on genuinely small screens */}
+            {/* Use gap for spacing */}
+            <div className="row flex-grow-1 gy-3 gx-3 mb-2">
 
                 {/* Left Column (Parliament + Coalition) */}
-                {/* Use flex column to stack items vertically */}
-                <div className="col-md-5 d-flex flex-column">
+                {/* Flex column, fill height, use gap */}
+                <div className="col-md-5 d-flex flex-column gap-4">
 
                     {/* Parliament View Card (Top Left) */}
-                    <div className="card shadow-sm mb-4"> {/* Added mb-4 here */}
-                        <div className="card-body" style={{ height: '35vh', minHeight: '250px' }}> {/* Added minHeight */}
+                    {/* Added flex-shrink-0 to prevent it from shrinking below its content/min-height */}
+                    {/* Set min-height on the card-body */}
+                    <div className="card shadow-sm flex-shrink-0"> {/* Added flex-shrink-0 */}
+                        <div className="card-body" style={{ minHeight: parliamentMinHeight }}> {/* ADDED minHeight style */}
                             <ParliamentView seatResult={seatResults} parties={parties} />
                         </div>
                     </div>
 
                     {/* Coalition List Card (Bottom Left) */}
-                    {/* Use flex-grow-1 to allow this card to fill the remaining vertical space if needed, or h-100 */}
-                    {/* Let's try without explicit growth first, relying on content height */}
-                    <div className="card shadow-sm flex-grow-1"> {/* Added flex-grow-1 */}
-                        <div className="card-body d-flex flex-column"> {/* Allow the body to flex */}
-                            <div className="flex-grow-1"> {/* Make the inner div grow */}
-                                <h5 className="mb-2">Possible Coalitions</h5>
+                    {/* flex-grow-1 allows it to take space *after* Parliament's min-height is met */}
+                    {/* overflow-hidden on CARD, overflow-y-auto INSIDE body */}
+                    {/* Added flex-shrink-1 to allow this component to shrink when needed */}
+                    <div className="card shadow-sm  flex-shrink-1 min-h-0 flex-grow-1" style={{ maxHeight: parliamentMinHeight }}> {/* Added flex-shrink-1 and min-h-0 */}
+                        <div className="card-body flex-column min-h-0">
+                            <h5 className="mb-2 flex-shrink-0">Possible Coalitions</h5>
+                            {/* This div scrolls if list is too long for the allocated space */}
+                            <div className="flex-grow-1 overflow-y-auto"> {/* Ensures internal scrolling */}
                                 <CoalitionList seats={seatResults} totalSeats={totalSeats} parties={parties} />
                             </div>
                         </div>
@@ -165,12 +170,17 @@ function OverviewLayout() {
                 </div> {/* End Left Column */}
 
                 {/* Middle Column (Map) */}
-                <div className="col-md-4 d-flex">
-                    {/* Germany Map Card */}
-                    <div className="card shadow-sm h-100 w-100">
+                {/* Fill height */}
+                <div className="col-md-4 d-flex h-100">
+                    {/* Map Card */}
+                    {/* Fill height, overflow-hidden on CARD, internal scroll/management */}
+                    {/* Added flex-shrink-1 to allow this component to shrink when needed */}
+                    <div className="card shadow-sm h-100 w-100 flex-shrink-1 min-h-0"> {/* Added flex-shrink-1 and min-h-0 */}
                         <div className="card-body d-flex flex-column">
-                            <h5 className="card-title">Map Filters</h5>
-                            <div className="flex-grow-1" style={{minHeight: '450px'}}>
+                            <h5 className="card-title flex-shrink-0">Map Filters</h5>
+                            {/* Map container grows, map should fit/handle its own view */}
+                            <div className="flex-grow-1 flex-shrink-1 position-relative min-h-0"> {/* Added flex-shrink-1 and min-h-0 */}
+                                {/* Ensure GermanyMap adapts to this container */}
                                 <GermanyMap addFilter={addFilter} removeFilter={removeFilter} />
                             </div>
                         </div>
@@ -178,17 +188,35 @@ function OverviewLayout() {
                 </div> {/* End Middle Column */}
 
                 {/* Right Column (Filter Categories) */}
-                <div className="col-md-3 d-flex">
-                    <div className="card shadow-sm h-100 w-100">
-                        <div className="card-body">
-                            <h5 className="card-title">Filter Options</h5>
-                            <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes} />
+                {/* Fill height */}
+                <div className="col-md-3 d-flex h-100">
+                    {/* Filter Card */}
+                    {/* Fill height, overflow-hidden on CARD, internal scroll */}
+                    {/* Added flex-shrink-1 to allow this component to shrink when needed */}
+                    <div className="card shadow-sm h-100 w-100 flex-shrink-1 min-h-0"> {/* Added flex-shrink-1 and min-h-0 */}
+                        {/* Card body scrolls internally if filters list is long */}
+                        <div className="card-body overflow-y-auto d-flex flex-column"> {/* Added d-flex flex-column */}
+                            <h5 className="card-title flex-shrink-0">Filter Options</h5>
+                            <div className="flex-grow-1 flex-shrink-1 min-h-0 overflow-auto"> {/* Added container with flex properties */}
+                                <FilterCategories addFilter={addFilter} removeFilter={removeFilter} statVotes={statVotes} />
+                            </div>
                         </div>
                     </div>
                 </div> {/* End Right Column */}
 
-            </div> {/* End Combined Row */}
-        </div>
+            </div> {/* End Main Content Row */}
+
+            {/* Footer Info Text (pushed to bottom) */}
+            {/* Added flex-shrink-0 */}
+            <div className="row mt-auto pt-1 pb-1 flex-shrink-0"> {/* Reduced padding */}
+                <div className="col-12">
+                    <p className="text-center text-muted small mb-0" style={{ fontSize: '0.7rem' }}> {/* Reduced text size */}
+                        The data is based on information from bundeswahlleiterin.de. The demographic data has been extrapolated and may contain potential rounding inaccuracies.
+                    </p>
+                </div>
+            </div>
+
+        </div> // End Main Container
     );
 }
 
