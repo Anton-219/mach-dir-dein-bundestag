@@ -1,277 +1,293 @@
-# Projektvision: Mach dir deinen Bundestag
+# Project Vision: Build Your Own Bundestag
 
-## Ausgangslage
+## Background
 
-„Mach dir deinen Bundestag“ ist als Lern- und Experimentierprojekt entstanden. Es verbindet drei Ziele:
+“Build Your Own Bundestag” began as a learning and experimentation project. It combines three goals:
 
-1. praktische Erfahrung mit React und TypeScript sammeln,
-2. den Einsatz von LLMs bei Konzeption und Softwareentwicklung erproben,
-3. politische Wahldaten auf eine interaktive und verständliche Weise erfahrbar machen.
+1. gain practical experience with React and TypeScript,
+2. explore how LLMs can support product design and software development,
+3. make political election data interactive and easier to understand.
 
-Der bestehende Prototyp kann bereits Wahldaten filtern, daraus eine Sitzverteilung berechnen, einen Bundestag visualisieren und mögliche Mehrheitskoalitionen anzeigen. Die aktuelle Anwendung ist jedoch noch nicht als abgeschlossenes Produkt zu verstehen. Datenbereitstellung, fachliche Absicherung, Codequalität und insbesondere die Benutzeroberfläche müssen überarbeitet werden.
+The existing prototype can already filter election data, calculate a seat distribution, visualize a Bundestag, and display possible majority coalitions. However, the current application should not be considered a finished product. Data delivery, domain validation, code quality, and especially the user interface still need substantial improvement.
 
-Dieses Dokument beschreibt das gemeinsame Zielbild für die weitere Entwicklung. Es soll als Orientierung für Produktentscheidungen, UI-Entwürfe, Refactorings und spätere Implementierungsschritte dienen.
+This document describes the shared target state for future development. It should guide product decisions, UI design, refactoring, and implementation work.
 
-## Produktidee
+## Project Language
 
-Die Anwendung ermöglicht es Nutzerinnen und Nutzern, ein Wahlergebnis aus verschiedenen gesellschaftlichen und geografischen Perspektiven zu betrachten.
+English is the default language of the project.
 
-Ausgangspunkt sind reale Wahldaten. Durch das Ein- oder Ausschließen bestimmter Gruppen kann untersucht werden, wie sich ein Bundestag zusammensetzen würde, wenn nur ausgewählte Teile des Elektorats berücksichtigt würden.
+This applies to:
 
-Beispiele:
+- source code identifiers,
+- code comments,
+- documentation,
+- commit messages and pull request descriptions,
+- issue descriptions,
+- UI copy and user-facing explanations,
+- test names and developer tooling output where the project controls the wording.
 
-- Wie sähe der Bundestag aus, wenn nur Menschen unter 35 Jahren gewählt hätten?
-- Wie verändert sich die Sitzverteilung ohne einzelne Bundesländer?
-- Welche Unterschiede ergeben sich zwischen Briefwahl und Urnenwahl?
-- Wie unterscheiden sich die Ergebnisse von Männern und Frauen bestimmter Altersgruppen?
-- Welche Koalitionen hätten in einem gefilterten Szenario eine Mehrheit?
+German localization may be added later, but it is not part of the first revised version. Proper names and official German terms may remain unchanged where translating them would reduce accuracy, for example “Bundestag” or official state names in source data.
 
-Die Anwendung ist kein Wahlprognosewerkzeug und soll keine politischen Empfehlungen geben. Sie ist ein interaktives Analyse- und Lernwerkzeug, das Zusammenhänge sichtbar macht.
+## Product Idea
 
-## Zentrales Produktversprechen
+The application allows users to explore an election result from different social, demographic, and geographic perspectives.
 
-> Nutzerinnen und Nutzer können mit wenigen, verständlichen Interaktionen ein eigenes Wahlszenario zusammenstellen und sofort erkennen, wie sich dieses auf Stimmenanteile, Sitzverteilung und mögliche Mehrheiten im Bundestag auswirkt.
+The starting point is real election data. By including or excluding selected groups, users can examine how the Bundestag might be composed if only certain parts of the electorate were considered.
 
-Die Anwendung soll dabei drei Eigenschaften vereinen:
+Examples:
 
-- **verständlich:** Auch ohne Kenntnisse des Wahlrechts oder der Datenanalyse soll die Bedienung nachvollziehbar sein.
-- **unmittelbar:** Änderungen an Filtern sollen direkt und sichtbar auf das Ergebnis wirken.
-- **transparent:** Datenbasis, Annahmen, Berechnungsregeln und Einschränkungen müssen klar benannt werden.
+- What would the Bundestag look like if only people under the age of 35 had voted?
+- How would the seat distribution change without selected federal states?
+- What differences appear between postal voting and in-person voting?
+- How do results differ between men and women in specific age groups?
+- Which coalitions would have a majority in a filtered scenario?
 
-## Zielgruppe
+The application is not an election forecasting tool and must not provide political recommendations. It is an interactive analysis and learning tool intended to make patterns and relationships visible.
 
-Die Anwendung richtet sich vor allem an:
+## Core Product Promise
 
-- politisch interessierte Menschen, die Wahlergebnisse explorativ untersuchen möchten,
-- Schülerinnen, Schüler, Studierende und Lehrkräfte,
-- Menschen, die regionale und demografische Unterschiede besser verstehen möchten,
-- Entwicklerinnen und Entwickler, die das Projekt als Beispiel für datengetriebene React-Anwendungen betrachten,
-- die Projektentwicklung selbst als Lernumgebung für TypeScript, UI-Architektur und den sinnvollen Einsatz von LLMs.
+> Users can create their own election scenario through a small number of understandable interactions and immediately see how it affects vote shares, seat distribution, and possible parliamentary majorities.
 
-Die Anwendung soll keine Fachsoftware für Wahlforschung ersetzen. Sie muss jedoch fachlich plausibel, reproduzierbar und ehrlich hinsichtlich ihrer Grenzen sein.
+The application should combine three qualities:
 
-## Gewünschtes Nutzererlebnis
+- **understandable:** People should be able to use it without prior knowledge of electoral law or data analysis.
+- **immediate:** Filter changes should have a direct and visible effect on the result.
+- **transparent:** The data basis, assumptions, calculation rules, and limitations must be clearly explained.
 
-Beim Öffnen der Anwendung soll sofort verständlich sein:
+## Target Audience
 
-- was untersucht werden kann,
-- welche Daten aktuell ausgewählt sind,
-- wie Filter verändert werden,
-- welches Ergebnis daraus entsteht,
-- wie das Ergebnis einzuordnen ist.
+The application is primarily intended for:
 
-Die Oberfläche soll nicht wie ein technisches Dashboard aus einzelnen, gleichgewichteten Diagrammen wirken. Stattdessen soll sie eine klare Geschichte erzählen:
+- people interested in exploring election results,
+- pupils, students, teachers, and educators,
+- people who want to understand regional and demographic differences,
+- developers who use the project as an example of a data-driven React application,
+- the project owner, using the codebase as a learning environment for TypeScript, UI architecture, and responsible LLM-assisted development.
 
-1. **Szenario zusammenstellen**
-2. **Ergebnis verstehen**
-3. **Mehrheiten und Unterschiede untersuchen**
+The application is not intended to replace professional election-research software. It should nevertheless remain plausible, reproducible, and honest about its limitations.
 
-Die wichtigste Information ist die resultierende Zusammensetzung des Bundestags. Filter und ergänzende Auswertungen unterstützen dieses Ergebnis, sollen es aber nicht visuell überlagern.
+## Desired User Experience
 
-## Kernablauf
+When users open the application, they should immediately understand:
 
-### 1. Ausgangsszenario
+- what they can explore,
+- which data is currently included,
+- how filters can be changed,
+- what result is produced,
+- how that result should be interpreted.
 
-Beim Start wird das vollständige zugrunde liegende Wahlergebnis angezeigt. Die Anwendung nennt sichtbar:
+The interface should not feel like a technical dashboard made from several equally weighted charts. Instead, it should tell a clear story:
 
-- Wahljahr,
-- verwendete Stimmenart,
-- Datenquelle,
-- zugrunde liegendes Wahlrecht beziehungsweise Berechnungsmodell,
-- Gesamtzahl der berücksichtigten Stimmen,
-- Status „ungefiltertes Ergebnis“.
+1. **Create a scenario**
+2. **Understand the result**
+3. **Explore majorities and differences**
 
-### 2. Filter anwenden
+The resulting composition of the Bundestag is the primary information. Filters and additional analysis support that result and should not visually compete with it.
 
-Nutzerinnen und Nutzer können Gruppen über eine verständliche Filteroberfläche ein- oder ausschließen.
+## Core User Flow
 
-Vorgesehene Filterdimensionen:
+### 1. Initial Scenario
 
-- Bundesland,
-- Alter beziehungsweise Altersgruppe,
-- Geschlecht entsprechend der verfügbaren Datengrundlage,
-- Briefwahl oder Urnenwahl,
-- später optional weitere Dimensionen, sofern belastbare Daten vorliegen.
+When the application starts, it displays the complete underlying election result. The following information should be visible:
 
-Jede Interaktion muss klar zeigen, ob eine Gruppe aktuell berücksichtigt oder ausgeschlossen wird. Ausgeschlossene Gruppen dürfen nicht nur durch eine schwer interpretierbare Farbänderung erkennbar sein.
+- election year,
+- vote type used,
+- data source,
+- electoral law or calculation model used,
+- total number of votes included,
+- status indicating an unfiltered result.
 
-### 3. Aktives Szenario prüfen
+### 2. Apply Filters
 
-Alle aktiven Filter werden als verständliche Zusammenfassung angezeigt, zum Beispiel:
+Users can include or exclude groups through a clear filter interface.
 
-- „Bayern ausgeschlossen“
-- „18–24 Jahre berücksichtigt“
-- „nur Briefwahl“
+Planned filter dimensions:
 
-Einzelne Filter können direkt entfernt werden. Zusätzlich gibt es eine zentrale Aktion „Alle Filter zurücksetzen“.
+- federal state,
+- age or age group,
+- gender as represented by the available data,
+- postal voting or in-person voting,
+- additional dimensions later, provided reliable data is available.
 
-Die Anwendung zeigt, wie viele Stimmen beziehungsweise welcher Anteil der Datenbasis im aktuellen Szenario berücksichtigt wird.
+Every interaction must clearly communicate whether a group is included or excluded. Excluded groups must not be indicated only through a difficult-to-interpret color change.
 
-### 4. Ergebnis untersuchen
+### 3. Review the Active Scenario
 
-Nach jeder Änderung werden mindestens folgende Ergebnisse aktualisiert:
+All active filters should be summarized in readable language, for example:
 
-- Stimmenanteile der Parteien,
-- Sitzverteilung,
-- Gesamtzahl der Sitze,
-- Mehrheitsgrenze,
-- mögliche minimale Mehrheitskoalitionen.
+- “Bavaria excluded”
+- “Ages 18–24 included”
+- “Postal voting only”
 
-Die Übergänge sollen ruhig und nachvollziehbar sein. Änderungen dürfen nicht durch springende Layouts oder überladene Animationen unübersichtlich werden.
+Users can remove individual filters directly. A central “Reset all filters” action must also be available.
 
-## Informationsarchitektur und UI-Zielbild
+The application should show how many votes, or what share of the original dataset, remains included in the current scenario.
 
-### Kopfbereich
+### 4. Explore the Result
 
-Der Kopfbereich enthält:
+After every change, at least the following results should be updated:
 
-- Projekttitel,
-- eine kurze Erklärung in einem Satz,
-- Wahljahr und Datenstand,
-- einen gut auffindbaren Link zu Methodik und Datenquellen.
+- party vote shares,
+- seat distribution,
+- total number of seats,
+- majority threshold,
+- possible minimal winning coalitions.
 
-### Hauptbereich: Ergebnis
+Transitions should be calm and easy to follow. The layout must not jump unexpectedly, and excessive animation should be avoided.
 
-Das zentrale Element ist die Sitzverteilung im Bundestag. Sie soll groß, klar und gut beschriftet dargestellt werden.
+## Information Architecture and UI Target State
 
-Ergänzend werden angezeigt:
+### Header
 
-- Partei,
-- Sitzanzahl,
-- Stimmenanteil,
-- Veränderung gegenüber dem ungefilterten Ausgangsszenario,
-- Mehrheitsmarke.
+The header should contain:
 
-Die Darstellung soll auch ohne alleinige Abhängigkeit von Parteifarben verständlich sein. Farben müssen ausreichend kontrastreich und zugänglich verwendet werden.
+- project title,
+- a one-sentence explanation,
+- election year and data status,
+- an easy-to-find link to methodology and data sources.
 
-### Filterbereich
+### Main Results Area
 
-Der Filterbereich soll auf großen Bildschirmen als klar abgegrenzte Seitenleiste oder als strukturierter Bereich oberhalb des Ergebnisses erscheinen. Auf kleinen Bildschirmen kann er als ausklappbares Panel oder Drawer umgesetzt werden.
+The central element is the Bundestag seat distribution. It should be large, clearly labelled, and easy to interpret.
 
-Die Filter werden in verständliche Gruppen gegliedert:
+Supporting information should include:
 
-- Region,
-- Alter und Geschlecht,
-- Wahlart.
+- party,
+- number of seats,
+- vote share,
+- change compared with the unfiltered baseline,
+- majority marker.
 
-Die Deutschlandkarte bleibt als visuelles Auswahlwerkzeug erhalten, wird aber durch Beschriftung, Legende und eine alternative zugängliche Liste der Bundesländer ergänzt.
+The result must remain understandable without relying exclusively on party colors. Colors should provide sufficient contrast and be used accessibly.
 
-Das Alters- und Geschlechtsdiagramm kann als interaktives Filterelement erhalten bleiben, sofern Auswahlzustände eindeutig, tastaturbedienbar und verständlich sind. Eine klassische Formularalternative soll verfügbar sein.
+### Filter Area
 
-### Koalitionsbereich
+On large screens, filters should appear in a clearly separated sidebar or a structured section above the result. On small screens, they may appear in a collapsible panel or drawer.
 
-Koalitionen werden unterhalb des Hauptergebnisses dargestellt. Die Liste soll nicht jede mathematisch mögliche Kombination ungeordnet zeigen, sondern verständlich priorisieren.
+Filters should be grouped into understandable categories:
 
-Mindestens dargestellt werden:
+- region,
+- age and gender,
+- voting method.
 
-- beteiligte Parteien,
-- gemeinsame Sitzanzahl,
-- Abstand zur Mehrheitsgrenze,
-- grafische Zusammensetzung,
-- Kennzeichnung, ob es sich um eine minimale Mehrheitskoalition handelt.
+The Germany map should remain available as a visual selection tool, but it must be supported by labels, a legend, and an accessible alternative list of federal states.
 
-CDU und CSU können für Koalitionsdarstellungen als gemeinsame Union behandelt werden, während die zugrunde liegenden Sitzdaten weiterhin nachvollziehbar bleiben.
+The age and gender chart may remain as an interactive filter if selection states are clear, keyboard-accessible, and understandable. A conventional form-based alternative should also be available.
 
-## Fachlicher Funktionsumfang
+### Coalition Area
 
-### Stimmenaggregation
+Coalitions should appear below the main result. The interface should not display every mathematically possible combination without structure. Instead, results should be prioritised and easy to compare.
 
-Die Anwendung aggregiert die Stimmen aller Datensätze, die den aktiven Filtern entsprechen. Aus den aggregierten Stimmen werden Parteiergebnisse und Prozentanteile berechnet.
+At minimum, each coalition should display:
 
-Die Berechnung muss auch folgende Zustände sauber behandeln:
+- participating parties,
+- combined number of seats,
+- distance from the majority threshold,
+- graphical composition,
+- whether it is a minimal winning coalition.
 
-- keine aktiven Filter,
-- sehr kleine verbleibende Datenmengen,
-- vollständig herausgefilterte Daten,
-- Parteien ohne Stimmen im aktuellen Szenario,
-- unbekannte oder nicht zuordenbare Parteieinträge.
+CDU and CSU may be treated as a combined parliamentary union in coalition views while the underlying seat data remains transparent.
 
-### Sitzberechnung
+## Functional Scope
 
-Die Sitzverteilung soll in einem eigenständigen, testbaren Fachmodul erfolgen. UI-Komponenten dürfen die Berechnungslogik nicht selbst implementieren.
+### Vote Aggregation
 
-Das Modul muss explizit dokumentieren:
+The application aggregates all vote records that match the active filters. Party results and vote shares are calculated from those aggregated votes.
 
-- Zahl der zu verteilenden Sitze,
-- verwendetes Zuteilungsverfahren,
-- Sperrklausel,
-- Behandlung von Direktmandaten,
-- Behandlung von Parteien nationaler Minderheiten,
-- Behandlung von CDU und CSU,
-- Umgang mit Rundung und Gleichständen.
+The calculation must also handle:
 
-Das Ziel ist nicht nur ein visuell plausibles Ergebnis. Für definierte Referenzdaten muss die Berechnung reproduzierbare und fachlich geprüfte Ergebnisse liefern.
+- no active filters,
+- very small remaining datasets,
+- all data being filtered out,
+- parties with no votes in the current scenario,
+- unknown or unmapped party entries.
 
-### Koalitionsberechnung
+### Seat Calculation
 
-Die Koalitionslogik soll von der Darstellung getrennt und mit Tests abgesichert werden.
+Seat allocation should be implemented in an independent, testable domain module. UI components must not implement the calculation logic themselves.
 
-Standardmäßig sollen minimale Mehrheitskoalitionen berechnet werden. Eine Koalition ist dabei minimal, wenn sie die Mehrheit erreicht, aber nach Entfernen einer beteiligten Partei keine Mehrheit mehr besitzt.
+The module must explicitly document:
 
-Die Ergebnisse sollen:
+- the number of seats to distribute,
+- the allocation method,
+- the electoral threshold,
+- treatment of direct mandates,
+- treatment of parties representing national minorities,
+- treatment of CDU and CSU,
+- rounding and tie-breaking behavior.
 
-- keine Duplikate enthalten,
-- stabil sortiert sein,
-- eine nachvollziehbare Mehrheitsgrenze verwenden,
-- optional nach Zahl der Parteien oder Größe der Mehrheit sortierbar sein.
+The goal is not merely a visually plausible result. Defined reference datasets must produce reproducible and domain-validated outcomes.
 
-## Datenbasis
+### Coalition Calculation
 
-Die Anwendung basiert auf aufbereiteten Wahldaten. Die Datenaufbereitung erfolgt außerhalb der React-Anwendung, derzeit über Python beziehungsweise Jupyter-Notebooks.
+Coalition logic should be separated from presentation and protected by automated tests.
 
-Langfristig soll ein reproduzierbarer Datenprozess entstehen:
+By default, the application should calculate minimal winning coalitions. A coalition is minimal when it reaches a majority, but removing any participating party would cause it to lose that majority.
 
-1. Rohdaten aus dokumentierten offiziellen Quellen beziehen,
-2. Daten in ein klar definiertes internes Format überführen,
-3. Konsistenz und Summen prüfen,
-4. die für die Anwendung benötigten Dateien erzeugen,
-5. die erzeugten Daten versionieren oder reproduzierbar beim Build bereitstellen.
+The results should:
 
-Die Anwendung darf nicht davon abhängen, dass nur auf einem einzelnen lokalen Rechner vorhandene Dateien manuell kopiert werden.
+- contain no duplicates,
+- use stable ordering,
+- use a clearly defined majority threshold,
+- optionally be sortable by number of parties or size of the majority.
 
-Für jede verwendete Datei müssen Herkunft, Wahljahr, Erzeugungsweg und bekannte Einschränkungen dokumentiert sein.
+## Data Basis
 
-### Umgang mit unvollständigen demografischen Daten
+The application is based on prepared election data. Data preparation takes place outside the React application, currently through Python and Jupyter notebooks.
 
-Falls Stimmen auf demografische Gruppen verteilt oder angenähert werden müssen, ist dies deutlich als Modellierung zu kennzeichnen. Die Anwendung darf angenäherte Werte nicht als exakt beobachtete Einzeldaten darstellen.
+The long-term goal is a reproducible data pipeline:
 
-Methodische Annahmen gehören in eine eigene Methodikseite und in die Entwicklerdokumentation.
+1. obtain raw data from documented official sources,
+2. transform the data into a clearly defined internal format,
+3. validate consistency and totals,
+4. generate the files required by the application,
+5. either version the generated data or make it reproducibly available during the build process.
 
-## Technisches Zielbild
+The application must not depend on files that exist only on one local computer and need to be copied manually.
 
-### Grundprinzipien
+For every data file, the project should document its origin, election year, generation process, and known limitations.
 
-Der Code soll weiterhin als gut verständliches Lernprojekt lesbar bleiben. Abstraktionen sollen dort eingesetzt werden, wo sie Klarheit schaffen, nicht um eine unnötig komplexe Architektur zu erzeugen.
+### Handling Incomplete Demographic Data
 
-Wichtige Prinzipien:
+If votes must be distributed or estimated across demographic groups, this must be clearly identified as modelling. Estimated values must not be presented as exact individual-level observations.
 
-- fachliche Logik in reinen TypeScript-Modulen,
-- UI-Komponenten mit klar begrenzter Verantwortung,
-- serialisierbarer Filterzustand statt gespeicherter Callback-Funktionen,
-- abgeleitete Werte möglichst berechnen statt redundant im State speichern,
-- starke Typisierung ohne vermeidbares `any`,
-- aussagekräftige Namen und kleine, testbare Funktionen,
-- keine produktiven Debug-Ausgaben,
-- dokumentierte Datenverträge.
+Methodological assumptions belong on a dedicated methodology page and in the developer documentation.
 
-### Vorgeschlagene fachliche Bereiche
+## Technical Target State
 
-Eine mögliche Struktur ist:
+### Core Principles
 
-- `domain/election`: Wahldaten, Aggregation und Ergebnistypen,
-- `domain/filters`: Filterdefinitionen und Filterauswertung,
-- `domain/parliament`: Sitz- und Mehrheitsberechnung,
-- `data`: Laden und Validieren aufbereiteter Daten,
-- `features/filters`: Filteroberfläche,
-- `features/results`: Parlament, Parteien und Ergebnisvergleich,
-- `features/coalitions`: Koalitionsdarstellung,
-- `shared`: wiederverwendbare UI- und Hilfsfunktionen.
+The codebase should remain understandable as a learning project. Abstractions should be introduced where they improve clarity, not to create unnecessary architectural complexity.
 
-Diese Struktur ist ein Leitbild und keine starre Vorgabe. Entscheidend ist eine erkennbare Trennung zwischen Daten, Fachlogik und Darstellung.
+Important principles:
 
-### Filtermodell
+- domain logic in pure TypeScript modules,
+- UI components with clearly limited responsibilities,
+- serializable filter state instead of stored callback functions,
+- derived values calculated where possible instead of stored redundantly,
+- strong typing without avoidable `any`,
+- meaningful names and small, testable functions,
+- no production debug logging,
+- documented data contracts.
 
-Filter sollen als Daten beschrieben werden, beispielsweise:
+### Suggested Domain Areas
+
+A possible structure is:
+
+- `domain/election`: election data, aggregation, and result types,
+- `domain/filters`: filter definitions and filter evaluation,
+- `domain/parliament`: seat allocation and majority calculations,
+- `data`: loading and validating prepared data,
+- `features/filters`: filter UI,
+- `features/results`: parliament, parties, and result comparison,
+- `features/coalitions`: coalition presentation,
+- `shared`: reusable UI and utility functions.
+
+This structure is a guideline rather than a strict requirement. The essential goal is a clear separation between data, domain logic, and presentation.
+
+### Filter Model
+
+Filters should be represented as data, for example:
 
 ```ts
 interface ElectionFilter {
@@ -281,185 +297,185 @@ interface ElectionFilter {
 }
 ```
 
-Dadurch werden folgende Funktionen möglich:
+This enables:
 
-- aktive Filter verständlich darstellen,
-- Szenarien über eine URL teilen,
-- Filter speichern und wiederherstellen,
-- Tests ohne UI ausführen,
-- Auswertungen und Telemetrie später nachvollziehbar gestalten.
+- readable display of active filters,
+- shareable scenarios through URLs,
+- saving and restoring filters,
+- testing without the UI,
+- clearer future analytics and telemetry.
 
-## Gestaltung und visuelle Sprache
+## Design and Visual Language
 
-Die neue UI soll modern, ruhig und inhaltlich fokussiert wirken. Sie soll weder wie ein generisches Bootstrap-Dashboard noch wie eine überladene Nachrichtengrafik erscheinen.
+The revised UI should feel modern, calm, and focused on the content. It should not resemble a generic Bootstrap dashboard or an overloaded news graphic.
 
-### Gestaltungsprinzipien
+### Design Principles
 
-- klare visuelle Hierarchie,
-- großzügige Abstände,
-- begrenzte Anzahl gleichzeitig konkurrierender Elemente,
-- gut lesbare Typografie,
-- neutrale Grundfarben und gezielter Einsatz von Parteifarben,
-- konsistente Komponenten und Zustände,
-- verständliche Beschriftungen auf Deutsch,
-- responsive Gestaltung für Desktop, Tablet und Smartphone,
-- barrierearme Bedienung und ausreichende Kontraste.
+- clear visual hierarchy,
+- generous spacing,
+- a limited number of competing elements,
+- readable typography,
+- neutral base colors with purposeful use of party colors,
+- consistent components and interaction states,
+- clear English labels,
+- responsive design for desktop, tablet, and mobile,
+- accessible controls and sufficient contrast.
 
-### Interaktionsprinzipien
+### Interaction Principles
 
-- Auswahlzustände sind eindeutig beschriftet,
-- jede Aktion besitzt eine sichtbare Rückmeldung,
-- Filter sind per Maus, Tastatur und Touch bedienbar,
-- Diagramme sind keine alleinige Informationsquelle,
-- Tooltips ergänzen Informationen, ersetzen aber keine Beschriftung,
-- leere oder ungültige Szenarien werden erklärt,
-- Reset und Rückkehr zum Ausgangsergebnis sind jederzeit möglich.
+- selection states are explicitly labelled,
+- every action provides visible feedback,
+- filters work with mouse, keyboard, and touch,
+- charts are not the only source of information,
+- tooltips add detail but do not replace labels,
+- empty or invalid scenarios are explained,
+- resetting and returning to the baseline is always possible.
 
-## Transparenz und Einordnung
+## Transparency and Context
 
-Politische Daten benötigen eine besonders klare Einordnung. Die Anwendung soll sichtbar erklären:
+Political data requires particularly clear context. The application should visibly explain:
 
-- dass gefilterte Ergebnisse hypothetische Szenarien sind,
-- dass demografische Daten je nach Quelle modelliert oder aggregiert sein können,
-- welches Wahljahr dargestellt wird,
-- welches Wahlrecht modelliert wird,
-- warum Ergebnisse von offiziellen Sitzverteilungen abweichen können,
-- dass die Anwendung keine Prognose und keine Wahlempfehlung darstellt.
+- that filtered results are hypothetical scenarios,
+- that demographic data may be modelled or aggregated depending on the source,
+- which election year is displayed,
+- which electoral rules are modelled,
+- why results may differ from official seat distributions,
+- that the application is neither a forecast nor a voting recommendation.
 
-Ein eigener Bereich „Methodik und Daten“ soll diese Informationen ausführlich zugänglich machen.
+A dedicated “Methodology and Data” section should make this information available in detail.
 
-## Barrierefreiheit
+## Accessibility
 
-Die Anwendung soll grundlegende Anforderungen barrierearmer Webanwendungen erfüllen:
+The application should meet fundamental accessibility requirements for web applications:
 
-- semantische Überschriftenstruktur,
-- vollständige Tastaturbedienbarkeit,
-- sichtbare Fokuszustände,
-- sinnvolle Alternativtexte und Beschreibungen für Grafiken,
-- ausreichende Farbkontraste,
-- keine Information ausschließlich über Farbe,
-- verständliche Formularelemente und Beschriftungen,
-- Unterstützung reduzierter Bewegung,
-- sinnvolle Darstellung bei Vergrößerung und auf kleinen Viewports.
+- semantic heading structure,
+- complete keyboard operation,
+- visible focus states,
+- meaningful alternative text and descriptions for graphics,
+- sufficient color contrast,
+- no information communicated through color alone,
+- understandable form controls and labels,
+- support for reduced motion,
+- usable layouts at high zoom levels and on small viewports.
 
-## Qualität und Nachvollziehbarkeit
+## Quality and Traceability
 
 ### Tests
 
-Mindestens folgende Bereiche sollen automatisiert getestet werden:
+At minimum, automated tests should cover:
 
-- Kombination mehrerer Filter,
-- Stimmenaggregation,
-- Prozentberechnung,
-- Sitzverteilung für bekannte Referenzfälle,
-- Sperrklausel und Ausnahmen,
-- Gesamtzahl der Sitze,
-- minimale Mehrheitskoalitionen,
-- CDU/CSU-Zusammenführung,
-- Verhalten bei leeren Ergebnissen,
-- Datenvalidierung.
+- combinations of multiple filters,
+- vote aggregation,
+- percentage calculation,
+- seat allocation for known reference cases,
+- electoral thresholds and exemptions,
+- total seat count,
+- minimal winning coalitions,
+- CDU/CSU merging,
+- behavior for empty results,
+- data validation.
 
-### Automatisierte Prüfungen
+### Automated Checks
 
-Für jeden Pull Request sollen mindestens ausgeführt werden:
+For every pull request, the project should run at least:
 
-- TypeScript-Build,
-- Linting,
-- Unit-Tests.
+- TypeScript build,
+- linting,
+- unit tests.
 
-Ein frischer Checkout muss ohne lokal vorhandene Sonderdateien reproduzierbar installierbar und baubar sein.
+A fresh checkout must be installable and buildable without special files that exist only on a developer’s machine.
 
-### Dokumentation
+### Documentation
 
-Die README soll künftig mindestens enthalten:
+The README should eventually include at least:
 
-- Zweck des Projekts,
-- Screenshots oder eine kurze Produktdarstellung,
-- lokale Einrichtung,
-- Datenbereitstellung,
-- verfügbare Skripte,
-- Architekturüberblick,
-- fachliche Annahmen,
-- bekannte Einschränkungen.
+- project purpose,
+- screenshots or a short product overview,
+- local setup,
+- data provisioning,
+- available scripts,
+- architecture overview,
+- domain assumptions,
+- known limitations.
 
-## Nicht-Ziele der ersten überarbeiteten Version
+## Non-Goals for the First Revised Version
 
-Die erste stabile Version soll bewusst begrenzt bleiben. Zunächst nicht erforderlich sind:
+The first stable revision should remain deliberately limited. It does not initially require:
 
-- Echtzeitprognosen oder Umfragedaten,
-- individuelle Wahlberatung,
-- Simulation strategischen Wahlverhaltens,
-- Benutzerkonten,
-- dauerhafte Speicherung persönlicher Szenarien auf einem Server,
-- ein eigenes Backend, sofern statische Daten ausreichen,
-- vollständige wissenschaftliche Wahlforschungssoftware,
-- Unterstützung beliebig vieler Wahljahre vor Abschluss eines stabilen ersten Datenmodells.
+- real-time forecasts or polling data,
+- personalised voting advice,
+- simulation of strategic voting,
+- user accounts,
+- permanent server-side storage of personal scenarios,
+- a custom backend if static data is sufficient,
+- fully featured academic election-research software,
+- support for an arbitrary number of election years before the first data model is stable.
 
-## Definition einer erfolgreichen ersten stabilen Version
+## Definition of a Successful First Stable Version
 
-Die erste stabile Version gilt als erreicht, wenn:
+The first stable version is complete when:
 
-1. ein frischer Checkout reproduzierbar installiert und gebaut werden kann,
-2. Datenquelle und Datenaufbereitung dokumentiert sind,
-3. das ungefilterte Referenzergebnis nachvollziehbar berechnet wird,
-4. zentrale fachliche Regeln durch automatisierte Tests abgesichert sind,
-5. Bundesland, Alter, Geschlecht und Wahlart verständlich gefiltert werden können,
-6. aktive Filter eindeutig sichtbar und vollständig zurücksetzbar sind,
-7. Sitzverteilung und minimale Mehrheitskoalitionen korrekt aktualisiert werden,
-8. die Oberfläche auf Desktop und Smartphone klar bedienbar ist,
-9. die wichtigsten Inhalte auf Deutsch konsistent beschriftet sind,
-10. Methodik, Annahmen und Einschränkungen innerhalb der Anwendung zugänglich sind.
+1. a fresh checkout can be reproducibly installed and built,
+2. the data source and preparation process are documented,
+3. the unfiltered reference result is calculated transparently,
+4. central electoral rules are protected by automated tests,
+5. federal state, age, gender, and voting method can be filtered clearly,
+6. active filters are unambiguous and can be fully reset,
+7. seat distribution and minimal winning coalitions update correctly,
+8. the interface is clear and usable on desktop and mobile,
+9. all primary project and UI language is consistently English,
+10. methodology, assumptions, and limitations are accessible within the application.
 
-## Empfohlene Entwicklungsphasen
+## Recommended Development Phases
 
-### Phase 1: Projekt stabilisieren
+### Phase 1: Stabilize the Project
 
-- fehlende beziehungsweise generierte Datendateien klären,
-- reproduzierbaren Build herstellen,
-- offensichtliche TypeScript- und Laufzeitfehler beheben,
-- Debug-Code entfernen,
-- bestehende fachliche Logik mit Referenztests absichern.
+- clarify missing or generated data files,
+- establish a reproducible build,
+- fix obvious TypeScript and runtime errors,
+- remove debug code,
+- protect existing domain logic with reference tests.
 
-### Phase 2: Fachmodell und Code strukturieren
+### Phase 2: Structure the Domain Model and Code
 
-- Filter als serialisierbare Daten modellieren,
-- Aggregation, Sitzverteilung und Koalitionen aus UI-Komponenten herauslösen,
-- Datenverträge definieren und validieren,
-- abgeleiteten State vereinfachen.
+- represent filters as serializable data,
+- move aggregation, seat allocation, and coalition logic out of UI components,
+- define and validate data contracts,
+- simplify derived state.
 
-### Phase 3: UI und Nutzerführung neu gestalten
+### Phase 3: Redesign the UI and User Journey
 
-- Informationsarchitektur festlegen,
-- visuelles Designsystem definieren,
-- responsive Hauptansicht umsetzen,
-- Filterzustände und Ergebnisvergleich verständlich gestalten,
-- Barrierefreiheit berücksichtigen.
+- define the information architecture,
+- establish a visual design system,
+- implement a responsive main view,
+- make filter states and result comparisons understandable,
+- include accessibility from the beginning.
 
-### Phase 4: Dokumentation und Veröffentlichung
+### Phase 4: Documentation and Release
 
-- Methodikseite und README fertigstellen,
-- CI einrichten,
-- statisches Deployment konfigurieren,
-- bekannte Einschränkungen dokumentieren,
-- erste stabile Version veröffentlichen.
+- complete the methodology page and README,
+- configure continuous integration,
+- configure static deployment,
+- document known limitations,
+- publish the first stable version.
 
-## Offene Produktentscheidungen
+## Open Product Decisions
 
-Vor oder während der Umsetzung müssen noch einige Fragen bewusst entschieden werden:
+Several questions still need explicit decisions before or during implementation:
 
-- Soll die Anwendung zunächst ausschließlich die Bundestagswahl 2021 abbilden?
-- Welches Wahlrecht wird als Referenz verwendet und wie wird es benannt?
-- Werden Filter standardmäßig als Einschluss oder Ausschluss verstanden?
-- Welche demografischen Werte sind exakt und welche modelliert?
-- Sollen Ergebnisse immer mit dem vollständigen Wahlergebnis verglichen werden?
-- Sollen nur minimale Mehrheitskoalitionen oder optional alle Mehrheiten angezeigt werden?
-- Werden generierte JSON-Dateien eingecheckt oder reproduzierbar im Build erzeugt?
-- Welcher Umfang an Erläuterungen gehört direkt in die Hauptansicht und welcher auf die Methodikseite?
+- Should the first version cover only the 2021 German federal election?
+- Which electoral rules are the reference, and how should they be named?
+- Should filters be understood as inclusion or exclusion by default?
+- Which demographic values are exact, and which are modelled?
+- Should results always be compared with the complete baseline result?
+- Should the application show only minimal winning coalitions or optionally all majorities?
+- Should generated JSON files be committed, or generated reproducibly during the build?
+- Which explanations belong directly in the main interface, and which belong on the methodology page?
 
-Diese Entscheidungen sollen dokumentiert werden, damit fachliches Verhalten und UI nicht zufällig aus einzelnen Implementierungsdetails entstehen.
+These decisions should be documented so that domain behavior and UI design do not emerge accidentally from implementation details.
 
-## Leitgedanke für die weitere Entwicklung
+## Guiding Principle for Future Development
 
-Das Projekt soll seinen Charakter als Lern- und Experimentierprojekt behalten, aber zugleich den Schritt von einem technisch funktionierenden Prototyp zu einer verständlichen, reproduzierbaren und vertrauenswürdigen Anwendung machen.
+The project should retain its character as a learning and experimentation project while progressing from a technically functional prototype to an understandable, reproducible, and trustworthy application.
 
-Neue Funktionen sind erst dann wertvoll, wenn die vorhandenen Funktionen klar bedienbar, fachlich nachvollziehbar und technisch wartbar sind. Die weitere Entwicklung priorisiert deshalb zunächst Stabilität, Verständlichkeit und ein überzeugendes Nutzererlebnis.
+New features are valuable only when existing functionality is clear to use, transparent in its assumptions, and technically maintainable. Future development should therefore prioritize stability, clarity, and a convincing user experience.
