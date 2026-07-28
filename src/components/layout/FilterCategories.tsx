@@ -1,12 +1,9 @@
 import React, {ChangeEvent, useMemo, useState} from "react";
 import {ActiveStates, FilterRule} from "../../types/FilterRule.tsx";
 import {StatVotes} from "../../types/ElectionTypes.tsx";
-import {Chart} from "chart.js";
-import ChartAnnotation from "chartjs-plugin-annotation";
 import {Bar} from "react-chartjs-2";
 import {humanizeNumber} from "../util/Humanize.tsx";
 
-Chart.register(ChartAnnotation);
 
 interface FilterCategoriesProps {
     addFilter: (filterRule: FilterRule) => void;
@@ -53,7 +50,7 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
             labels: ageGroups,
             datasets: [
                 {
-                    label: 'Male',
+                    // label: 'Male',
                     data: ageGroups.map(ageGroup => -genderAgeGroupTotals.m[ageGroup] || 0),
                     backgroundColor: ageGroups.map((_, index) =>
                         selectedBars.has(`0-${index}`)
@@ -76,28 +73,6 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
                 }
             ]
         };
-
-        const customTextPlugin = {
-            id: 'customTextPlugin',
-            afterDraw: (chart: any) => {
-                const {ctx, chartArea} = chart;
-                ctx.save();
-                ctx.font = 'bold 14px sans-serif';
-                ctx.fillStyle = '#343434';
-
-                // Draw "Male" at bottom left
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'bottom';
-                ctx.fillText('Male', chartArea.left + 10, chartArea.bottom - 10);
-
-                // Draw "Female" at bottom right
-                ctx.textAlign = 'right';
-                ctx.fillText('Female', chartArea.right - 10, chartArea.bottom - 10);
-                ctx.restore();
-            }
-        };
-
-        Chart.register(customTextPlugin);
 
         const options = {
             indexAxis: 'y' as const,
@@ -168,6 +143,7 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
                 legend: false,
                 annotation: {},
                 customTextPlugin: {},
+                BackgroundIconPlugin: {}
             }
         };
         return {chartData: data, chartOptions: options};
@@ -178,6 +154,11 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
             category: 'electionMethod' as const,
             values: ['postal', 'in-person'] as const,
             getLabel: (v: string) => v === 'postal' ? 'Postal Vote' : 'In-Person'
+        },
+        {
+            category: 'gender' as const,
+            values: ['m', 'w'] as const,
+            getLabel: (v: string) => v === 'm' ? 'male' : 'female'
         }
     ];
 
@@ -205,21 +186,34 @@ function FilterCategories({addFilter, removeFilter, statVotes}: FilterCategories
     }
 
     return (
-        <div className="p-3" style={{width: '100%'}}>
+        <div className="overflow-auto p-2" 
+             style={{width: '100%', height: '100%'}}>
+            {/* 
+              FILTER OPTIONS SIZE ADJUSTMENT:
+              Removed maxHeight to allow component to shrink when needed
+              Using height: 100% to take full available height of parent container
+              Border, shadow, and bg-white removed as they're provided by the parent card
+              Padding is reduced from p-3 to p-2
+            */}
             {filterGroups.map(({category, values, getLabel}) => (
-                <div key={category} className="mb-4">
-                    <h5 className="mb-2 text-capitalize fw-bold">
+                <div key={category} className="mb-3">
+                    <h6 className="mb-1 text-capitalize fw-bold">
                         {category.replace(/([A-Z])/g, ' $1').trim()}
-                    </h5>
+                    </h6>
                     <div className="d-flex flex-wrap gap-2">
                         {createListElements(values, category, getLabel)}
                     </div>
                 </div>
             ))}
-            {/* Age Group Chart */}
-            <div className="mb-4">
-                <h5 className="mb-2 text-capitalize fw-bold">Age Group</h5>
-                <div style={{height: '600px'}}>
+            <div className="mb-3">
+                <h6 className="mb-1 text-capitalize fw-bold">Age Group</h6>
+                {/* 
+                  AGE GROUP CHART SIZE ADJUSTMENT:
+                  Using min-height instead of fixed height to allow chart to shrink
+                  Added flex-shrink-1 to allow chart to shrink when needed
+                  Adjust min-height value if chart becomes too small
+                */}
+                <div style={{minHeight: '250px', flexShrink: 1}} className="border rounded shadow-sm p-2">
                     <Bar data={chartData} options={chartOptions}/>
                 </div>
             </div>

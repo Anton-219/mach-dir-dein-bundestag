@@ -1,9 +1,16 @@
 /* src/components/CoalitionList.css */
 .coalition-item {
-    border: 2px solid #dee2e6;
+    border: 1px solid #dee2e6;
     border-radius: 0.5rem;
-    padding: 0rem;
-    margin-bottom: 1.5rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    background-color: #ffffff;
+    transition: all 0.2s ease-in-out;
+}
+
+.coalition-item:hover {
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .party-list {
@@ -12,14 +19,32 @@
 }
 
 .party-name {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #212529;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ffffff;
 }
 
-.color-swatch {
-    min-width: 1rem;
-    height: 1rem;
-    border-radius: 2px;
-    border: 1px solid #dee2e6;
+.badge {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.coalition-list {
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+/* Make the scrollbar more subtle */
+.coalition-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.coalition-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.coalition-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
 }

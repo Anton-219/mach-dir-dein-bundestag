@@ -6,7 +6,7 @@ function mergeCduCsuSeatResults(seats: SeatResult[]): SeatResult[] {
     console.log("Received seatResults", seats);
     const merged = new Map<string, SeatResult>();
     if (seats.filter(x => x.partyAbbreviation === 'CDU' || x.partyAbbreviation === 'CSU').length < 2) {
-        // If one of the CDU/CSU parties is not present then we do not have to merge anything.
+        // If one of the CDU/CSU parties is not present, then we do not have to merge anything.
         return seats;
     }
     for (const seat of seats) {
@@ -42,13 +42,17 @@ function CoalitionList({seats, totalSeats, parties}: CoalitionListProps) {
         threshold
     );
     return (
-        // The outer div provides a scrollable container (using Bootstrap's overflow-auto)
-        // and sets a max height so that if the content exceeds it, scrolling is enabled.
-        <div className="coalition-list overflow-auto" style={{maxHeight: '500px', width: '100%'}}>
-            {/* Use Bootstrap row with two columns */}
-            <div className="row row-cols-2">
+        // The outer div provides a scrollable container with improved styling for 1920x1080 screens
+        // COALITION LIST SIZE ADJUSTMENT:
+        // Removed maxHeight to allow component to shrink when needed
+        // Using height: 100% to take full available height of parent container
+        // Adjust these values if needed for better layout
+        <div className="coalition-list overflow-auto p-2 bg-white border shadow-sm"
+             style={{ height: '100%', width: '100%' }}>
+            {/* You can increase g-2 to g-3 or higher for more spacing */}
+            <div className="row row-cols-2 g-3">
                 {coalitions.map((coalition, index) => (
-                    <div key={`coalition-item-${index}`} className="col" style={{width: '45s%'}}>
+                    <div key={`coalition-item-${index}`} className="col">
                         <CoalitionItem
                             idKey={`coalition-item-${index}`}
                             totalSeats={totalSeats}

@@ -1,6 +1,4 @@
 import {Bar} from "react-chartjs-2";
-import {Chart} from "chart.js";
-import ChartAnnotation from 'chartjs-plugin-annotation';
 import {Party, SeatResult} from "../../types/ElectionTypes.tsx";
 import './CoalitionItem.css'
 
@@ -10,8 +8,6 @@ interface CoalitionItemProps {
     coalition: SeatResult[],
     parties: Record<string, Party>,
 }
-
-Chart.register(ChartAnnotation);
 
 
 function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemProps) {
@@ -83,7 +79,7 @@ function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemPro
                         value: totalSeats / 2,
                         borderColor: '#a80000',
                         borderWidth: 2,
-                        borderDash: [2,2],
+                        borderDash: [2, 2],
                     },
                     border: {
                         type: 'box',
@@ -108,21 +104,39 @@ function CoalitionItem({idKey, totalSeats, coalition, parties}: CoalitionItemPro
     };
 
     return (
-        <div key={`coalition-item-${idKey}`}>
-            <div className="d-flex flex-wrap gap-3 mb-2 party-list">
-                {coalition.map((seatResult) => (
-                    seatResult && (
-                        <div key={`coalition-item-header-${seatResult.partyAbbreviation}`}
-                             className="d-flex align-items-center gap-1">
-                        <span className="party-name">
-                                {seatResult.partyAbbreviation} ({seatResult.seats})
-                            </span>
-                        </div>
-                    )
-                ))}
+        <div key={`coalition-item-${idKey}`} className="coalition-item border rounded p-1 h-100 shadow-sm">
+            {/* 
+              COALITION ITEM SIZE ADJUSTMENT:
+              - Padding reduced from p-2 to p-1
+              - Margins and gaps reduced
+              - Font sizes reduced in CSS
+              - Bar chart height reduced from 40px to 30px
+              Adjust these values if you need more/less space for the coalition items
+            */}
+            <div className="d-flex justify-content-between align-items-center mb-1">
+                <div className="d-flex flex-wrap gap-1 party-list">
+                    {coalition.map((seatResult) => (
+                        seatResult && (
+                            <div key={`coalition-item-header-${seatResult.partyAbbreviation}`}
+                                 className="d-flex align-items-center badge"
+                                 style={{
+                                     backgroundColor: getPartyColor(seatResult.partyAbbreviation),
+                                     color: '#fff',
+                                     fontSize: '0.7rem',
+                                     padding: '0.2rem 0.4rem'
+                                 }}>
+                                <span className="party-name">
+                                    {seatResult.partyAbbreviation} ({seatResult.seats})
+                                </span>
+                            </div>
+                        )
+                    ))}
+                </div>
+                <span className="badge bg-secondary"
+                      style={{fontSize: '0.7rem', padding: '0.2rem 0.4rem'}}>{coalitionTotal} / {totalSeats}</span>
             </div>
-            <div key={`coalition-item-bar-${idKey}`} className="mb-4"
-                 style={{height: '60px'}}>
+            <div key={`coalition-item-bar-${idKey}`} className="mb-1"
+                 style={{height: '30px'}}>
                 <Bar options={options} data={data}/>
             </div>
         </div>
