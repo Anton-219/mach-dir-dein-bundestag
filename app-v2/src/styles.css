@@ -72,3 +72,13 @@ h1 {
   color: #5b6476;
   line-height: 1.6;
 }
+
+.status-error {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1rem 1.125rem;
+  border: 1px solid #d7a2a2;
+  border-radius: 0.75rem;
+  color: #7b1f1f;
+  background: #fff6f6;
+}
