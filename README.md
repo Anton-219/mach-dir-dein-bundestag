@@ -1,50 +1,40 @@
-# React + TypeScript + Vite
+# Mach dir deinen Bundestag
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive project for exploring how selected voter groups could change the composition of the German Bundestag.
 
-Currently, two official plugins are available:
+## Application folders
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The repository currently contains two frontend workspaces:
 
-## Expanding the ESLint configuration
+- The application in the repository root is the temporary **legacy reference**. It remains available for checking existing data structures, calculations, filters, and behavior during the rebuild.
+- [`app-v2/`](./app-v2/) is the independent **rebuild workspace** for the new static one-page application. New rebuild work belongs there and must not import the legacy component tree, state, or styles.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+The legacy application will stay in place until the rebuild is ready for the final cut-over.
 
-- Configure the top-level `parserOptions` property like this:
+## Rebuild documentation
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+The agreed rebuild scope and milestone tickets are documented in [`docs/rebuild/`](./docs/rebuild/). Do not use `docs/tasks.md` as a roadmap.
+
+## Run the legacy reference
+
+From the repository root:
+
+```bash
+npm install
+npm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+The root project also provides `npm run lint` and `npm run build`.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Run the new application
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+From `app-v2/`:
+
+```bash
+npm install
+npm run dev
+npm run lint
+npm run build
 ```
+
+See [`app-v2/README.md`](./app-v2/README.md) for details.
