@@ -37,10 +37,10 @@ export interface Party {
  * One raw direct-mandate record from
  * `src/data/election_results_direktmandate.json`.
  *
- * The snake_case `districts_won` field is intentional. Mapping it to an
- * application-facing name such as `districtsWon` belongs in a loader or adapter.
+ * The snake_case `districts_won` field is intentional. Mapping it to the legacy
+ * application-facing `districtsWon` field belongs in a loader or adapter.
  */
-export interface DirectMandateWinner {
+export interface DirectMandateWinnerJson {
   party: string
   districts_won: number
 }
