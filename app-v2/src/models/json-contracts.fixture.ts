@@ -1,6 +1,6 @@
 import type {
   AgeGroup,
-  DirectMandateWinner,
+  DirectMandateWinnerJson,
   ElectionMethod,
   Gender,
   Party,
@@ -43,7 +43,7 @@ export const representativePartyRecord = {
 export const representativeDirectMandateRecord = {
   party: 'SPD',
   districts_won: 121,
-} satisfies DirectMandateWinner
+} satisfies DirectMandateWinnerJson
 
 export const representativeVoteEntryRecord = {
   state: 'Schleswig-Holstein',
