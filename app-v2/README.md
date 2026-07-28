@@ -31,11 +31,11 @@ All contracts were reviewed against the legacy model file `../src/types/Election
 | Contract | Legacy JSON source |
 | --- | --- |
 | `Party` | `../src/data/partyData.json` |
-| `DirectMandateWinner` | `../src/data/election_results_direktmandate.json` |
+| `DirectMandateWinnerJson` | `../src/data/election_results_direktmandate.json` |
 | `VoteEntry` | `../src/data/second_votes.json` |
 | `StatVotes` | `../src/data/stat_votes.json` |
 
-The raw direct-mandate contract intentionally keeps `districts_won`. A loader or adapter may later expose an application-facing `districtsWon` field without rewriting the JSON schema.
+The raw direct-mandate contract intentionally keeps `districts_won`. The legacy application-facing `DirectMandateWinner` model remains separate in `src/models/normalized-inputs.ts` with its `districtsWon` field, ready for the loader or adapter implemented in Ticket 03.
 
 `ElectionResult` and `SeatResult` are calculated application models and therefore live separately in `src/models/calculation-results.ts`.
 
