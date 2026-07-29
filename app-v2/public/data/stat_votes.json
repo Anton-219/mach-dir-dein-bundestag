@@ -1,0 +1,650 @@
+[
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "CDU",
+        "votes": 144724.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "SPD",
+        "votes": 256800.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "AfD",
+        "votes": 136398.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "FDP",
+        "votes": 459161.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "DIE LINKE",
+        "votes": 117729.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "GRÜNE",
+        "votes": 346427.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "CSU",
+        "votes": 46187.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "Sonstige",
+        "votes": 246432.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "CDU",
+        "votes": 301125.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "SPD",
+        "votes": 484363.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "AfD",
+        "votes": 356644.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "FDP",
+        "votes": 528007.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "DIE LINKE",
+        "votes": 203912.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "GRÜNE",
+        "votes": 588682.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "CSU",
+        "votes": 97649.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "Sonstige",
+        "votes": 408959.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "CDU",
+        "votes": 446800.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "SPD",
+        "votes": 558806.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "AfD",
+        "votes": 554908.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "FDP",
+        "votes": 432239.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "DIE LINKE",
+        "votes": 159426.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "GRÜNE",
+        "votes": 539844.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "CSU",
+        "votes": 131675.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "Sonstige",
+        "votes": 347522.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "CDU",
+        "votes": 1138286.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "SPD",
+        "votes": 1483308.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "AfD",
+        "votes": 1005178.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "FDP",
+        "votes": 735355.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "DIE LINKE",
+        "votes": 253938.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "GRÜNE",
+        "votes": 811678.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "CSU",
+        "votes": 307460.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "Sonstige",
+        "votes": 444729.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "CDU",
+        "votes": 807086.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "SPD",
+        "votes": 1261087.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "AfD",
+        "votes": 544532.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "FDP",
+        "votes": 379347.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "DIE LINKE",
+        "votes": 206208.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "GRÜNE",
+        "votes": 455285.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "CSU",
+        "votes": 246294.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "Sonstige",
+        "votes": 192453.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "CDU",
+        "votes": 1272734.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "SPD",
+        "votes": 1456287.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "AfD",
+        "votes": 341961.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "FDP",
+        "votes": 341627.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "DIE LINKE",
+        "votes": 186192.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "GRÜNE",
+        "votes": 276216.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "CSU",
+        "votes": 317914.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "Sonstige",
+        "votes": 107926.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "CDU",
+        "votes": 142730.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "SPD",
+        "votes": 286470.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "AfD",
+        "votes": 87541.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "FDP",
+        "votes": 257584.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "DIE LINKE",
+        "votes": 154173.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "GRÜNE",
+        "votes": 490427.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "CSU",
+        "votes": 43631.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "Sonstige",
+        "votes": 270036.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "CDU",
+        "votes": 309938.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "SPD",
+        "votes": 548309.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "AfD",
+        "votes": 238895.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "FDP",
+        "votes": 355117.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "DIE LINKE",
+        "votes": 187947.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "GRÜNE",
+        "votes": 765109.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "CSU",
+        "votes": 99525.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "Sonstige",
+        "votes": 447787.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "CDU",
+        "votes": 485147.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "SPD",
+        "votes": 670455.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "AfD",
+        "votes": 349025.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "FDP",
+        "votes": 361362.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "DIE LINKE",
+        "votes": 146499.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "GRÜNE",
+        "votes": 650046.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "CSU",
+        "votes": 137361.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "Sonstige",
+        "votes": 419062.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "CDU",
+        "votes": 1122136.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "SPD",
+        "votes": 1685782.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "AfD",
+        "votes": 601067.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "FDP",
+        "votes": 672570.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "DIE LINKE",
+        "votes": 258318.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "GRÜNE",
+        "votes": 1005141.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "CSU",
+        "votes": 310385.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "Sonstige",
+        "votes": 629277.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "CDU",
+        "votes": 895607.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "SPD",
+        "votes": 1375472.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "AfD",
+        "votes": 351695.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "FDP",
+        "votes": 370460.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "DIE LINKE",
+        "votes": 196557.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "GRÜNE",
+        "votes": 524099.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "CSU",
+        "votes": 246580.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "Sonstige",
+        "votes": 278615.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "CDU",
+        "votes": 1708609.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "SPD",
+        "votes": 1834421.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "AfD",
+        "votes": 241390.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "FDP",
+        "votes": 398184.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "DIE LINKE",
+        "votes": 184966.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "GRÜNE",
+        "votes": 361452.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "CSU",
+        "votes": 418166.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "Sonstige",
+        "votes": 200187.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "18-24",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "25-34",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "35-44",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "45-54",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "55-64",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "m",
+        "ageGroup": "65+",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "18-24",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "25-34",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "35-44",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "45-54",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "55-64",
+        "party": "SSW",
+        "votes": 4632.0
+    },
+    {
+        "gender": "w",
+        "ageGroup": "65+",
+        "party": "SSW",
+        "votes": 4632.0
+    }
+]
