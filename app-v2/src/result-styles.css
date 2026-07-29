@@ -77,10 +77,10 @@
 }
 
 .majority-marker {
-  stroke: var(--ink);
-  stroke-width: 1.4;
+  stroke: var(--muted);
+  stroke-width: 0.9;
   stroke-linecap: round;
-  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 80%));
+  opacity: 0.72;
 }
 
 .parliament-chart .parliament-cutout {
@@ -206,11 +206,24 @@
   font-size: 0.5rem;
 }
 
+.coalition-note {
+  flex: none;
+  margin: 0 0 0.55rem;
+  padding-top: 0;
+}
+
 .coalition-panel .coalition-list {
   min-height: 0;
   overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   align-content: start;
-  padding-right: 0.12rem;
+  padding-right: 0.35rem;
+}
+
+.coalition-panel .coalition-list:focus-visible {
+  outline: 2px solid #6d8998;
+  outline-offset: 2px;
 }
 
 .coalition-panel .coalition-row {
