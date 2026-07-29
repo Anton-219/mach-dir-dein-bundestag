@@ -1,3 +1,5 @@
+/* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- The fixed-height coalition list must remain keyboard-scrollable. */
+
 import {
   getPartyIdentity,
   prioritizeCoalitions,
@@ -44,7 +46,6 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
 
           <ol
             className="coalition-list"
-            role="region"
             tabIndex={0}
             aria-labelledby="coalitions-title"
             aria-describedby="coalition-result-note"
