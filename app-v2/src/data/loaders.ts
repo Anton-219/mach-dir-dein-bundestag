@@ -20,11 +20,6 @@ const dataFiles = {
   germanyStates: 'germany_states_map.geo.json',
 } as const
 
-const germanyStatesMapUrl = new URL(
-  '../../../src/data/germany_states_map.geo.json',
-  import.meta.url,
-).href
-
 const genders = ['m', 'w'] as const satisfies readonly Gender[]
 const ageGroups = [
   '18-24',
@@ -177,8 +172,8 @@ function createDataUrl(fileName: string): string {
 async function fetchJson(
   fileName: string,
   fetcher: JsonFetcher,
-  dataUrl = createDataUrl(fileName),
 ): Promise<unknown> {
+  const dataUrl = createDataUrl(fileName)
   let response: Response
 
   try {
@@ -256,7 +251,7 @@ export async function loadElectionData(
     fetchJson(dataFiles.secondVotes, fetcher),
     fetchJson(dataFiles.statVotes, fetcher),
     fetchJson(dataFiles.directMandates, fetcher),
-    fetchJson(dataFiles.germanyStates, fetcher, germanyStatesMapUrl),
+    fetchJson(dataFiles.germanyStates, fetcher),
   ])
 
   const directMandates = parseArray(
