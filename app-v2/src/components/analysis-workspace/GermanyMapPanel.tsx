@@ -1,25 +1,17 @@
-import {
-  describeStateSelection,
-  type FilterSelection,
-} from '../../lib/filters/index.ts'
+import { describeStateSelection } from '../../lib/filters/index.ts'
 
 interface GermanyMapPanelProps {
-  selection: FilterSelection<string>
+  excludedStates: readonly string[]
   totalStateCount: number
   onEditStates: () => void
 }
 
 export function GermanyMapPanel({
-  selection,
+  excludedStates,
   totalStateCount,
   onEditStates,
 }: GermanyMapPanelProps) {
-  const includedStateCount =
-    selection.values.length === 0
-      ? totalStateCount
-      : selection.mode === 'include'
-        ? selection.values.length
-        : Math.max(totalStateCount - selection.values.length, 0)
+  const includedStateCount = Math.max(totalStateCount - excludedStates.length, 0)
 
   return (
     <section className="workspace-panel map-panel" aria-labelledby="map-title">
@@ -35,9 +27,11 @@ export function GermanyMapPanel({
 
       <div className="map-content">
         <svg
-          className={selection.values.length === 0
-            ? 'germany-map-placeholder'
-            : 'germany-map-placeholder germany-map-filtered'}
+          className={
+            excludedStates.length === 0
+              ? 'germany-map-placeholder'
+              : 'germany-map-placeholder germany-map-filtered'
+          }
           viewBox="0 0 220 260"
           aria-hidden="true"
           focusable="false"
@@ -56,7 +50,7 @@ export function GermanyMapPanel({
         </svg>
 
         <div className="map-copy">
-          <strong>{describeStateSelection(selection)}</strong>
+          <strong>{describeStateSelection(excludedStates)}</strong>
           <p>
             The map reflects the regional scenario. The labelled state editor is the
             complete keyboard-accessible control.
