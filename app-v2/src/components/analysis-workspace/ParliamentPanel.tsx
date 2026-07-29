@@ -35,7 +35,7 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
           <p className="panel-kicker">Calculated result</p>
           <h2 id="parliament-title">Bundestag</h2>
         </div>
-        <div className="parliament-totals" aria-live="polite">
+        <div className="parliament-totals">
           <span>
             <strong>{readyScenario?.totalSeats ?? '—'}</strong> seats
           </span>
@@ -49,16 +49,17 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
       </div>
 
       {readyScenario && segments.length > 0 ? (
-        <div className="parliament-result" aria-live="polite">
+        <div className="parliament-result">
           <div className="parliament-chart">
             <svg
               viewBox="0 0 184 104"
+              role="img"
               aria-labelledby="parliament-chart-title parliament-chart-description"
             >
               <title id="parliament-chart-title">Bundestag seat distribution</title>
               <desc id="parliament-chart-description">
                 {partyResults
-                  .map((result) => `${result.abbreviation}: ${result.seats} seats`)
+                  .map((result) => `${result.name}: ${result.seats} seats`)
                   .join(', ')}
                 . The majority threshold is {readyScenario.majorityThreshold} seats.
               </desc>
@@ -110,8 +111,10 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
                   style={{ backgroundColor: result.color }}
                   aria-hidden="true"
                 />
+                <span className="visually-hidden">{result.name}, </span>
                 <span>{result.abbreviation}</span>
                 <strong>{result.seats}</strong>
+                <span className="visually-hidden"> seats</span>
               </li>
             ))}
           </ul>
@@ -119,7 +122,6 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
       ) : (
         <p
           className={`result-empty${scenario?.status === 'invalid' ? ' result-empty-error' : ''}`}
-          aria-live="polite"
         >
           {resultMessage}
         </p>
