@@ -50,40 +50,21 @@ interface FilterOption<T extends string> {
   label: string
 }
 
-function SelectionEditor<T extends string>({
+function SelectionFields<T extends string>({
   id,
-  label,
   selection,
   options,
   wide,
   onChange,
-  onClose,
 }: {
   id: string
-  label: string
   selection: FilterSelection<T>
   options: readonly FilterOption<T>[]
   wide?: boolean
   onChange: (selection: FilterSelection<T>) => void
-  onClose: () => void
 }) {
   return (
-    <div className="filter-menu" id={id}>
-      <div className="filter-menu-heading">
-        <div>
-          <strong>{label}</strong>
-          <span>Choose values, then include only or exclude them.</span>
-        </div>
-        <button
-          className="filter-menu-close"
-          type="button"
-          aria-label={`Close ${label.toLowerCase()} filter`}
-          onClick={onClose}
-        >
-          ×
-        </button>
-      </div>
-
+    <>
       <fieldset className="filter-mode-group">
         <legend>Selection rule</legend>
         <div className="filter-mode-options">
@@ -133,6 +114,45 @@ function SelectionEditor<T extends string>({
           ))}
         </div>
       </fieldset>
+    </>
+  )
+}
+
+function StateSelectionEditor({
+  selection,
+  options,
+  onChange,
+  onClose,
+}: {
+  selection: FilterSelection<string>
+  options: readonly FilterOption<string>[]
+  onChange: (selection: FilterSelection<string>) => void
+  onClose: () => void
+}) {
+  return (
+    <div className="filter-menu" id="filter-menu-states">
+      <div className="filter-menu-heading">
+        <div>
+          <strong>Federal state</strong>
+          <span>Choose states, then include only or exclude them.</span>
+        </div>
+        <button
+          className="filter-menu-close"
+          type="button"
+          aria-label="Close federal state filter"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
+
+      <SelectionFields
+        id="filter-states"
+        selection={selection}
+        options={options}
+        wide
+        onChange={onChange}
+      />
 
       <div className="filter-menu-actions">
         <span>
@@ -152,43 +172,36 @@ function SelectionEditor<T extends string>({
   )
 }
 
-function FilterControl({
-  dimension,
-  label,
+function StateFilterControl({
   summary,
   selectedCount,
-  openFilter,
-  onOpenFilterChange,
+  isOpen,
+  onOpenChange,
   children,
 }: {
-  dimension: FilterDimension
-  label: string
   summary: string
   selectedCount: number
-  openFilter: FilterDimension | null
-  onOpenFilterChange: (dimension: FilterDimension | null) => void
+  isOpen: boolean
+  onOpenChange: (isOpen: boolean) => void
   children: ReactNode
 }) {
-  const isOpen = openFilter === dimension
-  const menuId = `filter-menu-${dimension}`
-
   return (
     <div
       className={
         isOpen
-          ? 'filter-control-shell filter-control-shell-open'
-          : 'filter-control-shell'
+          ? 'filter-control-shell filter-control-shell-state filter-control-shell-open'
+          : 'filter-control-shell filter-control-shell-state'
       }
     >
       <button
         className="filter-control"
         type="button"
         aria-expanded={isOpen}
-        aria-controls={menuId}
-        onClick={() => onOpenFilterChange(isOpen ? null : dimension)}
+        aria-controls="filter-menu-states"
+        onClick={() => onOpenChange(!isOpen)}
       >
         <span className="filter-control-copy">
-          <strong>{label}</strong>
+          <strong>Federal state</strong>
           <small>{summary}</small>
         </span>
         <span className="filter-control-status">
@@ -203,6 +216,53 @@ function FilterControl({
   )
 }
 
+function InlineSelectionEditor<T extends string>({
+  id,
+  label,
+  summary,
+  selection,
+  options,
+  wide,
+  onChange,
+}: {
+  id: string
+  label: string
+  summary: string
+  selection: FilterSelection<T>
+  options: readonly FilterOption<T>[]
+  wide?: boolean
+  onChange: (selection: FilterSelection<T>) => void
+}) {
+  const className = wide
+    ? 'inline-filter-card inline-filter-card-wide'
+    : 'inline-filter-card'
+
+  return (
+    <section className={className} aria-labelledby={`${id}-title`}>
+      <div className="inline-filter-heading">
+        <div>
+          <strong id={`${id}-title`}>{label}</strong>
+          <span>{summary}</span>
+        </div>
+        <button
+          type="button"
+          disabled={selection.values.length === 0}
+          onClick={() => onChange({ mode: 'include', values: [] })}
+        >
+          Clear
+        </button>
+      </div>
+
+      <SelectionFields
+        id={id}
+        selection={selection}
+        options={options}
+        onChange={onChange}
+      />
+    </section>
+  )
+}
+
 export function FilterPanel({
   filters,
   states,
@@ -210,7 +270,7 @@ export function FilterPanel({
   onChange,
   onOpenFilterChange,
 }: FilterPanelProps) {
-  const closeEditor = () => onOpenFilterChange(null)
+  const statesOpen = openFilter === 'states'
 
   return (
     <section className="workspace-panel filter-panel" aria-labelledby="filters-title">
@@ -225,87 +285,54 @@ export function FilterPanel({
       </div>
 
       <div className="filter-list">
-        <FilterControl
-          dimension="states"
-          label="Federal state"
+        <StateFilterControl
           summary={describeStateSelection(filters.states)}
           selectedCount={filters.states.values.length}
-          openFilter={openFilter}
-          onOpenFilterChange={onOpenFilterChange}
+          isOpen={statesOpen}
+          onOpenChange={(isOpen) => onOpenFilterChange(isOpen ? 'states' : null)}
         >
-          <SelectionEditor
-            id="filter-menu-states"
-            label="Federal state"
+          <StateSelectionEditor
             selection={filters.states}
             options={states.map((state) => ({ value: state, label: state }))}
-            wide
             onChange={(selection) => onChange({ ...filters, states: selection })}
-            onClose={closeEditor}
+            onClose={() => onOpenFilterChange(null)}
           />
-        </FilterControl>
+        </StateFilterControl>
 
-        <FilterControl
-          dimension="ageGroups"
+        <InlineSelectionEditor
+          id="filter-age-groups"
           label="Age group"
           summary={describeAgeGroupSelection(filters.ageGroups)}
-          selectedCount={filters.ageGroups.values.length}
-          openFilter={openFilter}
-          onOpenFilterChange={onOpenFilterChange}
-        >
-          <SelectionEditor
-            id="filter-menu-ageGroups"
-            label="Age group"
-            selection={filters.ageGroups}
-            options={ageGroupOptions}
-            onChange={(selection) =>
-              onChange({ ...filters, ageGroups: selection })
-            }
-            onClose={closeEditor}
-          />
-        </FilterControl>
+          selection={filters.ageGroups}
+          options={ageGroupOptions}
+          wide
+          onChange={(selection) => onChange({ ...filters, ageGroups: selection })}
+        />
 
-        <FilterControl
-          dimension="genders"
+        <InlineSelectionEditor
+          id="filter-genders"
           label="Gender"
           summary={describeGenderSelection(filters.genders)}
-          selectedCount={filters.genders.values.length}
-          openFilter={openFilter}
-          onOpenFilterChange={onOpenFilterChange}
-        >
-          <SelectionEditor
-            id="filter-menu-genders"
-            label="Gender"
-            selection={filters.genders}
-            options={genderOptions}
-            onChange={(selection) => onChange({ ...filters, genders: selection })}
-            onClose={closeEditor}
-          />
-        </FilterControl>
+          selection={filters.genders}
+          options={genderOptions}
+          onChange={(selection) => onChange({ ...filters, genders: selection })}
+        />
 
-        <FilterControl
-          dimension="electionMethods"
+        <InlineSelectionEditor
+          id="filter-election-methods"
           label="Voting method"
           summary={describeElectionMethodSelection(filters.electionMethods)}
-          selectedCount={filters.electionMethods.values.length}
-          openFilter={openFilter}
-          onOpenFilterChange={onOpenFilterChange}
-        >
-          <SelectionEditor
-            id="filter-menu-electionMethods"
-            label="Voting method"
-            selection={filters.electionMethods}
-            options={electionMethodOptions}
-            onChange={(selection) =>
-              onChange({ ...filters, electionMethods: selection })
-            }
-            onClose={closeEditor}
-          />
-        </FilterControl>
+          selection={filters.electionMethods}
+          options={electionMethodOptions}
+          onChange={(selection) =>
+            onChange({ ...filters, electionMethods: selection })
+          }
+        />
       </div>
 
       <p className="filter-help">
-        Each dimension can include only selected values or exclude them from the
-        scenario.
+        Age, gender, and voting method stay directly available. Open the federal
+        state filter to edit the longer state list.
       </p>
     </section>
   )
