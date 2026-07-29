@@ -9,7 +9,7 @@ import {
   createEmptyFilterState,
   getActiveFilterSummaries,
   summarizeFilterState,
-  toggleSelectionValue,
+  toggleExcludedValue,
   type FilterState,
 } from '../../src/lib/filters/index.ts'
 import type { VoteEntry } from '../../src/models/json-contracts.ts'
@@ -53,12 +53,12 @@ const entries: VoteEntry[] = [
   },
 ]
 
-test('applies include and exclude selections across every dimension', () => {
+test('excludes disabled values across every filter dimension', () => {
   const filters: FilterState = {
-    states: { mode: 'include', values: ['Hamburg'] },
-    ageGroups: { mode: 'include', values: ['25-34'] },
-    genders: { mode: 'exclude', values: ['w'] },
-    electionMethods: { mode: 'include', values: ['in-person'] },
+    states: ['Berlin'],
+    ageGroups: ['18-24'],
+    genders: ['w'],
+    electionMethods: ['postal'],
   }
 
   const filtered = applyFilterState(entries, filters)
@@ -71,7 +71,7 @@ test('applies include and exclude selections across every dimension', () => {
   assert.equal(entries.length, 4)
 })
 
-test('treats empty selections as the complete unfiltered result', () => {
+test('treats empty exclusion lists as the complete unfiltered result', () => {
   const filters = createEmptyFilterState()
   const filtered = applyFilterState(entries, filters)
 
@@ -81,42 +81,44 @@ test('treats empty selections as the complete unfiltered result', () => {
   assert.equal(summarizeFilterState(filters), 'All voters in Germany')
 })
 
-test('stores only serializable filter data', () => {
+test('stores only serializable lists of excluded values', () => {
   const filters: FilterState = {
-    states: { mode: 'exclude', values: ['Berlin'] },
-    ageGroups: { mode: 'include', values: ['18-24'] },
-    genders: { mode: 'include', values: ['w'] },
-    electionMethods: { mode: 'include', values: ['postal'] },
+    states: ['Berlin'],
+    ageGroups: ['18-24'],
+    genders: ['w'],
+    electionMethods: ['postal'],
   }
 
   assert.deepEqual(JSON.parse(JSON.stringify(filters)), filters)
   assert.equal(countActiveFilterDimensions(filters), 4)
   assert.equal(
     summarizeFilterState(filters),
-    'Berlin excluded · Only ages 18–24 · Women only · Postal voting only',
+    'Berlin excluded · Ages 18–24 excluded · Women excluded · Postal voting excluded',
   )
   assert.deepEqual(getActiveFilterSummaries(filters), [
     { dimension: 'states', label: 'Berlin excluded' },
-    { dimension: 'ageGroups', label: 'Only ages 18–24' },
-    { dimension: 'genders', label: 'Women only' },
-    { dimension: 'electionMethods', label: 'Postal voting only' },
+    { dimension: 'ageGroups', label: 'Ages 18–24 excluded' },
+    { dimension: 'genders', label: 'Women excluded' },
+    { dimension: 'electionMethods', label: 'Postal voting excluded' },
   ])
 })
 
-test('toggles values and clears one filter dimension without changing the others', () => {
+test('toggles exclusions and clears one dimension without changing the others', () => {
+  const excludedStates = toggleExcludedValue<string>([], 'Schleswig-Holstein')
   const filters: FilterState = {
     ...createEmptyFilterState(),
-    states: toggleSelectionValue(
-      createEmptyFilterState().states,
-      'Schleswig-Holstein',
-    ),
-    genders: { mode: 'exclude', values: ['m'] },
+    states: excludedStates,
+    genders: ['m'],
   }
 
   const cleared = clearFilterDimension(filters, 'states')
 
-  assert.deepEqual(filters.states.values, ['Schleswig-Holstein'])
-  assert.deepEqual(cleared.states, { mode: 'include', values: [] })
-  assert.deepEqual(cleared.genders, { mode: 'exclude', values: ['m'] })
+  assert.deepEqual(filters.states, ['Schleswig-Holstein'])
+  assert.deepEqual(
+    toggleExcludedValue(filters.states, 'Schleswig-Holstein'),
+    [],
+  )
+  assert.deepEqual(cleared.states, [])
+  assert.deepEqual(cleared.genders, ['m'])
   assert.equal(countActiveFilterDimensions(cleared), 1)
 })
