@@ -78,17 +78,45 @@ function isParty(value: unknown): value is Party {
   )
 }
 
-function isVoteEntry(value: unknown): value is VoteEntry {
-  return (
-    isRecord(value) &&
-    typeof value.state === 'string' &&
-    isOneOf(value.gender, genders) &&
-    isOneOf(value.ageGroup, ageGroups) &&
-    typeof value.party === 'string' &&
-    isOneOf(value.voteType, voteTypes) &&
-    isOneOf(value.electionMethod, electionMethods) &&
-    isFiniteNumber(value.votes)
-  )
+function normalizeVoteEntry(value: unknown): VoteEntry | undefined {
+  if (
+    !isRecord(value) ||
+    typeof value.state !== 'string' ||
+    !isOneOf(value.gender, genders) ||
+    !isOneOf(value.ageGroup, ageGroups) ||
+    typeof value.party !== 'string' ||
+    !isOneOf(value.electionMethod, electionMethods) ||
+    !isFiniteNumber(value.votes)
+  ) {
+    return undefined
+  }
+
+  let voteType: VoteType
+  if (isOneOf(value.voteType, voteTypes)) {
+    voteType = value.voteType
+  } else if (
+    value.state === 'Schleswig-Holstein' &&
+    value.party === 'SSW' &&
+    value.voteType === value.electionMethod
+  ) {
+    // The restored legacy file contains 24 appended SSW second-vote records
+    // whose voteType accidentally repeats the election method. The old app
+    // accepted these through a type assertion. Keep the raw file unchanged and
+    // normalize this narrowly identified legacy defect at the data boundary.
+    voteType = '2'
+  } else {
+    return undefined
+  }
+
+  return {
+    state: value.state,
+    gender: value.gender,
+    ageGroup: value.ageGroup,
+    party: value.party,
+    voteType,
+    electionMethod: value.electionMethod,
+    votes: value.votes,
+  }
 }
 
 function isStatVotes(value: unknown): value is StatVotes {
@@ -114,7 +142,7 @@ function isDirectMandateWinnerJson(
 function parseArray<T>(
   value: unknown,
   fileName: string,
-  isItem: (item: unknown) => item is T,
+  parseItem: (item: unknown) => T | undefined,
 ): T[] {
   if (!Array.isArray(value)) {
     throw new ElectionDataLoadError(
@@ -122,14 +150,15 @@ function parseArray<T>(
     )
   }
 
-  const invalidIndex = value.findIndex((item) => !isItem(item))
+  const parsedItems = value.map(parseItem)
+  const invalidIndex = parsedItems.findIndex((item) => item === undefined)
   if (invalidIndex !== -1) {
     throw new ElectionDataLoadError(
       `${fileName} contains an invalid record at index ${invalidIndex}.`,
     )
   }
 
-  return value
+  return parsedItems as T[]
 }
 
 function createDataUrl(fileName: string): string {
@@ -183,20 +212,24 @@ export async function loadElectionData(
   const directMandates = parseArray(
     directMandatesJson,
     dataFiles.directMandates,
-    isDirectMandateWinnerJson,
+    (item) => (isDirectMandateWinnerJson(item) ? item : undefined),
   ).map(({ party, districts_won }) => ({
     party,
     districtsWon: districts_won,
   }))
 
   return {
-    parties: parseArray(partiesJson, dataFiles.parties, isParty),
+    parties: parseArray(partiesJson, dataFiles.parties, (item) =>
+      isParty(item) ? item : undefined,
+    ),
     secondVotes: parseArray(
       secondVotesJson,
       dataFiles.secondVotes,
-      isVoteEntry,
+      normalizeVoteEntry,
     ),
-    statVotes: parseArray(statVotesJson, dataFiles.statVotes, isStatVotes),
+    statVotes: parseArray(statVotesJson, dataFiles.statVotes, (item) =>
+      isStatVotes(item) ? item : undefined,
+    ),
     directMandates,
   }
 }
