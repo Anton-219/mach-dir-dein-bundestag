@@ -1,0 +1,131 @@
+.filter-control-shell-state,
+.inline-filter-card-wide {
+  grid-column: 1 / -1;
+}
+
+.filter-control-shell-state .filter-menu {
+  right: auto;
+  left: 0;
+  width: 100%;
+}
+
+.inline-filter-card {
+  min-width: 0;
+  padding: 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--panel-muted);
+}
+
+.inline-filter-heading {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin-bottom: 0.45rem;
+}
+
+.inline-filter-heading > div {
+  min-width: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.inline-filter-heading strong,
+.inline-filter-heading span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inline-filter-heading strong {
+  font-size: 0.68rem;
+}
+
+.inline-filter-heading span {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
+.inline-filter-heading button {
+  flex: none;
+  padding: 0.2rem 0.4rem;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.58rem;
+  font-weight: 750;
+}
+
+.inline-filter-heading button:disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.55;
+}
+
+.inline-filter-card .filter-mode-group {
+  margin-bottom: 0.45rem;
+}
+
+.inline-filter-card .filter-mode-options span {
+  min-height: 1.65rem;
+  padding: 0.25rem 0.35rem;
+  font-size: 0.58rem;
+}
+
+.inline-filter-card .filter-checkbox span {
+  min-height: 1.7rem;
+  padding: 0.25rem 0.35rem 0.25rem 1.45rem;
+  font-size: 0.58rem;
+}
+
+.inline-filter-card .filter-checkbox span::before {
+  left: 0.45rem;
+  width: 0.65rem;
+  height: 0.65rem;
+}
+
+.inline-filter-card-wide {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.62fr) minmax(0, 1.38fr);
+  gap: 0 0.65rem;
+}
+
+.inline-filter-card-wide .inline-filter-heading {
+  grid-column: 1 / -1;
+}
+
+.inline-filter-card-wide .filter-mode-group {
+  margin-bottom: 0;
+}
+
+.inline-filter-card-wide .filter-option-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 58rem), (max-height: 43rem) {
+  .inline-filter-card-wide {
+    grid-template-columns: minmax(8rem, 0.75fr) minmax(0, 1.25fr);
+  }
+}
+
+@media (max-width: 42rem) {
+  .inline-filter-card,
+  .inline-filter-card-wide {
+    grid-column: 1;
+  }
+
+  .inline-filter-card-wide {
+    display: block;
+  }
+
+  .inline-filter-card-wide .filter-mode-group {
+    margin-bottom: 0.45rem;
+  }
+
+  .inline-filter-card-wide .filter-option-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
