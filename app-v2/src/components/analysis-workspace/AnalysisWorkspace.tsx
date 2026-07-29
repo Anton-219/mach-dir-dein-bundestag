@@ -1,3 +1,12 @@
+import { useMemo, useState } from 'react'
+
+import {
+  applyFilterState,
+  countVotes,
+  EMPTY_FILTER_STATE,
+  type FilterState,
+} from '../../lib/filters/index.ts'
+import { aggregateElectionResults, allocateSeats } from '../../lib/election/index.ts'
 import { CoalitionPanel } from './CoalitionPanel.tsx'
 import { FilterPanel } from './FilterPanel.tsx'
 import { GermanyMapPanel } from './GermanyMapPanel.tsx'
@@ -8,23 +17,57 @@ import type { DataState } from './types.ts'
 import { WorkspaceHeader } from './WorkspaceHeader.tsx'
 
 export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
+  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTER_STATE)
+
+  const scenario = useMemo(() => {
+    if (dataState.status !== 'ready') {
+      return undefined
+    }
+
+    const filteredVotes = applyFilterState(dataState.data.secondVotes, filters)
+    const electionResults = aggregateElectionResults(
+      filteredVotes,
+      dataState.data.parties,
+    )
+    const seatResults = allocateSeats(electionResults, dataState.data.directMandates)
+
+    return {
+      filteredVotes,
+      electionResults,
+      seatResults,
+      includedVotes: countVotes(filteredVotes),
+      totalVotes: countVotes(dataState.data.secondVotes),
+      states: [...new Set(dataState.data.secondVotes.map((entry) => entry.state))].sort(),
+    }
+  }, [dataState, filters])
+
   return (
     <div className="application-shell">
       <WorkspaceHeader />
 
       <main className="analysis-shell">
-        <ScenarioSummary dataState={dataState} />
+        <ScenarioSummary
+          dataState={dataState}
+          filters={filters}
+          includedVotes={scenario?.includedVotes ?? 0}
+          totalVotes={scenario?.totalVotes ?? 0}
+          onReset={() => setFilters(EMPTY_FILTER_STATE)}
+        />
 
         <div className="analysis-workspace" aria-label="Election analysis workspace">
           <div className="workspace-column workspace-column-left">
-            <FilterPanel />
-            <GermanyMapPanel />
+            <FilterPanel filters={filters} onChange={setFilters} />
+            <GermanyMapPanel
+              filters={filters}
+              states={scenario?.states ?? []}
+              onChange={setFilters}
+            />
           </div>
 
-          <ParliamentPanel />
+          <ParliamentPanel seatResults={scenario?.seatResults ?? []} />
 
           <div className="workspace-column workspace-column-right">
-            <PartySummaryPanel />
+            <PartySummaryPanel results={scenario?.electionResults ?? []} />
             <CoalitionPanel />
           </div>
         </div>
