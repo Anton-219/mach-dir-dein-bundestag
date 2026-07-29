@@ -13,16 +13,15 @@ interface ParliamentPanelProps {
 const parliamentArc = 'M 12 92 A 80 80 0 0 1 172 92'
 
 export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
-  const partyResults =
-    scenario?.status === 'ready'
-      ? buildPresentedPartyResults(
-          parties,
-          scenario.electionResults,
-          scenario.seatResults,
-        )
-      : []
+  const readyScenario = scenario?.status === 'ready' ? scenario : undefined
+  const partyResults = readyScenario
+    ? buildPresentedPartyResults(
+        parties,
+        readyScenario.electionResults,
+        readyScenario.seatResults,
+      )
+    : []
   const segments = buildParliamentSegments(partyResults)
-  const hasResult = scenario?.status === 'ready' && segments.length > 0
   const resultMessage =
     scenario?.message ?? 'Results are unavailable until the election data has loaded.'
 
@@ -38,22 +37,18 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
         </div>
         <div className="parliament-totals" aria-live="polite">
           <span>
-            <strong>{scenario?.status === 'ready' ? scenario.totalSeats : '—'}</strong>{' '}
-            seats
+            <strong>{readyScenario?.totalSeats ?? '—'}</strong> seats
           </span>
           <span>
-            <strong>
-              {scenario?.status === 'ready' ? scenario.majorityThreshold : '—'}
-            </strong>{' '}
-            majority
+            <strong>{readyScenario?.majorityThreshold ?? '—'}</strong> majority
           </span>
           <span>
-            <strong>{hasResult ? partyResults.length : '—'}</strong> parties
+            <strong>{segments.length > 0 ? partyResults.length : '—'}</strong> parties
           </span>
         </div>
       </div>
 
-      {hasResult ? (
+      {readyScenario && segments.length > 0 ? (
         <div className="parliament-result" aria-live="polite">
           <div className="parliament-chart">
             <svg
@@ -66,7 +61,7 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
                 {partyResults
                   .map((result) => `${result.abbreviation}: ${result.seats} seats`)
                   .join(', ')}
-                . The majority threshold is {scenario.majorityThreshold} seats.
+                . The majority threshold is {readyScenario.majorityThreshold} seats.
               </desc>
               <path
                 className="parliament-track"
@@ -98,13 +93,14 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
             </svg>
 
             <div className="parliament-cutout" aria-hidden="true">
-              <strong>{scenario.totalSeats}</strong>
+              <strong>{readyScenario.totalSeats}</strong>
               <span>total seats</span>
             </div>
           </div>
 
           <p className="majority-axis">
-            Majority threshold: <strong>{scenario.majorityThreshold} seats</strong>
+            Majority threshold:{' '}
+            <strong>{readyScenario.majorityThreshold} seats</strong>
           </p>
 
           <ul className="parliament-legend" aria-label="Parties represented in parliament">
