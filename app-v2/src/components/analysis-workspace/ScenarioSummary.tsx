@@ -16,9 +16,9 @@ function DataStatus({
 }) {
   if (dataState.status === 'loading') {
     return (
-      <p className="scenario-data-status" role="status">
+      <output className="scenario-data-status" aria-live="polite">
         Loading confirmed election data…
-      </p>
+      </output>
     )
   }
 
@@ -168,9 +168,13 @@ export function ScenarioSummary({
       ) : null}
 
       {scenarioAnnouncement ? (
-        <p className="visually-hidden" role="status" aria-atomic="true">
+        <output
+          className="visually-hidden"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {scenarioAnnouncement}
-        </p>
+        </output>
       ) : null}
     </section>
   )
