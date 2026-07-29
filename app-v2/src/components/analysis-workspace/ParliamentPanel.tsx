@@ -86,8 +86,8 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
                 className="majority-marker"
                 x1="92"
                 x2="92"
-                y1="3"
-                y2="24"
+                y1="12"
+                y2="30"
               />
             </svg>
 
