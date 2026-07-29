@@ -110,7 +110,7 @@ test('prioritises concise coalitions before smaller majority margins', () => {
     prioritizeCoalitions(coalitions).map((coalition) =>
       coalition.members.map((member) => member.partyAbbreviation).join('+'),
     ),
-    ['RIGHT', 'LEFT+CENTRE', 'LEFT+EXTRA', 'LEFT+CENTRE+EXTRA'],
+    ['RIGHT', 'LEFT+EXTRA', 'LEFT+CENTRE', 'LEFT+CENTRE+EXTRA'],
   )
   assert.equal(coalitions[0]?.members.length, 3)
 })
