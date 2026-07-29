@@ -1,3 +1,5 @@
+import { isGermanyStatesGeoJson } from '../lib/map/germany-map.ts'
+import type { GermanyStatesGeoJson } from '../lib/map/germany-map.ts'
 import type {
   AgeGroup,
   DirectMandateWinner,
@@ -15,7 +17,13 @@ const dataFiles = {
   secondVotes: 'second_votes.json',
   statVotes: 'stat_votes.json',
   directMandates: 'election_results_direktmandate.json',
+  germanyStates: 'germany_states_map.geo.json',
 } as const
+
+const germanyStatesMapUrl = new URL(
+  '../../../src/data/germany_states_map.geo.json',
+  import.meta.url,
+).href
 
 const genders = ['m', 'w'] as const satisfies readonly Gender[]
 const ageGroups = [
@@ -41,6 +49,7 @@ export interface ElectionData {
   secondVotes: VoteEntry[]
   statVotes: StatVotes[]
   directMandates: DirectMandateWinner[]
+  germanyStates: GermanyStatesGeoJson
 }
 
 export class ElectionDataLoadError extends Error {
@@ -168,8 +177,8 @@ function createDataUrl(fileName: string): string {
 async function fetchJson(
   fileName: string,
   fetcher: JsonFetcher,
+  dataUrl = createDataUrl(fileName),
 ): Promise<unknown> {
-  const dataUrl = createDataUrl(fileName)
   let response: Response
 
   try {
@@ -201,13 +210,19 @@ async function fetchJson(
 export async function loadElectionData(
   fetcher: JsonFetcher = fetch,
 ): Promise<ElectionData> {
-  const [partiesJson, secondVotesJson, statVotesJson, directMandatesJson] =
-    await Promise.all([
-      fetchJson(dataFiles.parties, fetcher),
-      fetchJson(dataFiles.secondVotes, fetcher),
-      fetchJson(dataFiles.statVotes, fetcher),
-      fetchJson(dataFiles.directMandates, fetcher),
-    ])
+  const [
+    partiesJson,
+    secondVotesJson,
+    statVotesJson,
+    directMandatesJson,
+    germanyStatesJson,
+  ] = await Promise.all([
+    fetchJson(dataFiles.parties, fetcher),
+    fetchJson(dataFiles.secondVotes, fetcher),
+    fetchJson(dataFiles.statVotes, fetcher),
+    fetchJson(dataFiles.directMandates, fetcher),
+    fetchJson(dataFiles.germanyStates, fetcher, germanyStatesMapUrl),
+  ])
 
   const directMandates = parseArray(
     directMandatesJson,
@@ -217,6 +232,12 @@ export async function loadElectionData(
     party,
     districtsWon: districts_won,
   }))
+
+  if (!isGermanyStatesGeoJson(germanyStatesJson)) {
+    throw new ElectionDataLoadError(
+      `${dataFiles.germanyStates} does not contain a valid state FeatureCollection.`,
+    )
+  }
 
   return {
     parties: parseArray(partiesJson, dataFiles.parties, (item) =>
@@ -231,5 +252,6 @@ export async function loadElectionData(
       isStatVotes(item) ? item : undefined,
     ),
     directMandates,
+    germanyStates: germanyStatesJson,
   }
 }
