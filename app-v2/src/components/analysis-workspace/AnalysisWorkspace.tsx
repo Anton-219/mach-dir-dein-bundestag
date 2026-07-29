@@ -101,7 +101,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
               onOpenFilterChange={setOpenFilter}
             />
             <GermanyMapPanel
-              selection={filters.states}
+              excludedStates={filters.states}
               totalStateCount={availableStates.length}
               onEditStates={() => setOpenFilter('states')}
             />
