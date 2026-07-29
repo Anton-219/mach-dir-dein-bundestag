@@ -310,8 +310,7 @@ export function FilterPanel({
       </div>
 
       <p className="filter-help">
-        Every value starts included. Select a value to exclude it, and select it
-        again to include it.
+        Select an included value to exclude it. Select it again to include it.
       </p>
     </section>
   )
