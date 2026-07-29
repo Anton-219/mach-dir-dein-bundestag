@@ -311,7 +311,7 @@ export function FilterPanel({
       </div>
 
       <p className="filter-help">
-        Select an included value to exclude it. Select it again to include it.
+        All values start included. Select a value to exclude or include it.
       </p>
     </section>
   )
