@@ -46,7 +46,6 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
             className="coalition-list"
             aria-label="All minimal winning coalitions"
             aria-describedby="coalition-result-note"
-            tabIndex={0}
           >
             {coalitionRows.map((coalition, index) => (
               <article
