@@ -180,11 +180,7 @@ function App() {
 
           <div className="result-stage">
             <div className="parliament-panel">
-              <div
-                className="parliament-arc"
-                role="img"
-                aria-label="Placeholder for a semicircular Bundestag seat distribution"
-              >
+              <div className="parliament-arc" aria-hidden="true">
                 <div className="parliament-cutout">
                   <strong>630</strong>
                   <span>seats</span>
