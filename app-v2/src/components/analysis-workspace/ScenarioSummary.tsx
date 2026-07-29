@@ -1,4 +1,11 @@
-import type { DataState } from './types.ts'
+import {
+  countActiveFilterDimensions,
+  getActiveFilterSummaries,
+  summarizeFilterState,
+  type FilterDimension,
+  type FilterState,
+} from '../../lib/filters/index.ts'
+import type { DataState, ScenarioResult } from './types.ts'
 
 function DataStatus({ dataState }: { dataState: DataState }) {
   if (dataState.status === 'loading') {
@@ -26,12 +33,29 @@ function DataStatus({ dataState }: { dataState: DataState }) {
   )
 }
 
-export function ScenarioSummary({ dataState }: { dataState: DataState }) {
+interface ScenarioSummaryProps {
+  dataState: DataState
+  filters: FilterState
+  scenario?: ScenarioResult
+  onClearFilter: (dimension: FilterDimension) => void
+  onReset: () => void
+}
+
+export function ScenarioSummary({
+  dataState,
+  filters,
+  scenario,
+  onClearFilter,
+  onReset,
+}: ScenarioSummaryProps) {
+  const activeFilters = getActiveFilterSummaries(filters)
+  const activeCount = countActiveFilterDimensions(filters)
+
   return (
     <section className="scenario-summary" aria-labelledby="scenario-title">
       <div className="scenario-title-group">
         <p className="panel-kicker">Active scenario</p>
-        <h2 id="scenario-title">All voters in Germany</h2>
+        <h2 id="scenario-title">{summarizeFilterState(filters)}</h2>
       </div>
 
       <dl className="scenario-facts">
@@ -40,20 +64,53 @@ export function ScenarioSummary({ dataState }: { dataState: DataState }) {
           <dd>2021 confirmed result</dd>
         </div>
         <div>
-          <dt>Filters</dt>
-          <dd>None active</dd>
+          <dt>Included votes</dt>
+          <dd>
+            {scenario
+              ? `${scenario.includedVotes.toLocaleString('en-US')} · ${scenario.includedShare.toLocaleString('en-US', {
+                  style: 'percent',
+                  maximumFractionDigits: 1,
+                })}`
+              : '—'}
+          </dd>
         </div>
         <div>
           <dt>Parliament</dt>
-          <dd>630 seats</dd>
+          <dd>
+            {scenario
+              ? `${scenario.totalSeats} seats · ${scenario.majorityThreshold} majority`
+              : '—'}
+          </dd>
         </div>
       </dl>
 
       <DataStatus dataState={dataState} />
 
-      <button className="secondary-action" type="button" disabled>
+      <button
+        className="secondary-action"
+        type="button"
+        disabled={activeCount === 0}
+        onClick={onReset}
+      >
         Reset all filters
       </button>
+
+      {activeFilters.length > 0 ? (
+        <div className="active-filter-list" aria-label="Active filters">
+          {activeFilters.map((filter) => (
+            <button
+              className="active-filter"
+              type="button"
+              key={filter.dimension}
+              onClick={() => onClearFilter(filter.dimension)}
+              aria-label={`Remove filter: ${filter.label}`}
+            >
+              <span>{filter.label}</span>
+              <span aria-hidden="true">×</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
     </section>
   )
 }

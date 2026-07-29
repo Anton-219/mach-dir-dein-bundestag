@@ -1,6 +1,8 @@
-const coalitionRows = [1, 2, 3] as const
+import type { ScenarioResult } from './types.ts'
 
-export function CoalitionPanel() {
+export function CoalitionPanel({ scenario }: { scenario?: ScenarioResult }) {
+  const coalitionRows = scenario?.coalitions.slice(0, 3) ?? []
+
   return (
     <section
       className="workspace-panel coalition-panel"
@@ -11,24 +13,44 @@ export function CoalitionPanel() {
           <p className="panel-kicker">Majority options</p>
           <h2 id="coalitions-title">Coalitions</h2>
         </div>
-        <span className="panel-badge">316 needed</span>
+        <span className="panel-badge" aria-live="polite">
+          {scenario?.coalitions.length ?? 0} options
+        </span>
       </div>
 
-      <div className="coalition-list" aria-label="Coalition result placeholders">
-        {coalitionRows.map((position) => (
-          <div className="coalition-row" key={position}>
-            <span className="coalition-rank">0{position}</span>
-            <span className="coalition-combination">
-              <strong>Party combination</strong>
-              <small>Minimal winning coalition</small>
-            </span>
-            <span className="coalition-seat-count">—</span>
-          </div>
-        ))}
-      </div>
+      {coalitionRows.length > 0 ? (
+        <div className="coalition-list" aria-label="Coalition result preview">
+          {coalitionRows.map((coalition, index) => (
+            <div
+              className="coalition-row"
+              key={coalition.members
+                .map((member) => member.partyAbbreviation)
+                .join('-')}
+            >
+              <span className="coalition-rank">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="coalition-combination">
+                <strong>
+                  {coalition.members
+                    .map((member) => member.partyAbbreviation)
+                    .join(' + ')}
+                </strong>
+                <small>{coalition.surplus} seats above majority</small>
+              </span>
+              <span className="coalition-seat-count">{coalition.seats}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="result-empty" aria-live="polite">
+          No minimal winning coalition is available for the current scenario.
+        </p>
+      )}
 
       <p className="panel-placeholder-note">
-        Calculated members, seats, and majority margins arrive in Ticket 07.
+        Coalition calculations react to filters. Ticket 07 will add the final
+        prioritisation and graphical composition.
       </p>
     </section>
   )
