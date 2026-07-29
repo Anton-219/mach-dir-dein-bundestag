@@ -10,6 +10,14 @@ import {
   filterEligibleParties,
   filterVoteEntries,
 } from '../../src/lib/election/index.ts'
+import {
+  applyFilterState,
+  countActiveFilterDimensions,
+  countVotes,
+  EMPTY_FILTER_STATE,
+  summarizeFilterState,
+  toggleFilterValue,
+} from '../../src/lib/filters/index.ts'
 import type {
   ElectionResult,
   SeatResult,
@@ -71,6 +79,47 @@ test('applies all vote-entry filters without mutating the input', () => {
     ['SPD', 'UNKNOWN'],
   )
   assert.equal(entries.length, 4)
+})
+
+test('applies serializable filter state across all dimensions', () => {
+  const filters = {
+    states: ['Hamburg'],
+    ageGroups: ['25-34'],
+    genders: ['m'],
+    electionMethods: ['in-person'],
+  } as const
+
+  assert.deepEqual(
+    applyFilterState(entries, filters).map((entry) => entry.party),
+    ['SPD', 'UNKNOWN'],
+  )
+  assert.equal(countVotes(applyFilterState(entries, filters)), 50)
+  assert.equal(entries.length, 4)
+})
+
+test('treats empty serializable selections as all values included', () => {
+  assert.deepEqual(applyFilterState(entries, EMPTY_FILTER_STATE), entries)
+  assert.notStrictEqual(applyFilterState(entries, EMPTY_FILTER_STATE), entries)
+  assert.equal(countActiveFilterDimensions(EMPTY_FILTER_STATE), 0)
+  assert.equal(summarizeFilterState(EMPTY_FILTER_STATE), 'All voters in Germany')
+})
+
+test('toggles filter values and creates readable scenario summaries', () => {
+  const states = toggleFilterValue<string>([], 'Berlin')
+  const filters = {
+    ...EMPTY_FILTER_STATE,
+    states,
+    genders: ['w'] as const,
+    electionMethods: ['postal'] as const,
+  }
+
+  assert.deepEqual(states, ['Berlin'])
+  assert.deepEqual(toggleFilterValue(states, 'Berlin'), [])
+  assert.equal(countActiveFilterDimensions(filters), 3)
+  assert.equal(
+    summarizeFilterState(filters),
+    'Berlin · women · postal voting',
+  )
 })
 
 test('aggregates votes, percentages, and party positions in input order', () => {
