@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './styles.css'
 import './filter-styles.css'
-import './direct-filter-styles.css'
 
 const rootElement = document.getElementById('root')
 
