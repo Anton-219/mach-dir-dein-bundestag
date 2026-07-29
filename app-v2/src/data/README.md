@@ -11,4 +11,8 @@ The one-page rebuild loads the confirmed election datasets from `app-v2/public/d
 
 `germany_states_map.geo.json` is not copied in this ticket because the current `app-v2` one-page scope does not yet render a Germany map. It can be added unchanged if a later UI ticket adopts the legacy map.
 
-Only `src/data/loaders.ts` knows the concrete asset paths and the raw `districts_won` field. Presentation components consume typed application values, including the normalized `districtsWon` property.
+Only `src/data/loaders.ts` knows the concrete asset paths and raw field differences. Presentation components consume typed application values, including the normalized `districtsWon` property.
+
+## Known legacy normalization
+
+The final 24 SSW entries in `second_votes.json` contain the election method (`in-person` or `postal`) in `voteType` instead of the second-vote literal `2`. The legacy application hid this defect with a TypeScript assertion and did not validate the values at runtime. The copied JSON remains byte-for-byte unchanged; the loader narrowly recognizes these Schleswig-Holstein SSW records and normalizes their application-facing `voteType` to `2`.
