@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import type {
   AgeGroup,
   ElectionMethod,
@@ -66,7 +68,7 @@ function SelectionEditor<T extends string>({
   onClose: () => void
 }) {
   return (
-    <div className="filter-menu" id={id} role="group" aria-label={`${label} filter`}>
+    <div className="filter-menu" id={id}>
       <div className="filter-menu-heading">
         <div>
           <strong>{label}</strong>
@@ -110,7 +112,13 @@ function SelectionEditor<T extends string>({
 
       <fieldset className="filter-value-group">
         <legend>Values</legend>
-        <div className={wide ? 'filter-option-grid filter-option-grid-wide' : 'filter-option-grid'}>
+        <div
+          className={
+            wide
+              ? 'filter-option-grid filter-option-grid-wide'
+              : 'filter-option-grid'
+          }
+        >
           {options.map((option) => (
             <label className="filter-checkbox" key={option.value}>
               <input
@@ -159,13 +167,19 @@ function FilterControl({
   selectedCount: number
   openFilter: FilterDimension | null
   onOpenFilterChange: (dimension: FilterDimension | null) => void
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const isOpen = openFilter === dimension
   const menuId = `filter-menu-${dimension}`
 
   return (
-    <div className={isOpen ? 'filter-control-shell filter-control-shell-open' : 'filter-control-shell'}>
+    <div
+      className={
+        isOpen
+          ? 'filter-control-shell filter-control-shell-open'
+          : 'filter-control-shell'
+      }
+    >
       <button
         className="filter-control"
         type="button"
@@ -243,7 +257,9 @@ export function FilterPanel({
             label="Age group"
             selection={filters.ageGroups}
             options={ageGroupOptions}
-            onChange={(selection) => onChange({ ...filters, ageGroups: selection })}
+            onChange={(selection) =>
+              onChange({ ...filters, ageGroups: selection })
+            }
             onClose={closeEditor}
           />
         </FilterControl>
