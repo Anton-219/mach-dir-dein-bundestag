@@ -1,4 +1,26 @@
-export function GermanyMapPanel() {
+import {
+  describeStateSelection,
+  type FilterSelection,
+} from '../../lib/filters/index.ts'
+
+interface GermanyMapPanelProps {
+  selection: FilterSelection<string>
+  totalStateCount: number
+  onEditStates: () => void
+}
+
+export function GermanyMapPanel({
+  selection,
+  totalStateCount,
+  onEditStates,
+}: GermanyMapPanelProps) {
+  const includedStateCount =
+    selection.values.length === 0
+      ? totalStateCount
+      : selection.mode === 'include'
+        ? selection.values.length
+        : Math.max(totalStateCount - selection.values.length, 0)
+
   return (
     <section className="workspace-panel map-panel" aria-labelledby="map-title">
       <div className="panel-heading">
@@ -6,12 +28,16 @@ export function GermanyMapPanel() {
           <p className="panel-kicker">Regional selection</p>
           <h2 id="map-title">Germany map</h2>
         </div>
-        <span className="panel-badge">16 included</span>
+        <span className="panel-badge" aria-live="polite">
+          {includedStateCount} included
+        </span>
       </div>
 
       <div className="map-content">
         <svg
-          className="germany-map-placeholder"
+          className={selection.values.length === 0
+            ? 'germany-map-placeholder'
+            : 'germany-map-placeholder germany-map-filtered'}
           viewBox="0 0 220 260"
           aria-hidden="true"
           focusable="false"
@@ -30,13 +56,13 @@ export function GermanyMapPanel() {
         </svg>
 
         <div className="map-copy">
-          <strong>All federal states included</strong>
+          <strong>{describeStateSelection(selection)}</strong>
           <p>
-            The final labelled map and state-list alternative will share the same
-            filter state.
+            The map reflects the regional scenario. The labelled state editor is the
+            complete keyboard-accessible control.
           </p>
-          <button type="button" disabled>
-            Open state list
+          <button type="button" onClick={onEditStates}>
+            Edit state filter
           </button>
         </div>
       </div>
