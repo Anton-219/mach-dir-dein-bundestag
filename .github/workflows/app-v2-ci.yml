@@ -41,6 +41,9 @@ jobs:
       - name: Audit dependencies
         run: npm audit
 
+      - name: Test calculation modules
+        run: npm test
+
       - name: Lint application
         run: npm run lint
 
