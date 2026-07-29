@@ -1,9 +1,9 @@
-import type {CoalitionResult} from '../coalitions'
+import type { CoalitionResult } from '../coalitions/index.ts'
 import type {
     ElectionResult,
     SeatResult,
-    Party
-} from '../../models'
+} from '../../models/calculation-results.ts'
+import type { Party } from '../../models/json-contracts.ts'
 
 const FALLBACK_PARTY_COLOR = '#71838c'
 
