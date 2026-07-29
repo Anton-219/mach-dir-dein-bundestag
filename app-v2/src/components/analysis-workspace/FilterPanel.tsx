@@ -1,7 +1,7 @@
 import {
+  useCallback,
   useEffect,
   useRef,
-  type KeyboardEvent,
   type ReactNode,
   type RefObject,
 } from 'react'
@@ -114,33 +114,33 @@ function StateSelectionEditor({
   onChange: (excludedStates: readonly string[]) => void
   onClose: () => void
 }) {
-  const editorRef = useRef<HTMLDivElement>(null)
+  const editorRef = useRef<HTMLElement>(null)
   const includedCount = Math.max(options.length - excludedStates.length, 0)
 
   useEffect(() => {
     editorRef.current
       ?.querySelector<HTMLButtonElement>('button:not(:disabled)')
       ?.focus()
-  }, [])
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== 'Escape') {
-      return
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return
+      }
+
+      event.preventDefault()
+      onClose()
     }
 
-    event.preventDefault()
-    event.stopPropagation()
-    onClose()
-  }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
 
   return (
-    <div
+    <section
       className="filter-menu"
       id="filter-menu-states"
       ref={editorRef}
-      role="region"
       aria-labelledby="filter-menu-states-title"
-      onKeyDown={handleKeyDown}
     >
       <div className="filter-menu-heading">
         <div>
@@ -177,7 +177,7 @@ function StateSelectionEditor({
           Include all
         </button>
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -291,10 +291,10 @@ export function FilterPanel({
   const statesOpen = openFilter === 'states'
   const stateControlsAvailable = states.length > 0
 
-  const closeStateEditor = () => {
+  const closeStateEditor = useCallback(() => {
     onOpenFilterChange(null)
     requestAnimationFrame(() => stateTriggerRef.current?.focus())
-  }
+  }, [onOpenFilterChange])
 
   return (
     <section
