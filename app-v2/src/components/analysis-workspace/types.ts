@@ -10,7 +10,11 @@ export type DataState =
   | { status: 'ready'; data: ElectionData }
   | { status: 'error'; message: string }
 
+export type ScenarioStatus = 'ready' | 'empty' | 'invalid'
+
 export interface ScenarioResult {
+  status: ScenarioStatus
+  message?: string
   electionResults: readonly ElectionResult[]
   seatResults: readonly SeatResult[]
   coalitions: readonly CoalitionResult[]
