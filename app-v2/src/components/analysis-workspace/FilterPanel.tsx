@@ -1,4 +1,10 @@
-import type { ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 
 import type {
   AgeGroup,
@@ -63,7 +69,7 @@ function ValueToggleGroup<T extends string>({
 }) {
   return (
     <fieldset className="filter-value-group">
-      <legend className="visually-hidden">{label} included values</legend>
+      <legend className="visually-hidden">{label} values</legend>
       <div
         className={
           wide
@@ -108,13 +114,37 @@ function StateSelectionEditor({
   onChange: (excludedStates: readonly string[]) => void
   onClose: () => void
 }) {
+  const editorRef = useRef<HTMLDivElement>(null)
   const includedCount = Math.max(options.length - excludedStates.length, 0)
 
+  useEffect(() => {
+    editorRef.current
+      ?.querySelector<HTMLButtonElement>('button:not(:disabled)')
+      ?.focus()
+  }, [])
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Escape') {
+      return
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+    onClose()
+  }
+
   return (
-    <div className="filter-menu" id="filter-menu-states">
+    <div
+      className="filter-menu"
+      id="filter-menu-states"
+      ref={editorRef}
+      role="region"
+      aria-labelledby="filter-menu-states-title"
+      onKeyDown={handleKeyDown}
+    >
       <div className="filter-menu-heading">
         <div>
-          <strong>Federal state</strong>
+          <strong id="filter-menu-states-title">Federal state</strong>
           <span>Every state starts included. Select one to exclude it.</span>
         </div>
         <button
@@ -154,13 +184,17 @@ function StateSelectionEditor({
 function StateFilterControl({
   summary,
   excludedCount,
+  disabled,
   isOpen,
+  triggerRef,
   onOpenChange,
   children,
 }: {
   summary: string
   excludedCount: number
+  disabled: boolean
   isOpen: boolean
+  triggerRef: RefObject<HTMLButtonElement | null>
   onOpenChange: (isOpen: boolean) => void
   children: ReactNode
 }) {
@@ -175,7 +209,9 @@ function StateFilterControl({
       <button
         className="filter-control"
         type="button"
-        aria-expanded={isOpen}
+        ref={triggerRef}
+        disabled={disabled}
+        aria-expanded={disabled ? false : isOpen}
         aria-controls="filter-menu-states"
         onClick={() => onOpenChange(!isOpen)}
       >
@@ -184,13 +220,17 @@ function StateFilterControl({
           <small>{summary}</small>
         </span>
         <span className="filter-control-status">
-          {excludedCount === 0 ? 'All included' : `${excludedCount} excluded`}
+          {disabled
+            ? 'Unavailable'
+            : excludedCount === 0
+              ? 'All included'
+              : `${excludedCount} excluded`}
           <span className="filter-control-chevron" aria-hidden="true">
             ⌄
           </span>
         </span>
       </button>
-      {isOpen ? children : null}
+      {isOpen && !disabled ? children : null}
     </div>
   )
 }
@@ -247,10 +287,21 @@ export function FilterPanel({
   onChange,
   onOpenFilterChange,
 }: FilterPanelProps) {
+  const stateTriggerRef = useRef<HTMLButtonElement>(null)
   const statesOpen = openFilter === 'states'
+  const stateControlsAvailable = states.length > 0
+
+  const closeStateEditor = () => {
+    onOpenFilterChange(null)
+    requestAnimationFrame(() => stateTriggerRef.current?.focus())
+  }
 
   return (
-    <section className="workspace-panel filter-panel" aria-labelledby="filters-title">
+    <section
+      className="workspace-panel filter-panel"
+      aria-labelledby="filters-title"
+      aria-describedby="filter-help"
+    >
       <div className="panel-heading">
         <div>
           <p className="panel-kicker">Scenario controls</p>
@@ -263,9 +314,15 @@ export function FilterPanel({
 
       <div className="filter-list">
         <StateFilterControl
-          summary={describeStateSelection(filters.states)}
+          summary={
+            stateControlsAvailable
+              ? describeStateSelection(filters.states)
+              : 'State data is not available yet'
+          }
           excludedCount={filters.states.length}
+          disabled={!stateControlsAvailable}
           isOpen={statesOpen}
+          triggerRef={stateTriggerRef}
           onOpenChange={(isOpen) => onOpenFilterChange(isOpen ? 'states' : null)}
         >
           <StateSelectionEditor
@@ -274,7 +331,7 @@ export function FilterPanel({
             onChange={(excludedStates) =>
               onChange({ ...filters, states: excludedStates })
             }
-            onClose={() => onOpenFilterChange(null)}
+            onClose={closeStateEditor}
           />
         </StateFilterControl>
 
@@ -310,8 +367,9 @@ export function FilterPanel({
         />
       </div>
 
-      <p className="filter-help">
-        All values are included by default. Select one to toggle it.
+      <p className="filter-help" id="filter-help">
+        All values are included by default. Select one to toggle it. Press Escape to
+        close the federal state editor.
       </p>
     </section>
   )
