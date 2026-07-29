@@ -1,3 +1,8 @@
+import {
+  countActiveFilterDimensions,
+  summarizeFilterState,
+  type FilterState,
+} from '../../lib/filters/index.ts'
 import type { DataState } from './types.ts'
 
 function DataStatus({ dataState }: { dataState: DataState }) {
@@ -26,12 +31,29 @@ function DataStatus({ dataState }: { dataState: DataState }) {
   )
 }
 
-export function ScenarioSummary({ dataState }: { dataState: DataState }) {
+interface ScenarioSummaryProps {
+  dataState: DataState
+  filters: FilterState
+  includedVotes: number
+  totalVotes: number
+  onReset: () => void
+}
+
+export function ScenarioSummary({
+  dataState,
+  filters,
+  includedVotes,
+  totalVotes,
+  onReset,
+}: ScenarioSummaryProps) {
+  const activeDimensions = countActiveFilterDimensions(filters)
+  const includedShare = totalVotes === 0 ? 0 : includedVotes / totalVotes
+
   return (
     <section className="scenario-summary" aria-labelledby="scenario-title">
       <div className="scenario-title-group">
         <p className="panel-kicker">Active scenario</p>
-        <h2 id="scenario-title">All voters in Germany</h2>
+        <h2 id="scenario-title">{summarizeFilterState(filters)}</h2>
       </div>
 
       <dl className="scenario-facts">
@@ -41,17 +63,28 @@ export function ScenarioSummary({ dataState }: { dataState: DataState }) {
         </div>
         <div>
           <dt>Filters</dt>
-          <dd>None active</dd>
+          <dd>{activeDimensions === 0 ? 'None active' : `${activeDimensions} active`}</dd>
         </div>
         <div>
-          <dt>Parliament</dt>
-          <dd>630 seats</dd>
+          <dt>Included votes</dt>
+          <dd>
+            {includedVotes.toLocaleString('en-US')} ·{' '}
+            {includedShare.toLocaleString('en-US', {
+              style: 'percent',
+              maximumFractionDigits: 1,
+            })}
+          </dd>
         </div>
       </dl>
 
       <DataStatus dataState={dataState} />
 
-      <button className="secondary-action" type="button" disabled>
+      <button
+        className="secondary-action"
+        type="button"
+        disabled={activeDimensions === 0}
+        onClick={onReset}
+      >
         Reset all filters
       </button>
     </section>
