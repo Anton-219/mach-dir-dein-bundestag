@@ -114,7 +114,7 @@ function StateSelectionEditor({
       <div className="filter-menu-heading">
         <div>
           <strong>Federal state</strong>
-          <span>All states are included. Select a state to exclude it.</span>
+          <span>Every state starts included. Select one to exclude it.</span>
         </div>
         <button
           className="filter-menu-close"
