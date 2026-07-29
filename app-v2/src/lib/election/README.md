@@ -8,3 +8,4 @@ These modules isolate the deterministic behavior that previously lived in React 
 - `Sonstige` is an aggregate data bucket and is never allocated seats.
 - SSW is treated as an exempt minority party once it reaches 40,000 votes. The value comes from the legacy constant and approximates the votes needed for one seat; it is not asserted here as a legally exact threshold and should be replaced by a verified rule when the data-import follow-up is resolved.
 - Coalition calculation tests only whether combinations reach a numerical seat threshold. It does not encode political compatibility or named coalition conventions.
+- When both CDU and CSU have seat results, coalition calculation combines them as `CDU+CSU` before enumerating combinations, matching the legacy coalition-list flow. If only one is present, it remains unchanged.
