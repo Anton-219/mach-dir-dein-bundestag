@@ -83,6 +83,101 @@ a {
   outline-offset: 2px;
 }
 
+.germany-map-shell {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  gap: 0.45rem;
+}
+
+.germany-map {
+  width: min(100%, 12rem);
+  max-height: 13rem;
+  display: block;
+  overflow: visible;
+}
+
+.map-state {
+  cursor: pointer;
+}
+
+.map-state path {
+  fill: var(--accent-soft);
+  stroke: var(--panel-background);
+  stroke-linejoin: round;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  transition:
+    fill 140ms ease,
+    opacity 140ms ease,
+    stroke 140ms ease,
+    stroke-width 140ms ease;
+}
+
+.map-state-excluded path {
+  fill: url(#excluded-state-pattern);
+  stroke: var(--muted);
+  stroke-dasharray: 2 1.5;
+  opacity: 0.78;
+}
+
+.map-state:hover path,
+.map-state:focus-visible path {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  opacity: 1;
+}
+
+.map-state:focus-visible {
+  outline: none;
+}
+
+.map-pattern-background {
+  fill: var(--panel-muted);
+}
+
+.map-pattern-line {
+  stroke: var(--muted);
+  stroke-width: 2.5;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.65rem;
+  color: var(--muted);
+  font-size: 0.56rem;
+  font-weight: 700;
+}
+
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.map-legend i {
+  width: 0.75rem;
+  height: 0.75rem;
+  display: inline-block;
+  border: 1px solid var(--muted);
+  border-radius: 0.18rem;
+}
+
+.map-legend-included {
+  background: var(--accent-soft);
+}
+
+.map-legend-excluded {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--panel-muted) 0 3px,
+    var(--muted) 3px 4px
+  );
+}
+
 @media (max-width: 42rem) {
   .analysis-shell {
     padding: 0.55rem;
@@ -111,7 +206,11 @@ a {
   }
 
   .map-content {
-    grid-template-columns: minmax(6.5rem, 0.7fr) minmax(0, 1fr);
+    grid-template-columns: minmax(7.5rem, 0.8fr) minmax(0, 1fr);
+  }
+
+  .germany-map {
+    max-height: 12rem;
   }
 }
 
@@ -148,8 +247,9 @@ a {
     align-items: start;
   }
 
-  .germany-map-placeholder {
-    max-height: 10rem;
+  .germany-map {
+    width: min(100%, 10.5rem);
+    max-height: 11rem;
   }
 
   .filter-menu-actions {
