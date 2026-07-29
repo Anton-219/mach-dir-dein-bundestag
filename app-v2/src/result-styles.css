@@ -1,0 +1,331 @@
+.result-note {
+  margin: auto 0 0;
+  padding-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.61rem;
+  line-height: 1.4;
+}
+
+.result-empty {
+  min-height: 7rem;
+  display: grid;
+  place-content: center;
+  flex: 1;
+  margin-bottom: 0;
+  padding: 1rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: 0.7rem;
+  color: var(--muted);
+  background: var(--panel-muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.result-empty-error {
+  color: var(--danger);
+  border-color: rgb(132 43 43 / 35%);
+  background: rgb(132 43 43 / 5%);
+}
+
+.party-swatch {
+  width: 0.62rem;
+  height: 0.62rem;
+  flex: none;
+  border: 1px solid rgb(23 33 43 / 24%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 55%) inset;
+}
+
+.parliament-result {
+  min-height: 0;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.parliament-chart {
+  position: relative;
+  width: min(100%, 42rem);
+  margin: auto auto 0;
+}
+
+.parliament-chart svg {
+  width: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.parliament-track,
+.parliament-segment {
+  fill: none;
+  stroke-width: 25;
+}
+
+.parliament-track {
+  stroke: #e1e5e2;
+}
+
+.parliament-segment {
+  stroke-linecap: butt;
+  transition: opacity 160ms ease;
+}
+
+.parliament-segment:hover {
+  opacity: 0.72;
+}
+
+.majority-marker {
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 80%));
+}
+
+.parliament-chart .parliament-cutout {
+  bottom: 0;
+  width: 43%;
+  background: #fbfcfa;
+}
+
+.parliament-chart .parliament-cutout strong {
+  font-size: clamp(1.8rem, 4.6vw, 3.8rem);
+}
+
+.majority-axis strong {
+  color: var(--ink);
+}
+
+.parliament-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.parliament-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.42rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 78%);
+  font-size: 0.6rem;
+  white-space: nowrap;
+}
+
+.parliament-legend strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.parliament-note {
+  margin-top: 0;
+  text-align: center;
+}
+
+.party-panel .party-list {
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  padding-right: 0.12rem;
+}
+
+.party-panel .party-row {
+  grid-template-columns: minmax(7.5rem, 1.35fr) minmax(5.5rem, 0.9fr) auto;
+  gap: 0.55rem;
+  padding: 0.38rem 0.42rem;
+  border: 1px solid var(--border);
+  border-radius: 0.58rem;
+  background: var(--panel-muted);
+}
+
+.party-identity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+}
+
+.party-identity > span:last-child {
+  min-width: 0;
+  display: grid;
+  gap: 0.04rem;
+}
+
+.party-identity strong,
+.party-identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.party-identity strong {
+  font-size: 0.65rem;
+}
+
+.party-identity small {
+  color: var(--muted);
+  font-size: 0.52rem;
+}
+
+.party-share {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(2.8rem, 1fr) auto;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.party-share strong {
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.party-seats {
+  min-width: 2.4rem;
+  display: grid;
+  justify-items: end;
+  line-height: 1;
+}
+
+.party-seats strong {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.party-seats small {
+  margin-top: 0.14rem;
+  color: var(--muted);
+  font-size: 0.5rem;
+}
+
+.coalition-panel .coalition-list {
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  padding-right: 0.12rem;
+}
+
+.coalition-panel .coalition-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  padding: 0.48rem 0.52rem;
+}
+
+.coalition-members {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.coalition-member {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--panel-background);
+  font-size: 0.58rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.coalition-member .party-swatch {
+  width: 0.48rem;
+  height: 0.48rem;
+}
+
+.coalition-combination small {
+  margin-top: 0.12rem;
+}
+
+.coalition-metrics {
+  display: grid;
+  justify-items: end;
+  align-content: center;
+  line-height: 1;
+  text-align: right;
+}
+
+.coalition-metrics strong {
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.coalition-metrics > span {
+  margin-top: 0.12rem;
+  color: var(--muted);
+  font-size: 0.5rem;
+}
+
+.coalition-metrics small {
+  margin-top: 0.32rem;
+  color: var(--accent);
+  font-size: 0.52rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+@media (max-width: 70rem) {
+  .party-panel .party-row {
+    grid-template-columns: minmax(6rem, 1.2fr) minmax(4.5rem, 0.8fr) auto;
+  }
+
+  .party-identity small {
+    display: none;
+  }
+
+  .coalition-member {
+    font-size: 0.54rem;
+  }
+}
+
+@media (max-width: 42rem) {
+  .parliament-totals {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .parliament-legend {
+    justify-content: flex-start;
+  }
+
+  .party-panel .party-row {
+    grid-template-columns: minmax(7rem, 1fr) auto;
+  }
+
+  .party-share {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .party-identity small {
+    display: block;
+  }
+
+  .coalition-panel .coalition-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .coalition-metrics {
+    grid-column: 2;
+    grid-template-columns: auto auto 1fr;
+    gap: 0.2rem;
+    justify-items: start;
+    margin-top: 0.3rem;
+  }
+
+  .coalition-metrics small {
+    margin-top: 0;
+    justify-self: end;
+  }
+}
