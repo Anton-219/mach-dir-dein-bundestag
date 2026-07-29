@@ -7,7 +7,13 @@ import {
 } from '../../lib/filters/index.ts'
 import type { DataState, ScenarioResult } from './types.ts'
 
-function DataStatus({ dataState }: { dataState: DataState }) {
+function DataStatus({
+  dataState,
+  scenario,
+}: {
+  dataState: DataState
+  scenario?: ScenarioResult
+}) {
   if (dataState.status === 'loading') {
     return (
       <p className="scenario-data-status" aria-live="polite">
@@ -21,6 +27,23 @@ function DataStatus({ dataState }: { dataState: DataState }) {
       <p className="scenario-data-status scenario-data-status-error" role="alert">
         <strong>Election data could not be loaded.</strong>{' '}
         <span>{dataState.message}</span>
+      </p>
+    )
+  }
+
+  if (scenario?.status === 'invalid') {
+    return (
+      <p className="scenario-data-status scenario-data-status-error" role="alert">
+        <strong>Result could not be calculated.</strong>{' '}
+        <span>{scenario.message}</span>
+      </p>
+    )
+  }
+
+  if (scenario?.status === 'empty') {
+    return (
+      <p className="scenario-data-status" aria-live="polite">
+        <strong>No votes included.</strong> {scenario.message}
       </p>
     )
   }
@@ -50,6 +73,7 @@ export function ScenarioSummary({
 }: ScenarioSummaryProps) {
   const activeFilters = getActiveFilterSummaries(filters)
   const activeCount = countActiveFilterDimensions(filters)
+  const hasUsableVoteTotal = scenario && scenario.status !== 'invalid'
 
   return (
     <section className="scenario-summary" aria-labelledby="scenario-title">
@@ -66,7 +90,7 @@ export function ScenarioSummary({
         <div>
           <dt>Included votes</dt>
           <dd>
-            {scenario
+            {hasUsableVoteTotal
               ? `${scenario.includedVotes.toLocaleString('en-US')} · ${scenario.includedShare.toLocaleString('en-US', {
                   style: 'percent',
                   maximumFractionDigits: 1,
@@ -77,14 +101,16 @@ export function ScenarioSummary({
         <div>
           <dt>Parliament</dt>
           <dd>
-            {scenario
+            {scenario?.status === 'ready'
               ? `${scenario.totalSeats} seats · ${scenario.majorityThreshold} majority`
-              : '—'}
+              : scenario?.status === 'empty'
+                ? 'No included votes'
+                : '—'}
           </dd>
         </div>
       </dl>
 
-      <DataStatus dataState={dataState} />
+      <DataStatus dataState={dataState} scenario={scenario} />
 
       <button
         className="secondary-action"
