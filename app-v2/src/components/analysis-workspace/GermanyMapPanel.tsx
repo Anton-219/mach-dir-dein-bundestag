@@ -1,18 +1,35 @@
+import type { KeyboardEvent, MouseEvent } from 'react'
+
 import { describeStateSelection } from '../../lib/filters/index.ts'
+import {
+  buildGermanyStatePaths,
+  type GermanyStateFeature,
+} from '../../lib/map/germany-map.ts'
 
 interface GermanyMapPanelProps {
+  features: readonly GermanyStateFeature[]
   excludedStates: readonly string[]
-  totalStateCount: number
+  onToggleState: (state: string) => void
   onEditStates: () => void
 }
 
 export function GermanyMapPanel({
+  features,
   excludedStates,
-  totalStateCount,
+  onToggleState,
   onEditStates,
 }: GermanyMapPanelProps) {
-  const stateControlsAvailable = totalStateCount > 0
-  const includedStateCount = Math.max(totalStateCount - excludedStates.length, 0)
+  const statePaths = buildGermanyStatePaths(features)
+  const stateControlsAvailable = statePaths.length > 0
+  const includedStateCount = Math.max(statePaths.length - excludedStates.length, 0)
+
+  const activateState = (
+    event: MouseEvent<SVGAElement> | KeyboardEvent<SVGAElement>,
+    state: string,
+  ) => {
+    event.preventDefault()
+    onToggleState(state)
+  }
 
   return (
     <section className="workspace-panel map-panel" aria-labelledby="map-title">
@@ -27,28 +44,66 @@ export function GermanyMapPanel({
       </div>
 
       <div className="map-content">
-        <svg
-          className={
-            excludedStates.length === 0
-              ? 'germany-map-placeholder'
-              : 'germany-map-placeholder germany-map-filtered'
-          }
-          viewBox="0 0 220 260"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <path
-            className="germany-outline"
-            d="M91 9 119 18 132 38 151 43 148 65 169 81 157 102 174 117 163 139 174 158 157 177 159 202 137 213 128 244 105 251 91 230 70 229 62 207 42 196 46 173 31 157 42 136 29 119 44 101 40 80 60 67 61 42 82 34Z"
-          />
-          <path className="germany-boundary" d="M62 67 104 75 148 65" />
-          <path className="germany-boundary" d="M44 101 93 104 157 102" />
-          <path className="germany-boundary" d="M42 136 91 132 163 139" />
-          <path className="germany-boundary" d="M46 173 105 166 174 158" />
-          <path className="germany-boundary" d="M62 207 101 195 157 177" />
-          <path className="germany-boundary" d="M91 9 93 104 91 230" />
-          <path className="germany-boundary" d="M132 38 118 131 128 244" />
-        </svg>
+        {stateControlsAvailable ? (
+          <div className="germany-map-shell">
+            <svg
+              className="germany-map"
+              viewBox="0 0 220 260"
+              aria-labelledby="germany-map-title germany-map-description"
+            >
+              <title id="germany-map-title">Interactive map of German federal states</title>
+              <desc id="germany-map-description">
+                Select a federal state to include or exclude it from the active election
+                scenario. Included states are solid; excluded states use a hatched pattern.
+              </desc>
+              <defs>
+                <pattern
+                  id="excluded-state-pattern"
+                  width="8"
+                  height="8"
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="rotate(45)"
+                >
+                  <rect width="8" height="8" className="map-pattern-background" />
+                  <line x1="0" y1="0" x2="0" y2="8" className="map-pattern-line" />
+                </pattern>
+              </defs>
+
+              {statePaths.map((state) => {
+                const included = !excludedStates.includes(state.name)
+                const action = included ? 'exclude' : 'include'
+
+                return (
+                  <a
+                    className={included ? 'map-state map-state-included' : 'map-state map-state-excluded'}
+                    href="#filter-menu-states"
+                    aria-label={`${state.name}: ${included ? 'included' : 'excluded'}. Activate to ${action}.`}
+                    key={state.id}
+                    onClick={(event) => activateState(event, state.name)}
+                    onKeyDown={(event) => {
+                      if (event.key === ' ') {
+                        activateState(event, state.name)
+                      }
+                    }}
+                  >
+                    <path d={state.path} fillRule="evenodd">
+                      <title>
+                        {state.name}: {included ? 'included' : 'excluded'}
+                      </title>
+                    </path>
+                  </a>
+                )
+              })}
+            </svg>
+
+            <div className="map-legend" aria-hidden="true">
+              <span><i className="map-legend-included" />Included</span>
+              <span><i className="map-legend-excluded" />Excluded</span>
+            </div>
+          </div>
+        ) : (
+          <p className="result-empty">The federal-state map is not available yet.</p>
+        )}
 
         <div className="map-copy">
           <strong>
@@ -58,8 +113,8 @@ export function GermanyMapPanel({
           </strong>
           <p id="map-control-description">
             {stateControlsAvailable
-              ? 'The map reflects the regional scenario. The labelled state editor is the complete keyboard-accessible control.'
-              : 'The labelled state editor becomes available after the election data has loaded.'}
+              ? 'Select states directly on the map or use the labelled state editor. Both controls update the same filter.'
+              : 'The map and labelled state editor become available after the election data has loaded.'}
           </p>
           <button
             type="button"
