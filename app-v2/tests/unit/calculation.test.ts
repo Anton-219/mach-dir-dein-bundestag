@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { calculateMinimalWinningCoalitions } from '../../src/lib/coalitions/index.ts'
+import {
+  calculateMinimalWinningCoalitions,
+  normalizeCoalitionPartners,
+} from '../../src/lib/coalitions/index.ts'
 import {
   aggregateElectionResults,
   allocateSeats,
@@ -188,6 +191,43 @@ test('returns only the legacy minimal winning combinations', () => {
       { parties: ['B', 'C'], seats: 55, surplus: 4 },
     ],
   )
+})
+
+test('merges CDU and CSU before enumerating coalitions', () => {
+  const seats: SeatResult[] = [
+    { partyAbbreviation: 'CDU', seats: 20, seatPosition: 1 },
+    { partyAbbreviation: 'CSU', seats: 10, seatPosition: 2 },
+    { partyAbbreviation: 'SPD', seats: 25, seatPosition: 3 },
+    { partyAbbreviation: 'GRÜNE', seats: 20, seatPosition: 4 },
+  ]
+
+  const coalitions = calculateMinimalWinningCoalitions(seats, 41)
+
+  assert.deepEqual(
+    coalitions.map((coalition) => ({
+      parties: coalition.members.map((member) => member.partyAbbreviation),
+      seats: coalition.seats,
+    })),
+    [
+      { parties: ['CDU+CSU', 'SPD'], seats: 55 },
+      { parties: ['CDU+CSU', 'GRÜNE'], seats: 50 },
+      { parties: ['SPD', 'GRÜNE'], seats: 45 },
+    ],
+  )
+  assert.deepEqual(
+    seats.map((result) => result.partyAbbreviation),
+    ['CDU', 'CSU', 'SPD', 'GRÜNE'],
+  )
+})
+
+test('keeps a single CDU or CSU result unchanged', () => {
+  const seats: SeatResult[] = [
+    { partyAbbreviation: 'CSU', seats: 10, seatPosition: 1 },
+    { partyAbbreviation: 'SPD', seats: 20, seatPosition: 2 },
+  ]
+
+  assert.deepEqual(normalizeCoalitionPartners(seats), seats)
+  assert.notStrictEqual(normalizeCoalitionPartners(seats), seats)
 })
 
 test('returns no coalitions for an inactive threshold', () => {
