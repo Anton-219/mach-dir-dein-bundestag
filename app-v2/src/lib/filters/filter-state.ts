@@ -5,18 +5,11 @@ import type {
   VoteEntry,
 } from '../../models/json-contracts.ts'
 
-export type FilterMode = 'include' | 'exclude'
-
-export interface FilterSelection<T extends string> {
-  mode: FilterMode
-  values: readonly T[]
-}
-
 export interface FilterState {
-  states: FilterSelection<string>
-  ageGroups: FilterSelection<AgeGroup>
-  genders: FilterSelection<Gender>
-  electionMethods: FilterSelection<ElectionMethod>
+  states: readonly string[]
+  ageGroups: readonly AgeGroup[]
+  genders: readonly Gender[]
+  electionMethods: readonly ElectionMethod[]
 }
 
 export type FilterDimension = keyof FilterState
@@ -28,32 +21,22 @@ export interface ActiveFilterSummary {
 
 export function createEmptyFilterState(): FilterState {
   return {
-    states: { mode: 'include', values: [] },
-    ageGroups: { mode: 'include', values: [] },
-    genders: { mode: 'include', values: [] },
-    electionMethods: { mode: 'include', values: [] },
+    states: [],
+    ageGroups: [],
+    genders: [],
+    electionMethods: [],
   }
 }
 
 export const EMPTY_FILTER_STATE = createEmptyFilterState()
 
-export function toggleSelectionValue<T extends string>(
-  selection: FilterSelection<T>,
+export function toggleExcludedValue<T extends string>(
+  excludedValues: readonly T[],
   value: T,
-): FilterSelection<T> {
-  return {
-    ...selection,
-    values: selection.values.includes(value)
-      ? selection.values.filter((currentValue) => currentValue !== value)
-      : [...selection.values, value],
-  }
-}
-
-export function setSelectionMode<T extends string>(
-  selection: FilterSelection<T>,
-  mode: FilterMode,
-): FilterSelection<T> {
-  return { ...selection, mode }
+): readonly T[] {
+  return excludedValues.includes(value)
+    ? excludedValues.filter((currentValue) => currentValue !== value)
+    : [...excludedValues, value]
 }
 
 export function clearFilterDimension(
@@ -62,20 +45,8 @@ export function clearFilterDimension(
 ): FilterState {
   return {
     ...filters,
-    [dimension]: { mode: 'include', values: [] },
+    [dimension]: [],
   }
-}
-
-function matchesSelection<T extends string>(
-  value: T,
-  selection: FilterSelection<T>,
-): boolean {
-  if (selection.values.length === 0) {
-    return true
-  }
-
-  const selected = selection.values.includes(value)
-  return selection.mode === 'include' ? selected : !selected
 }
 
 export function applyFilterState(
@@ -84,10 +55,10 @@ export function applyFilterState(
 ): VoteEntry[] {
   return entries.filter(
     (entry) =>
-      matchesSelection(entry.state, filters.states) &&
-      matchesSelection(entry.ageGroup, filters.ageGroups) &&
-      matchesSelection(entry.gender, filters.genders) &&
-      matchesSelection(entry.electionMethod, filters.electionMethods),
+      !filters.states.includes(entry.state) &&
+      !filters.ageGroups.includes(entry.ageGroup) &&
+      !filters.genders.includes(entry.gender) &&
+      !filters.electionMethods.includes(entry.electionMethod),
   )
 }
 
@@ -96,7 +67,7 @@ export function countVotes(entries: readonly VoteEntry[]): number {
 }
 
 export function countActiveFilterDimensions(filters: FilterState): number {
-  return Object.values(filters).filter((selection) => selection.values.length > 0)
+  return Object.values(filters).filter((excludedValues) => excludedValues.length > 0)
     .length
 }
 
@@ -116,72 +87,52 @@ function formatAgeGroup(ageGroup: AgeGroup): string {
   return ageGroup.replace('-', '–')
 }
 
-export function describeStateSelection(
-  selection: FilterSelection<string>,
-): string {
-  if (selection.values.length === 0) {
-    return 'All federal states'
+export function describeStateSelection(excludedStates: readonly string[]): string {
+  if (excludedStates.length === 0) {
+    return 'All federal states included'
   }
 
-  if (selection.values.length > 2) {
-    return selection.mode === 'include'
-      ? `Only ${selection.values.length} federal states`
-      : `${selection.values.length} federal states excluded`
+  if (excludedStates.length > 2) {
+    return `${excludedStates.length} federal states excluded`
   }
 
-  const states = joinLabels(selection.values)
-  return selection.mode === 'include'
-    ? `Only ${states}`
-    : `${states} excluded`
+  return `${joinLabels(excludedStates)} excluded`
 }
 
 export function describeAgeGroupSelection(
-  selection: FilterSelection<AgeGroup>,
+  excludedAgeGroups: readonly AgeGroup[],
 ): string {
-  if (selection.values.length === 0) {
-    return 'All age groups'
+  if (excludedAgeGroups.length === 0) {
+    return 'All age groups included'
   }
 
-  if (selection.values.length > 2) {
-    return selection.mode === 'include'
-      ? `Only ${selection.values.length} age groups`
-      : `${selection.values.length} age groups excluded`
+  if (excludedAgeGroups.length > 2) {
+    return `${excludedAgeGroups.length} age groups excluded`
   }
 
-  const ageGroups = joinLabels(selection.values.map(formatAgeGroup))
-  return selection.mode === 'include'
-    ? `Only ages ${ageGroups}`
-    : `Ages ${ageGroups} excluded`
+  return `Ages ${joinLabels(excludedAgeGroups.map(formatAgeGroup))} excluded`
 }
 
-export function describeGenderSelection(
-  selection: FilterSelection<Gender>,
-): string {
-  if (selection.values.length === 0) {
-    return 'All recorded genders'
+export function describeGenderSelection(excludedGenders: readonly Gender[]): string {
+  if (excludedGenders.length === 0) {
+    return 'All recorded genders included'
   }
 
-  const labels = selection.values.map((value) => (value === 'm' ? 'Men' : 'Women'))
-  const genders = joinLabels(labels)
-  return selection.mode === 'include'
-    ? `${genders} only`
-    : `${genders} excluded`
+  const labels = excludedGenders.map((value) => (value === 'm' ? 'Men' : 'Women'))
+  return `${joinLabels(labels)} excluded`
 }
 
 export function describeElectionMethodSelection(
-  selection: FilterSelection<ElectionMethod>,
+  excludedMethods: readonly ElectionMethod[],
 ): string {
-  if (selection.values.length === 0) {
-    return 'Postal and in-person voting'
+  if (excludedMethods.length === 0) {
+    return 'Postal and in-person voting included'
   }
 
-  const labels = selection.values.map((value) =>
+  const labels = excludedMethods.map((value) =>
     value === 'postal' ? 'Postal voting' : 'In-person voting',
   )
-  const methods = joinLabels(labels)
-  return selection.mode === 'include'
-    ? `${methods} only`
-    : `${methods} excluded`
+  return `${joinLabels(labels)} excluded`
 }
 
 export function getActiveFilterSummaries(
@@ -189,25 +140,25 @@ export function getActiveFilterSummaries(
 ): ActiveFilterSummary[] {
   const summaries: ActiveFilterSummary[] = []
 
-  if (filters.states.values.length > 0) {
+  if (filters.states.length > 0) {
     summaries.push({
       dimension: 'states',
       label: describeStateSelection(filters.states),
     })
   }
-  if (filters.ageGroups.values.length > 0) {
+  if (filters.ageGroups.length > 0) {
     summaries.push({
       dimension: 'ageGroups',
       label: describeAgeGroupSelection(filters.ageGroups),
     })
   }
-  if (filters.genders.values.length > 0) {
+  if (filters.genders.length > 0) {
     summaries.push({
       dimension: 'genders',
       label: describeGenderSelection(filters.genders),
     })
   }
-  if (filters.electionMethods.values.length > 0) {
+  if (filters.electionMethods.length > 0) {
     summaries.push({
       dimension: 'electionMethods',
       label: describeElectionMethodSelection(filters.electionMethods),
