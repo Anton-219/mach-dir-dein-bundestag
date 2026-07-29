@@ -53,7 +53,6 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
           <div className="parliament-chart">
             <svg
               viewBox="0 0 184 104"
-              role="img"
               aria-labelledby="parliament-chart-title parliament-chart-description"
             >
               <title id="parliament-chart-title">Bundestag seat distribution</title>
