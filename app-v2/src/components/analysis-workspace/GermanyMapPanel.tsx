@@ -11,6 +11,7 @@ export function GermanyMapPanel({
   totalStateCount,
   onEditStates,
 }: GermanyMapPanelProps) {
+  const stateControlsAvailable = totalStateCount > 0
   const includedStateCount = Math.max(totalStateCount - excludedStates.length, 0)
 
   return (
@@ -20,8 +21,8 @@ export function GermanyMapPanel({
           <p className="panel-kicker">Regional selection</p>
           <h2 id="map-title">Germany map</h2>
         </div>
-        <span className="panel-badge" aria-live="polite">
-          {includedStateCount} included
+        <span className="panel-badge">
+          {stateControlsAvailable ? `${includedStateCount} included` : 'Unavailable'}
         </span>
       </div>
 
@@ -50,12 +51,22 @@ export function GermanyMapPanel({
         </svg>
 
         <div className="map-copy">
-          <strong>{describeStateSelection(excludedStates)}</strong>
-          <p>
-            The map reflects the regional scenario. The labelled state editor is the
-            complete keyboard-accessible control.
+          <strong>
+            {stateControlsAvailable
+              ? describeStateSelection(excludedStates)
+              : 'State data is not available yet'}
+          </strong>
+          <p id="map-control-description">
+            {stateControlsAvailable
+              ? 'The map reflects the regional scenario. The labelled state editor is the complete keyboard-accessible control.'
+              : 'The labelled state editor becomes available after the election data has loaded.'}
           </p>
-          <button type="button" onClick={onEditStates}>
+          <button
+            type="button"
+            disabled={!stateControlsAvailable}
+            aria-describedby="map-control-description"
+            onClick={onEditStates}
+          >
             Edit state filter
           </button>
         </div>
