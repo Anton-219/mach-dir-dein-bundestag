@@ -1,4 +1,5 @@
 import type { SeatResult } from '../../models/calculation-results.ts'
+import { normalizeCoalitionPartners } from './normalize-coalition-partners.ts'
 import type { CoalitionResult } from './types.ts'
 
 export function calculateMinimalWinningCoalitions(
@@ -12,7 +13,15 @@ export function calculateMinimalWinningCoalitions(
     throw new RangeError('The coalition threshold must be finite.')
   }
 
-  const sortedSeats = seatResults
+  for (const result of seatResults) {
+    if (!Number.isFinite(result.seats) || result.seats < 0) {
+      throw new RangeError(
+        `Seats for ${result.partyAbbreviation} must be finite and non-negative.`,
+      )
+    }
+  }
+
+  const sortedSeats = normalizeCoalitionPartners(seatResults)
     .map((result, inputIndex) => ({ result, inputIndex }))
     .sort(
       (left, right) =>
@@ -20,14 +29,6 @@ export function calculateMinimalWinningCoalitions(
         left.inputIndex - right.inputIndex,
     )
     .map(({ result }) => result)
-
-  for (const result of sortedSeats) {
-    if (!Number.isFinite(result.seats) || result.seats < 0) {
-      throw new RangeError(
-        `Seats for ${result.partyAbbreviation} must be finite and non-negative.`,
-      )
-    }
-  }
 
   const coalitions: CoalitionResult[] = []
 
