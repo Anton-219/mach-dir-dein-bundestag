@@ -10,6 +10,7 @@ import {
   clearFilterDimension,
   countVotes,
   createEmptyFilterState,
+  toggleExcludedValue,
   type FilterDimension,
   type FilterState,
 } from '../../lib/filters/index.ts'
@@ -174,7 +175,16 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     setOpenFilter(null)
   }
 
+  const toggleState = (state: string) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      states: toggleExcludedValue(currentFilters.states, state),
+    }))
+  }
+
   const parties = dataState.status === 'ready' ? dataState.data.parties : []
+  const germanyStates =
+    dataState.status === 'ready' ? dataState.data.germanyStates.features : []
 
   return (
     <div className="application-shell">
@@ -207,8 +217,9 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
               onOpenFilterChange={setOpenFilter}
             />
             <GermanyMapPanel
+              features={germanyStates}
               excludedStates={filters.states}
-              totalStateCount={availableStates.length}
+              onToggleState={toggleState}
               onEditStates={() => setOpenFilter('states')}
             />
           </div>
