@@ -24,7 +24,7 @@ export function GermanyMapPanel({
   const includedStateCount = Math.max(statePaths.length - excludedStates.length, 0)
 
   const activateState = (
-    event: MouseEvent<SVGAElement> | KeyboardEvent<SVGAElement>,
+    event: MouseEvent<HTMLAnchorElement> | KeyboardEvent<HTMLAnchorElement>,
     state: string,
   ) => {
     event.preventDefault()
@@ -75,7 +75,11 @@ export function GermanyMapPanel({
 
                 return (
                   <a
-                    className={included ? 'map-state map-state-included' : 'map-state map-state-excluded'}
+                    className={
+                      included
+                        ? 'map-state map-state-included'
+                        : 'map-state map-state-excluded'
+                    }
                     href="#filter-menu-states"
                     aria-label={`${state.name}: ${included ? 'included' : 'excluded'}. Activate to ${action}.`}
                     key={state.id}
@@ -97,8 +101,12 @@ export function GermanyMapPanel({
             </svg>
 
             <div className="map-legend" aria-hidden="true">
-              <span><i className="map-legend-included" />Included</span>
-              <span><i className="map-legend-excluded" />Excluded</span>
+              <span>
+                <i className="map-legend-included" />Included
+              </span>
+              <span>
+                <i className="map-legend-excluded" />Excluded
+              </span>
             </div>
           </div>
         ) : (
