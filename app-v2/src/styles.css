@@ -60,7 +60,7 @@ a:focus-visible {
 button:disabled {
   color: inherit;
   cursor: not-allowed;
-  opacity: 1;
+  opacity: 0.55;
 }
 
 h1,
@@ -210,8 +210,7 @@ h2 {
   color: var(--danger);
 }
 
-.secondary-action,
-.map-copy button {
+.secondary-action {
   min-height: 2rem;
   padding: 0.42rem 0.7rem;
   border: 1px solid var(--border-strong);
@@ -295,49 +294,67 @@ h2 {
 }
 
 .filter-list {
+  min-height: 0;
+  overflow: auto;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 
-.filter-control {
+.filter-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filter-group legend {
+  margin-bottom: 0.3rem;
+  color: var(--muted);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.filter-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.filter-option,
+.state-option {
   min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.55rem 0.6rem;
+  gap: 0.35rem;
+  padding: 0.42rem 0.5rem;
   border: 1px solid var(--border);
-  border-radius: 0.6rem;
+  border-radius: 0.55rem;
   background: var(--panel-muted);
+  color: var(--ink);
   text-align: left;
+  cursor: pointer;
 }
 
-.filter-control > span:first-child {
-  min-width: 0;
-  display: grid;
-  gap: 0.12rem;
+.filter-option[aria-pressed="true"],
+.state-option[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
-.filter-control strong,
-.filter-control small {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.filter-option {
+  font-size: 0.65rem;
+  font-weight: 700;
 }
 
-.filter-control strong {
-  font-size: 0.67rem;
-}
-
-.filter-control small {
+.filter-option span,
+.state-option small {
+  flex: none;
   color: var(--muted);
-  font-size: 0.61rem;
-}
-
-.filter-control > span:last-child {
-  color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.52rem;
+  font-weight: 700;
 }
 
 .map-content {
@@ -370,21 +387,22 @@ h2 {
   stroke-width: 1.5;
 }
 
-.map-copy strong {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.72rem;
+.state-list {
+  min-height: 0;
+  max-height: 100%;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem;
 }
 
-.map-copy p {
-  margin-bottom: 0.65rem;
-  color: var(--muted);
-  font-size: 0.64rem;
-  line-height: 1.4;
-}
-
-.map-copy button {
-  width: 100%;
+.state-option span {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .parliament-panel {
@@ -430,134 +448,97 @@ h2 {
   width: min(100%, 42rem);
   aspect-ratio: 2 / 1;
   overflow: hidden;
-  border-radius: 28rem 28rem 0.7rem 0.7rem;
+  border-radius: 24rem 24rem 0 0;
   background:
-    repeating-radial-gradient(
-      circle at 50% 100%,
-      transparent 0 10%,
-      rgb(255 255 255 / 28%) 10.3% 11%,
-      transparent 11.3% 17%
-    ),
-    conic-gradient(
+    repeating-conic-gradient(
       from 270deg at 50% 100%,
-      #536b7a 0deg 35deg,
-      #788995 35deg 68deg,
-      #a6b0b4 68deg 97deg,
-      #cbd0cd 97deg 124deg,
-      #88969d 124deg 153deg,
-      #354f61 153deg 180deg,
-      transparent 180deg 360deg
+      var(--accent) 0 0.7deg,
+      transparent 0.7deg 1.1deg
     );
-  box-shadow: inset 0 -1px 0 rgb(23 33 43 / 15%);
 }
 
 .parliament-cutout {
   position: absolute;
-  left: 50%;
-  bottom: -1px;
-  width: 42%;
-  aspect-ratio: 2 / 1;
+  inset: 40% 20% -1px;
   display: grid;
-  place-content: center;
-  padding-top: 0.8rem;
-  transform: translateX(-50%);
-  border-radius: 14rem 14rem 0 0;
+  place-content: end center;
+  padding-bottom: 0.8rem;
+  border-radius: 22rem 22rem 0 0;
   background: #fbfcfa;
   text-align: center;
 }
 
 .parliament-cutout strong {
-  font-size: clamp(2rem, 5vw, 4.2rem);
-  line-height: 0.9;
-  letter-spacing: -0.065em;
+  font-size: clamp(2rem, 6vw, 4.25rem);
+  line-height: 0.85;
+  letter-spacing: -0.08em;
 }
 
-.parliament-cutout span {
-  margin-top: 0.35rem;
+.parliament-cutout span,
+.majority-axis {
   color: var(--muted);
-  font-size: 0.6rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  font-size: 0.64rem;
+  font-weight: 750;
 }
 
 .majority-axis {
-  display: block;
-  width: min(100%, 42rem);
-  margin: 0.8rem auto 0;
-  padding-top: 0.55rem;
-  border-top: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 0.65rem;
-  font-weight: 700;
+  margin-top: 0.65rem;
   text-align: center;
 }
 
 .parliament-note {
-  margin-top: 0;
   text-align: center;
 }
 
-.party-list {
+.party-list,
+.coalition-list {
   min-height: 0;
+  overflow: auto;
   display: grid;
-  gap: 0.48rem;
-  flex: 1;
+  gap: 0.35rem;
 }
 
 .party-row {
-  min-width: 0;
   display: grid;
-  grid-template-columns: minmax(5.7rem, 1fr) minmax(3.5rem, 0.85fr) auto;
-  gap: 0.45rem;
+  grid-template-columns: minmax(6rem, 1fr) minmax(4rem, 1fr) auto;
+  gap: 0.5rem;
   align-items: center;
-  font-size: 0.62rem;
+  padding: 0.42rem 0;
+  border-bottom: 1px solid var(--border);
 }
 
-.party-name {
-  overflow: hidden;
-  font-weight: 750;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.party-name,
+.party-value {
+  font-size: 0.64rem;
+  font-weight: 700;
 }
 
 .party-track {
-  height: 0.34rem;
+  height: 0.35rem;
   overflow: hidden;
   border-radius: 999px;
-  background: #dde2df;
+  background: var(--panel-strong);
 }
 
 .party-fill {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #71838c;
+  background: var(--accent);
 }
 
 .party-value {
   color: var(--muted);
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-.coalition-list {
-  min-height: 0;
-  display: grid;
-  gap: 0.42rem;
-  flex: 1;
-}
-
 .coalition-row {
-  min-width: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0.55rem;
   align-items: center;
-  padding: 0.48rem;
-  border: 1px solid var(--border);
-  border-radius: 0.58rem;
-  background: var(--panel-muted);
+  padding: 0.52rem 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .coalition-rank {
@@ -569,183 +550,92 @@ h2 {
 .coalition-combination {
   min-width: 0;
   display: grid;
-  gap: 0.08rem;
+  gap: 0.1rem;
 }
 
 .coalition-combination strong,
-.coalition-combination small {
+.coalition-combination small,
+.coalition-seat-count {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.coalition-combination strong {
-  font-size: 0.64rem;
+.coalition-combination strong,
+.coalition-seat-count {
+  font-size: 0.65rem;
 }
 
 .coalition-combination small {
   color: var(--muted);
-  font-size: 0.56rem;
+  font-size: 0.57rem;
 }
 
 .coalition-seat-count {
-  color: var(--muted);
-  font-size: 0.65rem;
   font-weight: 800;
 }
 
 .application-footer {
-  min-height: 2rem;
-  display: flex;
-  align-items: center;
-  padding: 0.4rem 1rem;
-  border-top: 1px solid var(--border);
-  background: #f7f8f6;
+  padding: 0.45rem 0.8rem 0.6rem;
+  color: var(--muted);
+  font-size: 0.62rem;
+  line-height: 1.4;
 }
 
 .application-footer p {
   margin-bottom: 0;
-  color: var(--muted);
-  font-size: 0.62rem;
-  line-height: 1.35;
 }
 
-.application-footer strong {
-  color: var(--ink);
-}
-
-@media (max-width: 70rem) {
-  .workspace-header {
-    grid-template-columns: minmax(13rem, 0.8fr) minmax(19rem, 1.2fr) auto;
-    gap: 0.9rem;
-  }
-
+@media (max-width: 1100px) {
+  .workspace-header,
   .scenario-summary {
-    grid-template-columns: minmax(11rem, 0.85fr) minmax(20rem, 1.5fr) minmax(12rem, 0.9fr) auto;
-    gap: 0.65rem;
-  }
-
-  .analysis-workspace {
-    grid-template-columns:
-      minmax(13rem, 0.78fr)
-      minmax(23rem, 1.4fr)
-      minmax(14rem, 0.9fr);
-  }
-
-  .workspace-panel {
-    padding: 0.72rem;
-  }
-
-  .map-content {
-    grid-template-columns: minmax(6.5rem, 0.8fr) minmax(5.5rem, 1fr);
-    gap: 0.55rem;
-  }
-}
-
-@media (max-width: 58rem), (max-height: 43rem) {
-  .application-shell {
-    min-height: 100vh;
-    display: block;
-  }
-
-  .workspace-header {
     grid-template-columns: 1fr auto;
   }
 
-  .workspace-introduction {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  .analysis-shell {
-    display: block;
-  }
-
-  .scenario-summary {
-    grid-template-columns: 1fr 1.7fr auto;
-    margin-bottom: 0.65rem;
-  }
-
-  .scenario-data-status {
+  .workspace-introduction,
+  .scenario-facts {
     grid-column: 1 / -1;
   }
 
   .analysis-workspace {
-    min-height: 44rem;
-    grid-template-columns: minmax(14rem, 0.85fr) minmax(24rem, 1.4fr);
+    grid-template-columns: minmax(13rem, 0.8fr) minmax(24rem, 1.5fr);
   }
 
   .workspace-column-right {
     grid-column: 1 / -1;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: minmax(14rem, auto);
-  }
-
-  .application-footer {
-    margin-top: 0.2rem;
+    grid-template-rows: none;
   }
 }
 
-@media (max-width: 42rem) {
-  .workspace-header {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .workspace-introduction {
-    order: 3;
-    width: 100%;
-  }
-
-  .methodology-link {
-    margin-left: auto;
-  }
-
-  .scenario-summary {
+@media (max-width: 760px) {
+  .workspace-header,
+  .scenario-summary,
+  .analysis-workspace,
+  .workspace-column-right {
     display: grid;
-    grid-template-columns: 1fr auto;
-  }
-
-  .scenario-facts,
-  .scenario-data-status {
-    grid-column: 1 / -1;
-  }
-
-  .scenario-facts {
     grid-template-columns: 1fr;
-  }
-
-  .scenario-facts div {
-    padding: 0.3rem 0 0;
-    border-top: 1px solid var(--border);
-    border-left: 0;
   }
 
   .analysis-workspace,
+  .workspace-column,
+  .workspace-column-left,
   .workspace-column-right {
-    min-height: auto;
-    display: grid;
+    grid-template-rows: none;
+  }
+
+  .scenario-facts,
+  .filter-options,
+  .state-list,
+  .map-content {
     grid-template-columns: 1fr;
   }
 
-  .workspace-column-left,
-  .workspace-column-right {
-    grid-template-rows: auto;
+  .analysis-shell {
+    overflow: visible;
   }
 
   .workspace-panel {
     min-height: 18rem;
-  }
-
-  .filter-list {
-    grid-template-columns: 1fr;
-  }
-
-  .parliament-panel {
-    min-height: 24rem;
-  }
-
-  .application-footer {
-    padding-block: 0.65rem;
   }
 }
