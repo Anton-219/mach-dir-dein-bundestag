@@ -22,6 +22,29 @@ import { ScenarioSummary } from './ScenarioSummary.tsx'
 import type { DataState, ScenarioResult } from './types.ts'
 import { WorkspaceHeader } from './WorkspaceHeader.tsx'
 
+function createUnavailableScenario(
+  status: 'empty' | 'invalid',
+  message: string,
+  includedVotes: number,
+  totalVotes: number,
+): ScenarioResult {
+  return {
+    status,
+    message,
+    electionResults: [],
+    seatResults: [],
+    coalitions: [],
+    includedVotes,
+    totalVotes,
+    includedShare:
+      totalVotes > 0 && Number.isFinite(includedVotes / totalVotes)
+        ? includedVotes / totalVotes
+        : 0,
+    totalSeats: 0,
+    majorityThreshold: 0,
+  }
+}
+
 export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
@@ -39,33 +62,110 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
       return undefined
     }
 
-    const filteredVotes = applyFilterState(dataState.data.secondVotes, filters)
-    const electionResults = aggregateElectionResults(
-      filteredVotes,
-      dataState.data.parties,
-    )
-    const seatResults = allocateSeats(
-      electionResults,
-      dataState.data.directMandates,
-    )
-    const includedVotes = countVotes(filteredVotes)
-    const totalVotes = countVotes(dataState.data.secondVotes)
-    const totalSeats = seatResults.reduce((total, result) => total + result.seats, 0)
-    const majorityThreshold = totalSeats === 0 ? 0 : Math.floor(totalSeats / 2) + 1
-    const coalitions = calculateMinimalWinningCoalitions(
-      seatResults,
-      majorityThreshold,
-    )
+    let includedVotes = 0
+    let totalVotes = 0
 
-    return {
-      electionResults,
-      seatResults,
-      coalitions,
-      includedVotes,
-      totalVotes,
-      includedShare: totalVotes === 0 ? 0 : includedVotes / totalVotes,
-      totalSeats,
-      majorityThreshold,
+    try {
+      const filteredVotes = applyFilterState(dataState.data.secondVotes, filters)
+      includedVotes = countVotes(filteredVotes)
+      totalVotes = countVotes(dataState.data.secondVotes)
+
+      if (!Number.isFinite(totalVotes) || totalVotes <= 0) {
+        return createUnavailableScenario(
+          'invalid',
+          'The election data contains no usable second votes.',
+          0,
+          0,
+        )
+      }
+
+      if (!Number.isFinite(includedVotes) || includedVotes < 0) {
+        return createUnavailableScenario(
+          'invalid',
+          'The active filters produced an invalid vote total.',
+          0,
+          totalVotes,
+        )
+      }
+
+      if (includedVotes === 0) {
+        return createUnavailableScenario(
+          'empty',
+          'No votes are included. Re-enable at least one value in the filters.',
+          includedVotes,
+          totalVotes,
+        )
+      }
+
+      const electionResults = aggregateElectionResults(
+        filteredVotes,
+        dataState.data.parties,
+      )
+      const seatResults = allocateSeats(
+        electionResults,
+        dataState.data.directMandates,
+      )
+      const totalSeats = seatResults.reduce(
+        (total, result) => total + result.seats,
+        0,
+      )
+      const majorityThreshold = Math.floor(totalSeats / 2) + 1
+
+      const hasInvalidElectionResult = electionResults.some(
+        (result) =>
+          !Number.isFinite(result.votes) ||
+          result.votes < 0 ||
+          !Number.isFinite(result.percentage) ||
+          result.percentage < 0,
+      )
+      const hasInvalidSeatResult = seatResults.some(
+        (result) =>
+          !Number.isInteger(result.seats) ||
+          result.seats < 0 ||
+          !Number.isFinite(result.seatPosition),
+      )
+
+      if (
+        hasInvalidElectionResult ||
+        hasInvalidSeatResult ||
+        !Number.isInteger(totalSeats) ||
+        totalSeats <= 0 ||
+        !Number.isInteger(majorityThreshold) ||
+        majorityThreshold <= 0
+      ) {
+        return createUnavailableScenario(
+          'invalid',
+          'The active scenario produced an invalid parliamentary result.',
+          includedVotes,
+          totalVotes,
+        )
+      }
+
+      const coalitions = calculateMinimalWinningCoalitions(
+        seatResults,
+        majorityThreshold,
+      )
+
+      return {
+        status: 'ready',
+        electionResults,
+        seatResults,
+        coalitions,
+        includedVotes,
+        totalVotes,
+        includedShare: includedVotes / totalVotes,
+        totalSeats,
+        majorityThreshold,
+      }
+    } catch (error) {
+      const detail = error instanceof Error ? ` ${error.message}` : ''
+
+      return createUnavailableScenario(
+        'invalid',
+        `The active scenario could not be calculated.${detail}`,
+        includedVotes,
+        totalVotes,
+      )
     }
   }, [dataState, filters])
 
@@ -73,6 +173,8 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     setFilters(createEmptyFilterState())
     setOpenFilter(null)
   }
+
+  const parties = dataState.status === 'ready' ? dataState.data.parties : []
 
   return (
     <div className="application-shell">
@@ -107,14 +209,11 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
             />
           </div>
 
-          <ParliamentPanel scenario={scenario} />
+          <ParliamentPanel parties={parties} scenario={scenario} />
 
           <div className="workspace-column workspace-column-right">
-            <PartySummaryPanel
-              parties={dataState.status === 'ready' ? dataState.data.parties : []}
-              scenario={scenario}
-            />
-            <CoalitionPanel scenario={scenario} />
+            <PartySummaryPanel parties={parties} scenario={scenario} />
+            <CoalitionPanel parties={parties} scenario={scenario} />
           </div>
         </div>
       </main>
