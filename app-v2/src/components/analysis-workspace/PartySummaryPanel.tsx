@@ -1,3 +1,5 @@
+/* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- The fixed-height result list must remain keyboard-scrollable. */
+
 import {
   buildPresentedPartyResults,
   sortPartyResultsBySeats,
@@ -42,7 +44,6 @@ export function PartySummaryPanel({
       {partyRows.length > 0 ? (
         <ul
           className="party-list"
-          role="region"
           tabIndex={0}
           aria-labelledby="parties-title"
           aria-describedby="party-result-note"
