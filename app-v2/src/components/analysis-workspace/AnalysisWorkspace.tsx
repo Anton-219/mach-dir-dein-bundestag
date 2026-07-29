@@ -6,12 +6,11 @@ import {
   EMPTY_FILTER_STATE,
   type FilterState,
 } from '../../lib/filters/index.ts'
-import { aggregateElectionResults, allocateSeats } from '../../lib/election/index.ts'
-import { CoalitionPanel } from './CoalitionPanel.tsx'
 import { FilterPanel } from './FilterPanel.tsx'
 import { GermanyMapPanel } from './GermanyMapPanel.tsx'
 import { ParliamentPanel } from './ParliamentPanel.tsx'
 import { PartySummaryPanel } from './PartySummaryPanel.tsx'
+import { CoalitionPanel } from './CoalitionPanel.tsx'
 import { ScenarioSummary } from './ScenarioSummary.tsx'
 import type { DataState } from './types.ts'
 import { WorkspaceHeader } from './WorkspaceHeader.tsx'
@@ -25,16 +24,8 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     }
 
     const filteredVotes = applyFilterState(dataState.data.secondVotes, filters)
-    const electionResults = aggregateElectionResults(
-      filteredVotes,
-      dataState.data.parties,
-    )
-    const seatResults = allocateSeats(electionResults, dataState.data.directMandates)
 
     return {
-      filteredVotes,
-      electionResults,
-      seatResults,
       includedVotes: countVotes(filteredVotes),
       totalVotes: countVotes(dataState.data.secondVotes),
       states: [...new Set(dataState.data.secondVotes.map((entry) => entry.state))].sort(),
@@ -64,10 +55,10 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
             />
           </div>
 
-          <ParliamentPanel seatResults={scenario?.seatResults ?? []} />
+          <ParliamentPanel />
 
           <div className="workspace-column workspace-column-right">
-            <PartySummaryPanel results={scenario?.electionResults ?? []} />
+            <PartySummaryPanel />
             <CoalitionPanel />
           </div>
         </div>
