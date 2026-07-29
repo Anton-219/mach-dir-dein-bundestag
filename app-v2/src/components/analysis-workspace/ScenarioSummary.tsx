@@ -73,7 +73,10 @@ export function ScenarioSummary({
 }: ScenarioSummaryProps) {
   const activeFilters = getActiveFilterSummaries(filters)
   const activeCount = countActiveFilterDimensions(filters)
-  const hasUsableVoteTotal = scenario && scenario.status !== 'invalid'
+  const voteScenario =
+    scenario?.status === 'ready' || scenario?.status === 'empty'
+      ? scenario
+      : undefined
 
   return (
     <section className="scenario-summary" aria-labelledby="scenario-title">
@@ -90,8 +93,8 @@ export function ScenarioSummary({
         <div>
           <dt>Included votes</dt>
           <dd>
-            {hasUsableVoteTotal
-              ? `${scenario.includedVotes.toLocaleString('en-US')} · ${scenario.includedShare.toLocaleString('en-US', {
+            {voteScenario
+              ? `${voteScenario.includedVotes.toLocaleString('en-US')} · ${voteScenario.includedShare.toLocaleString('en-US', {
                   style: 'percent',
                   maximumFractionDigits: 1,
                 })}`
