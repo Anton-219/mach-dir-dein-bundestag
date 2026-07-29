@@ -1,3 +1,7 @@
+import {
+  buildPresentedPartyResults,
+  sortPartyResultsBySeats,
+} from '../../lib/results/presentation.ts'
 import type { Party } from '../../models/json-contracts.ts'
 import type { ScenarioResult } from './types.ts'
 
@@ -10,26 +14,18 @@ export function PartySummaryPanel({
   parties,
   scenario,
 }: PartySummaryPanelProps) {
-  const partiesByAbbreviation = new Map(
-    parties.map((party) => [party.abbreviation, party]),
-  )
-  const electionResultsByParty = new Map(
-    scenario?.electionResults.map((result) => [result.partyAbbreviation, result]) ?? [],
-  )
   const partyRows =
-    scenario?.seatResults
-      .filter((result) => result.seats > 0)
-      .map((seatResult) => ({
-        seatResult,
-        electionResult: electionResultsByParty.get(seatResult.partyAbbreviation),
-        party: partiesByAbbreviation.get(seatResult.partyAbbreviation),
-      }))
-      .sort(
-        (left, right) =>
-          right.seatResult.seats - left.seatResult.seats ||
-          (right.electionResult?.votes ?? 0) - (left.electionResult?.votes ?? 0),
-      )
-      .slice(0, 6) ?? []
+    scenario?.status === 'ready'
+      ? sortPartyResultsBySeats(
+          buildPresentedPartyResults(
+            parties,
+            scenario.electionResults,
+            scenario.seatResults,
+          ),
+        )
+      : []
+  const resultMessage =
+    scenario?.message ?? 'Results are unavailable until the election data has loaded.'
 
   return (
     <section className="workspace-panel party-panel" aria-labelledby="parties-title">
@@ -38,44 +34,68 @@ export function PartySummaryPanel({
           <p className="panel-kicker">Current result</p>
           <h2 id="parties-title">Parties</h2>
         </div>
-        <span className="panel-badge">Live preview</span>
+        <span className="panel-badge" aria-live="polite">
+          {partyRows.length > 0 ? `${partyRows.length} represented` : 'No result'}
+        </span>
       </div>
 
       {partyRows.length > 0 ? (
-        <div className="party-list" aria-label="Current party result preview" aria-live="polite">
-          {partyRows.map(({ seatResult, electionResult, party }) => {
-            const percentage = electionResult?.percentage ?? 0
-            const label = party?.name ?? seatResult.partyAbbreviation
+        <div className="party-list" aria-label="Current party results" aria-live="polite">
+          {partyRows.map((result) => {
+            const percentage = Math.min(Math.max(result.percentage, 0), 1)
 
             return (
-              <div className="party-row" key={seatResult.partyAbbreviation}>
-                <span className="party-name">{label}</span>
-                <span className="party-track" aria-hidden="true">
+              <div className="party-row" key={result.abbreviation}>
+                <span className="party-identity">
                   <span
-                    className="party-fill"
-                    style={{ width: `${Math.min(percentage * 100, 100)}%` }}
+                    className="party-swatch"
+                    style={{ backgroundColor: result.color }}
+                    aria-hidden="true"
                   />
+                  <span>
+                    <strong>{result.abbreviation}</strong>
+                    <small title={result.name}>{result.name}</small>
+                  </span>
                 </span>
-                <span className="party-value">
-                  {percentage.toLocaleString('en-US', {
-                    style: 'percent',
-                    maximumFractionDigits: 1,
-                  })}{' '}
-                  · {seatResult.seats}
+
+                <span className="party-share">
+                  <span className="party-track" aria-hidden="true">
+                    <span
+                      className="party-fill"
+                      style={{
+                        width: `${percentage * 100}%`,
+                        backgroundColor: result.color,
+                      }}
+                    />
+                  </span>
+                  <strong>
+                    {percentage.toLocaleString('en-US', {
+                      style: 'percent',
+                      maximumFractionDigits: 1,
+                    })}
+                  </strong>
+                </span>
+
+                <span className="party-seats">
+                  <strong>{result.seats}</strong>
+                  <small>seats</small>
                 </span>
               </div>
             )
           })}
         </div>
       ) : (
-        <p className="result-empty" aria-live="polite">
-          No party result is available for the current scenario.
+        <p
+          className={`result-empty${scenario?.status === 'invalid' ? ' result-empty-error' : ''}`}
+          aria-live="polite"
+        >
+          {resultMessage}
         </p>
       )}
 
-      <p className="panel-placeholder-note">
-        Vote shares and seat counts already react to filters. Ticket 07 will provide
-        the final result hierarchy and comparison details.
+      <p className="result-note">
+        Rows include every party with seats and are ordered by seat count. Labels and
+        numbers carry the result independently of party color.
       </p>
     </section>
   )
