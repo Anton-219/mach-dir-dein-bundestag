@@ -34,18 +34,28 @@ export function PartySummaryPanel({
           <p className="panel-kicker">Current result</p>
           <h2 id="parties-title">Parties</h2>
         </div>
-        <span className="panel-badge" aria-live="polite">
+        <span className="panel-badge">
           {partyRows.length > 0 ? `${partyRows.length} represented` : 'No result'}
         </span>
       </div>
 
       {partyRows.length > 0 ? (
-        <div className="party-list" aria-label="Current party results" aria-live="polite">
+        <ul
+          className="party-list"
+          role="region"
+          tabIndex={0}
+          aria-labelledby="parties-title"
+          aria-describedby="party-result-note"
+        >
           {partyRows.map((result) => {
             const percentage = Math.min(Math.max(result.percentage, 0), 1)
+            const formattedPercentage = percentage.toLocaleString('en-US', {
+              style: 'percent',
+              maximumFractionDigits: 1,
+            })
 
             return (
-              <div className="party-row" key={result.abbreviation}>
+              <li className="party-row" key={result.abbreviation}>
                 <span className="party-identity">
                   <span
                     className="party-swatch"
@@ -53,8 +63,13 @@ export function PartySummaryPanel({
                     aria-hidden="true"
                   />
                   <span>
-                    <strong>{result.abbreviation}</strong>
-                    <small title={result.name}>{result.name}</small>
+                    <strong>
+                      {result.abbreviation}
+                      <span className="visually-hidden"> — {result.name}</span>
+                    </strong>
+                    <small title={result.name} aria-hidden="true">
+                      {result.name}
+                    </small>
                   </span>
                 </span>
 
@@ -69,31 +84,31 @@ export function PartySummaryPanel({
                     />
                   </span>
                   <strong>
-                    {percentage.toLocaleString('en-US', {
-                      style: 'percent',
-                      maximumFractionDigits: 1,
-                    })}
+                    <span className="visually-hidden">Vote share: </span>
+                    {formattedPercentage}
                   </strong>
                 </span>
 
                 <span className="party-seats">
-                  <strong>{result.seats}</strong>
-                  <small>seats</small>
+                  <strong>
+                    <span className="visually-hidden">Seats: </span>
+                    {result.seats}
+                  </strong>
+                  <small aria-hidden="true">seats</small>
                 </span>
-              </div>
+              </li>
             )
           })}
-        </div>
+        </ul>
       ) : (
         <p
           className={`result-empty${scenario?.status === 'invalid' ? ' result-empty-error' : ''}`}
-          aria-live="polite"
         >
           {resultMessage}
         </p>
       )}
 
-      <p className="result-note">
+      <p className="result-note" id="party-result-note">
         Rows include every party with seats and are ordered by seat count. Labels and
         numbers carry the result independently of party color.
       </p>
