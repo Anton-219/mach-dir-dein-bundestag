@@ -1,4 +1,9 @@
-export function ParliamentPanel() {
+import type { ScenarioResult } from './types.ts'
+
+export function ParliamentPanel({ scenario }: { scenario?: ScenarioResult }) {
+  const representedParties =
+    scenario?.seatResults.filter((result) => result.seats > 0).length ?? 0
+
   return (
     <section
       className="workspace-panel parliament-panel"
@@ -9,12 +14,15 @@ export function ParliamentPanel() {
           <p className="panel-kicker">Calculated result</p>
           <h2 id="parliament-title">Bundestag</h2>
         </div>
-        <div className="parliament-totals">
+        <div className="parliament-totals" aria-live="polite">
           <span>
-            <strong>630</strong> seats
+            <strong>{scenario?.totalSeats ?? '—'}</strong> seats
           </span>
           <span>
-            <strong>316</strong> majority
+            <strong>{scenario?.majorityThreshold ?? '—'}</strong> majority
+          </span>
+          <span>
+            <strong>{representedParties}</strong> parties
           </span>
         </div>
       </div>
@@ -22,16 +30,18 @@ export function ParliamentPanel() {
       <div className="parliament-visual" aria-hidden="true">
         <div className="parliament-arc">
           <div className="parliament-cutout">
-            <strong>630</strong>
+            <strong>{scenario?.totalSeats ?? '—'}</strong>
             <span>total seats</span>
           </div>
         </div>
-        <span className="majority-axis">Majority threshold: 316</span>
+        <span className="majority-axis">
+          Majority threshold: {scenario?.majorityThreshold ?? '—'}
+        </span>
       </div>
 
       <p className="panel-placeholder-note parliament-note">
-        The final seat visualization will use the calculated scenario result in
-        Ticket 07.
+        Seat totals now follow the active scenario. Ticket 07 will replace the
+        neutral preview with the final party-based seat visualization.
       </p>
     </section>
   )
