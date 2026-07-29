@@ -180,7 +180,11 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     <div className="application-shell">
       <WorkspaceHeader />
 
-      <main className="analysis-shell">
+      <main
+        className="analysis-shell"
+        id="analysis-workspace"
+        aria-busy={dataState.status === 'loading'}
+      >
         <ScenarioSummary
           dataState={dataState}
           filters={filters}
@@ -218,7 +222,14 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         </div>
       </main>
 
-      <footer className="application-footer" id="methodology">
+      <footer
+        className="application-footer"
+        id="methodology"
+        aria-labelledby="methodology-title"
+      >
+        <h2 className="visually-hidden" id="methodology-title">
+          Methodology and data
+        </h2>
         <p>
           <strong>Methodology:</strong> confirmed 2021 election data and published
           statistical voting groups. Filtered scenarios are exploratory comparisons,
