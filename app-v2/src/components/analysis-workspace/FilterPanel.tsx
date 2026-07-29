@@ -79,6 +79,7 @@ function ValueToggleGroup<T extends string>({
               className="filter-value-button"
               type="button"
               aria-pressed={included}
+              aria-label={`${option.label}: ${included ? 'included' : 'excluded'}`}
               key={option.value}
               onClick={() =>
                 onChange(toggleExcludedValue(excludedValues, option.value))
