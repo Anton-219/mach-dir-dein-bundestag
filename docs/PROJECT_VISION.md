@@ -76,13 +76,9 @@ When users open the application, they should immediately understand:
 - what result is produced,
 - how that result should be interpreted.
 
-The interface should not feel like a technical dashboard made from several equally weighted charts. Instead, it should tell a clear story:
+The main interaction should take place in one coherent analysis workspace rather than across a sequence of separate content sections. On common desktop viewports, the parliament result, filters, Germany map, party summary, and coalition options should be immediately visible together. Users should be able to change a scenario and observe the connected results without navigating or scrolling between the main tools.
 
-1. **Create a scenario**
-2. **Understand the result**
-3. **Explore majorities and differences**
-
-The resulting composition of the Bundestag is the primary information. Filters and additional analysis support that result and should not visually compete with it.
+The relative size and visual emphasis of these areas remain open design decisions that should be evaluated in the working application. The project vision defines which elements belong together and should be readily available, but it does not prescribe a fixed grid or a single dominant component.
 
 ## Core User Flow
 
@@ -146,9 +142,24 @@ The header should contain:
 - election year and data status,
 - an easy-to-find link to methodology and data sources.
 
-### Main Results Area
+### Desktop Analysis Workspace
 
-The central element is the Bundestag seat distribution. It should be large, clearly labelled, and easy to interpret.
+On common desktop viewports, the following areas should form one immediately visible analysis workspace:
+
+- the Bundestag seat distribution,
+- filter controls,
+- the Germany map,
+- a compact party result summary,
+- coalition options,
+- the active scenario and relevant data status.
+
+These areas should read as parts of one connected tool rather than as a long-form sequence of independent sections. Their exact arrangement, size, and visual priority are intentionally not fixed by this document. The layout should be tested with real components and adjusted based on clarity, available space, and ease of comparison.
+
+Supporting explanations and detailed methodology do not need to compete for space inside the main workspace. They should remain easy to reach elsewhere in the same application.
+
+### Parliament and Party Results
+
+The Bundestag seat distribution and party summary are connected views of the current result. They should be clearly labelled, easy to interpret, and available without leaving the analysis workspace.
 
 Supporting information should include:
 
@@ -160,11 +171,9 @@ Supporting information should include:
 
 The result must remain understandable without relying exclusively on party colors. Colors should provide sufficient contrast and be used accessibly.
 
-### Filter Area
+### Filter Area and Germany Map
 
-On large screens, filters should appear in a clearly separated sidebar or a structured section above the result. On small screens, they may appear in a collapsible panel or drawer.
-
-Filters should be grouped into understandable categories:
+Filters should be part of the shared analysis workspace and grouped into understandable categories:
 
 - region,
 - age and gender,
@@ -176,7 +185,7 @@ The age and gender chart may remain as an interactive filter if selection states
 
 ### Coalition Area
 
-Coalitions should appear below the main result. The interface should not display every mathematically possible combination without structure. Instead, results should be prioritised and easy to compare.
+Coalition options should be available within the same desktop analysis workspace so that they can be compared directly with the current result. The interface should not display every mathematically possible combination without structure. Instead, results should be prioritised and easy to compare.
 
 At minimum, each coalition should display:
 
@@ -311,14 +320,14 @@ The revised UI should feel modern, calm, and focused on the content. It should n
 
 ### Design Principles
 
-- clear visual hierarchy,
-- generous spacing,
-- a limited number of competing elements,
+- a coherent desktop analysis workspace,
+- clear visual hierarchy without prescribing a single dominant area,
+- purposeful spacing that supports information density without clutter,
 - readable typography,
 - neutral base colors with purposeful use of party colors,
 - consistent components and interaction states,
 - clear English labels,
-- responsive design for desktop, tablet, and mobile,
+- a desktop-first layout that can be adapted to tablet and mobile after the main workspace is stable,
 - accessible controls and sufficient contrast.
 
 ### Interaction Principles
@@ -356,7 +365,7 @@ The application should meet fundamental accessibility requirements for web appli
 - no information communicated through color alone,
 - understandable form controls and labels,
 - support for reduced motion,
-- usable layouts at high zoom levels and on small viewports.
+- a component structure that can be adapted for high zoom levels and small viewports without rewriting the core workspace.
 
 ## Quality and Traceability
 
@@ -409,7 +418,8 @@ The first stable revision should remain deliberately limited. It does not initia
 - permanent server-side storage of personal scenarios,
 - a custom backend if static data is sufficient,
 - fully featured academic election-research software,
-- support for an arbitrary number of election years before the first data model is stable.
+- support for an arbitrary number of election years before the first data model is stable,
+- complete smartphone layout refinement before the desktop analysis workspace is established.
 
 ## Definition of a Successful First Stable Version
 
@@ -422,7 +432,7 @@ The first stable version is complete when:
 5. federal state, age, gender, and voting method can be filtered clearly,
 6. active filters are unambiguous and can be fully reset,
 7. seat distribution and minimal winning coalitions update correctly,
-8. the interface is clear and usable on desktop and mobile,
+8. the main analysis workspace is clear and usable on common desktop viewports,
 9. all primary project and UI language is consistently English,
 10. methodology, assumptions, and limitations are accessible within the application.
 
@@ -447,8 +457,10 @@ The first stable version is complete when:
 
 - define the information architecture,
 - establish a visual design system,
-- implement a responsive main view,
+- implement and validate the common desktop analysis workspace,
 - make filter states and result comparisons understandable,
+- keep core UI areas in components with clearly limited responsibilities,
+- adapt the established workspace to tablet and mobile after the desktop baseline is stable,
 - include accessibility from the beginning.
 
 ### Phase 4: Documentation and Release
@@ -470,6 +482,7 @@ Several questions still need explicit decisions before or during implementation:
 - Should results always be compared with the complete baseline result?
 - Should the application show only minimal winning coalitions or optionally all majorities?
 - Should generated JSON files be committed, or generated reproducibly during the build?
+- How should space and visual emphasis be distributed among the parliament result, filters, Germany map, party summary, and coalition options?
 - Which explanations belong directly in the main interface, and which belong on the methodology page?
 
 These decisions should be documented so that domain behavior and UI design do not emerge accidentally from implementation details.
