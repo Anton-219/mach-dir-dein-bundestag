@@ -1,4 +1,22 @@
-export function GermanyMapPanel() {
+import {
+  toggleFilterValue,
+  type FilterState,
+} from '../../lib/filters/index.ts'
+
+interface GermanyMapPanelProps {
+  filters: FilterState
+  states: readonly string[]
+  onChange: (filters: FilterState) => void
+}
+
+export function GermanyMapPanel({
+  filters,
+  states,
+  onChange,
+}: GermanyMapPanelProps) {
+  const includedStateCount =
+    filters.states.length === 0 ? states.length : filters.states.length
+
   return (
     <section className="workspace-panel map-panel" aria-labelledby="map-title">
       <div className="panel-heading">
@@ -6,7 +24,7 @@ export function GermanyMapPanel() {
           <p className="panel-kicker">Regional selection</p>
           <h2 id="map-title">Germany map</h2>
         </div>
-        <span className="panel-badge">16 included</span>
+        <span className="panel-badge">{includedStateCount} included</span>
       </div>
 
       <div className="map-content">
@@ -29,17 +47,34 @@ export function GermanyMapPanel() {
           <path className="germany-boundary" d="M132 38 118 131 128 244" />
         </svg>
 
-        <div className="map-copy">
-          <strong>All federal states included</strong>
-          <p>
-            The final labelled map and state-list alternative will share the same
-            filter state.
-          </p>
-          <button type="button" disabled>
-            Open state list
-          </button>
+        <div className="state-list" aria-label="Federal state filters">
+          {states.map((state) => {
+            const selected = filters.states.includes(state)
+            return (
+              <button
+                className="state-option"
+                type="button"
+                aria-pressed={selected}
+                key={state}
+                onClick={() =>
+                  onChange({
+                    ...filters,
+                    states: toggleFilterValue(filters.states, state),
+                  })
+                }
+              >
+                <span>{state}</span>
+                <small>{selected ? 'Included' : 'Any'}</small>
+              </button>
+            )
+          })}
         </div>
       </div>
+
+      <p className="panel-placeholder-note">
+        The map is a supplementary overview. The labelled state list is the complete
+        keyboard-operable control.
+      </p>
     </section>
   )
 }
