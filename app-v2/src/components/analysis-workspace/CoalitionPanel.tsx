@@ -13,7 +13,7 @@ interface CoalitionPanelProps {
 export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
   const coalitionRows =
     scenario?.status === 'ready'
-      ? prioritizeCoalitions(scenario.coalitions, 5)
+      ? prioritizeCoalitions(scenario.coalitions, scenario.coalitions.length)
       : []
   const resultMessage =
     scenario?.message ?? 'Results are unavailable until the election data has loaded.'
@@ -36,56 +36,68 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
       </div>
 
       {coalitionRows.length > 0 ? (
-        <div className="coalition-list" aria-label="Minimal winning coalitions">
-          {coalitionRows.map((coalition, index) => (
-            <article
-              className="coalition-row"
-              key={coalition.members
-                .map((member) => member.partyAbbreviation)
-                .join('-')}
-            >
-              <span className="coalition-rank" aria-hidden="true">
-                {String(index + 1).padStart(2, '0')}
-              </span>
+        <>
+          <p className="result-note coalition-note" id="coalition-result-note">
+            {coalitionRows.length} options, prioritised by fewer parties and the
+            smallest majority margin. CDU and CSU are grouped as CDU+CSU.
+          </p>
 
-              <div className="coalition-combination">
-                <div className="coalition-members">
-                  {coalition.members.map((member) => {
-                    const identity = getPartyIdentity(
-                      member.partyAbbreviation,
-                      parties,
-                    )
+          <div
+            className="coalition-list"
+            aria-label="All minimal winning coalitions"
+            aria-describedby="coalition-result-note"
+            tabIndex={0}
+          >
+            {coalitionRows.map((coalition, index) => (
+              <article
+                className="coalition-row"
+                key={coalition.members
+                  .map((member) => member.partyAbbreviation)
+                  .join('-')}
+              >
+                <span className="coalition-rank" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
 
-                    return (
-                      <span
-                        className="coalition-member"
-                        title={identity.name}
-                        key={member.partyAbbreviation}
-                      >
+                <div className="coalition-combination">
+                  <div className="coalition-members">
+                    {coalition.members.map((member) => {
+                      const identity = getPartyIdentity(
+                        member.partyAbbreviation,
+                        parties,
+                      )
+
+                      return (
                         <span
-                          className="party-swatch"
-                          style={{ backgroundColor: identity.color }}
-                          aria-hidden="true"
-                        />
-                        {identity.abbreviation}
-                      </span>
-                    )
-                  })}
+                          className="coalition-member"
+                          title={identity.name}
+                          key={member.partyAbbreviation}
+                        >
+                          <span
+                            className="party-swatch"
+                            style={{ backgroundColor: identity.color }}
+                            aria-hidden="true"
+                          />
+                          {identity.abbreviation}
+                        </span>
+                      )
+                    })}
+                  </div>
+                  <small>
+                    Minimal winning coalition · {coalition.members.length}{' '}
+                    {coalition.members.length === 1 ? 'party' : 'parties'}
+                  </small>
                 </div>
-                <small>
-                  Minimal winning coalition · {coalition.members.length}{' '}
-                  {coalition.members.length === 1 ? 'party' : 'parties'}
-                </small>
-              </div>
 
-              <div className="coalition-metrics">
-                <strong>{coalition.seats}</strong>
-                <span>seats</span>
-                <small>+{coalition.surplus} majority margin</small>
-              </div>
-            </article>
-          ))}
-        </div>
+                <div className="coalition-metrics">
+                  <strong>{coalition.seats}</strong>
+                  <span>seats</span>
+                  <small>+{coalition.surplus} majority margin</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
       ) : (
         <p
           className={`result-empty${scenario?.status === 'invalid' ? ' result-empty-error' : ''}`}
@@ -96,14 +108,6 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
             : resultMessage}
         </p>
       )}
-
-      {scenario?.status === 'ready' && scenario.coalitions.length > 0 ? (
-        <p className="result-note">
-          Showing {coalitionRows.length} of {scenario.coalitions.length} options,
-          prioritised by fewer parties and the smallest majority margin. CDU and CSU
-          are grouped as CDU+CSU.
-        </p>
-      ) : null}
     </section>
   )
 }
