@@ -2,6 +2,6 @@
 
 This branch explores a focused visual refinement of the existing `app-v2` analysis workspace before the final cut-over.
 
-The goal is to improve the balance, clarity, and usability of the current desktop presentation while keeping the established filters, calculations, data contracts, and connected result behavior intact. The primary target is the current desktop display, where the main workspace should be usable without document-level scrolling.
+The current implementation targets the primary desktop display and keeps the connected analysis tools within one fixed workspace without document-level scrolling. It rebalances the existing panels, keeps active scenario controls with the filters, strengthens the map and result presentation, and adds compact demographic context without changing the established calculations, data contracts, or filter behavior.
 
-The exact arrangement, proportions, and visual treatment remain open and will be evaluated iteratively in the working application. Broader responsive solutions for other screen sizes are deferred to later work.
+The result remains an iterative design draft. Its proportions and visual treatment should be evaluated in the working application before the final cut-over. Broader responsive solutions for other screen sizes are deferred to later work.
