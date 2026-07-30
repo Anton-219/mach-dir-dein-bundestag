@@ -5,6 +5,7 @@ import './styles.css'
 import './filter-styles.css'
 import './result-styles.css'
 import './accessibility-styles.css'
+import './desktop-refinement.css'
 
 const rootElement = document.getElementById('root')
 
