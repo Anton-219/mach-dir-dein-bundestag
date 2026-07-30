@@ -154,24 +154,27 @@ export function buildGermanyStatePaths(
   const maxLatitude = Math.max(...latitudes)
   const longitudeSpan = maxLongitude - minLongitude
   const latitudeSpan = maxLatitude - minLatitude
+  const centralLatitude = (minLatitude + maxLatitude) / 2
+  const longitudeScale = Math.cos((centralLatitude * Math.PI) / 180)
+  const projectedLongitudeSpan = longitudeSpan * longitudeScale
 
-  if (longitudeSpan <= 0 || latitudeSpan <= 0) {
+  if (projectedLongitudeSpan <= 0 || latitudeSpan <= 0) {
     return []
   }
 
   const availableWidth = size.width - size.padding * 2
   const availableHeight = size.height - size.padding * 2
   const scale = Math.min(
-    availableWidth / longitudeSpan,
+    availableWidth / projectedLongitudeSpan,
     availableHeight / latitudeSpan,
   )
-  const renderedWidth = longitudeSpan * scale
+  const renderedWidth = projectedLongitudeSpan * scale
   const renderedHeight = latitudeSpan * scale
   const offsetX = (size.width - renderedWidth) / 2
   const offsetY = (size.height - renderedHeight) / 2
 
   const project = ([longitude, latitude]: GeoPosition): readonly [number, number] => [
-    offsetX + (longitude - minLongitude) * scale,
+    offsetX + (longitude - minLongitude) * longitudeScale * scale,
     offsetY + (maxLatitude - latitude) * scale,
   ]
 
