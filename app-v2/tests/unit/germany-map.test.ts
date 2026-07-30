@@ -4,6 +4,7 @@ import test from 'node:test'
 import {
   buildGermanyStatePaths,
   isGermanyStatesGeoJson,
+  type GermanyStateFeature,
   type GermanyStatesGeoJson,
 } from '../../src/lib/map/germany-map.ts'
 
@@ -61,6 +62,12 @@ const fixture: GermanyStatesGeoJson = {
   ],
 }
 
+function extractCoordinates(path: string): readonly (readonly [number, number])[] {
+  return [...path.matchAll(/(?:M|L)(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].map(
+    (match) => [Number(match[1]), Number(match[2])] as const,
+  )
+}
+
 test('validates polygon and multipolygon state features', () => {
   assert.equal(isGermanyStatesGeoJson(fixture), true)
   assert.equal(
@@ -86,13 +93,45 @@ test('projects every state into a shared bounded SVG coordinate system', () => {
   assert.match(paths[0]?.path ?? '', / Z$/)
   assert.equal((paths[1]?.path.match(/M/g) ?? []).length, 2)
 
-  const coordinates = paths.flatMap(({ path }) =>
-    [...path.matchAll(/(?:M|L)(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].map(
-      (match) => [Number(match[1]), Number(match[2])] as const,
-    ),
-  )
+  const coordinates = paths.flatMap(({ path }) => extractCoordinates(path))
 
   assert.equal(coordinates.length > 0, true)
   assert.equal(coordinates.every(([x]) => x >= 0 && x <= 220), true)
   assert.equal(coordinates.every(([, y]) => y >= 0 && y <= 260), true)
+})
+
+test('corrects longitude scale for the map central latitude', () => {
+  const oneDegreeSquareAtSixtyDegrees: GermanyStateFeature = {
+    type: 'Feature',
+    properties: {
+      id: 'DE-CC',
+      name: 'Gamma',
+      type: 'State',
+    },
+    geometry: {
+      type: 'Polygon',
+      coordinates: [
+        [
+          [10, 59.5],
+          [11, 59.5],
+          [11, 60.5],
+          [10, 60.5],
+          [10, 59.5],
+        ],
+      ],
+    },
+  }
+
+  const [statePath] = buildGermanyStatePaths(
+    [oneDegreeSquareAtSixtyDegrees],
+    { width: 300, height: 300, padding: 0 },
+  )
+  const coordinates = extractCoordinates(statePath?.path ?? '')
+  const xs = coordinates.map(([x]) => x)
+  const ys = coordinates.map(([, y]) => y)
+  const renderedWidth = Math.max(...xs) - Math.min(...xs)
+  const renderedHeight = Math.max(...ys) - Math.min(...ys)
+
+  assert.equal(coordinates.length > 0, true)
+  assert.ok(Math.abs(renderedWidth / renderedHeight - 0.5) < 0.01)
 })
