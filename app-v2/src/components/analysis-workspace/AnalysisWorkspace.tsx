@@ -220,10 +220,10 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
 
           <div className="workspace-column workspace-column-center">
             <ParliamentPanel parties={parties} scenario={scenario} />
-            <CoalitionPanel parties={parties} scenario={scenario} />
+            <PartySummaryPanel parties={parties} scenario={scenario} />
           </div>
 
-          <PartySummaryPanel parties={parties} scenario={scenario} />
+          <CoalitionPanel parties={parties} scenario={scenario} />
 
           <div className="workspace-column workspace-column-context">
             <GermanyMapPanel
