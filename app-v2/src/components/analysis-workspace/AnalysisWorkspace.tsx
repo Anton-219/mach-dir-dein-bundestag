@@ -15,6 +15,7 @@ import {
   type FilterState,
 } from '../../lib/filters/index.ts'
 import { CoalitionPanel } from './CoalitionPanel.tsx'
+import { DemographicPanel } from './DemographicPanel.tsx'
 import { FilterPanel } from './FilterPanel.tsx'
 import { GermanyMapPanel } from './GermanyMapPanel.tsx'
 import { ParliamentPanel } from './ParliamentPanel.tsx'
@@ -185,6 +186,8 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const parties = dataState.status === 'ready' ? dataState.data.parties : []
   const germanyStates =
     dataState.status === 'ready' ? dataState.data.germanyStates.features : []
+  const statVotes = dataState.status === 'ready' ? dataState.data.statVotes : []
+  const secondVotes = dataState.status === 'ready' ? dataState.data.secondVotes : []
 
   return (
     <div className="application-shell">
@@ -195,17 +198,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         id="analysis-workspace"
         aria-busy={dataState.status === 'loading'}
       >
-        <ScenarioSummary
-          dataState={dataState}
-          filters={filters}
-          scenario={scenario}
-          onClearFilter={(dimension) =>
-            setFilters((currentFilters) =>
-              clearFilterDimension(currentFilters, dimension),
-            )
-          }
-          onReset={resetFilters}
-        />
+        <ScenarioSummary dataState={dataState} filters={filters} scenario={scenario} />
 
         <div className="analysis-workspace" aria-label="Election analysis workspace">
           <div className="workspace-column workspace-column-left">
@@ -213,22 +206,36 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
               filters={filters}
               states={availableStates}
               openFilter={openFilter}
+              scenario={scenario}
               onChange={setFilters}
               onOpenFilterChange={setOpenFilter}
+              onClearFilter={(dimension) =>
+                setFilters((currentFilters) =>
+                  clearFilterDimension(currentFilters, dimension),
+                )
+              }
+              onReset={resetFilters}
             />
+          </div>
+
+          <div className="workspace-column workspace-column-center">
+            <ParliamentPanel parties={parties} scenario={scenario} />
+            <CoalitionPanel parties={parties} scenario={scenario} />
+          </div>
+
+          <PartySummaryPanel parties={parties} scenario={scenario} />
+
+          <div className="workspace-column workspace-column-context">
             <GermanyMapPanel
               features={germanyStates}
               excludedStates={filters.states}
               onToggleState={toggleState}
-              onEditStates={() => setOpenFilter('states')}
             />
-          </div>
-
-          <ParliamentPanel parties={parties} scenario={scenario} />
-
-          <div className="workspace-column workspace-column-right">
-            <PartySummaryPanel parties={parties} scenario={scenario} />
-            <CoalitionPanel parties={parties} scenario={scenario} />
+            <DemographicPanel
+              statVotes={statVotes}
+              secondVotes={secondVotes}
+              filters={filters}
+            />
           </div>
         </div>
       </main>
