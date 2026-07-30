@@ -43,7 +43,7 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
         <>
           <p className="result-note coalition-note" id="coalition-result-note">
             {coalitionRows.length} minimal winning options, prioritised by fewer parties
-            and majority margin.
+            and majority margin. CDU and CSU are grouped as CDU+CSU.
           </p>
 
           <ol
@@ -113,9 +113,8 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
                     </div>
 
                     <small>
-                      {coalition.members.length}{' '}
-                      {coalition.members.length === 1 ? 'party' : 'parties'} · CDU and
-                      CSU grouped for coalition calculations
+                      Minimal winning coalition · {coalition.members.length}{' '}
+                      {coalition.members.length === 1 ? 'party' : 'parties'}
                     </small>
                   </div>
 
