@@ -93,7 +93,13 @@ export function GermanyMapPanel({
                     onMouseEnter={() => setHighlightedState(state.name)}
                     onMouseLeave={() => setHighlightedState(null)}
                   >
-                    <path d={state.path} fillRule="evenodd">
+                    <path
+                      className="map-state-hit-area"
+                      d={state.path}
+                      fillRule="evenodd"
+                      aria-hidden="true"
+                    />
+                    <path className="map-state-shape" d={state.path} fillRule="evenodd">
                       <title>
                         {state.name}: {included ? 'included' : 'excluded'}
                       </title>
