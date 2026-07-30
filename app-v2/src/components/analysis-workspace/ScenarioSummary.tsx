@@ -45,12 +45,7 @@ function DataStatus({
     )
   }
 
-  return (
-    <p className="scenario-data-status">
-      Data ready · {dataState.data.parties.length} parties ·{' '}
-      {dataState.data.secondVotes.length.toLocaleString('en-US')} vote entries
-    </p>
-  )
+  return null
 }
 
 function describeScenarioForAssistiveTechnology(
