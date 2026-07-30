@@ -16,9 +16,9 @@ function DataStatus({
 }) {
   if (dataState.status === 'loading') {
     return (
-      <p className="scenario-data-status" aria-live="polite">
+      <output className="scenario-data-status" aria-live="polite">
         Loading confirmed election data…
-      </p>
+      </output>
     )
   }
 
@@ -42,18 +42,40 @@ function DataStatus({
 
   if (scenario?.status === 'empty') {
     return (
-      <p className="scenario-data-status" aria-live="polite">
+      <p className="scenario-data-status">
         <strong>No votes included.</strong> {scenario.message}
       </p>
     )
   }
 
   return (
-    <p className="scenario-data-status" aria-live="polite">
+    <p className="scenario-data-status">
       Data ready · {dataState.data.parties.length} parties ·{' '}
       {dataState.data.secondVotes.length.toLocaleString('en-US')} vote entries
     </p>
   )
+}
+
+function describeScenarioForAssistiveTechnology(
+  filters: FilterState,
+  scenario?: ScenarioResult,
+) {
+  if (!scenario || scenario.status === 'invalid') {
+    return ''
+  }
+
+  const scenarioName = summarizeFilterState(filters)
+
+  if (scenario.status === 'empty') {
+    return `${scenarioName}. No votes are included in this scenario.`
+  }
+
+  const includedShare = scenario.includedShare.toLocaleString('en-US', {
+    style: 'percent',
+    maximumFractionDigits: 1,
+  })
+
+  return `${scenarioName}. ${scenario.includedVotes.toLocaleString('en-US')} votes included, ${includedShare} of the dataset. Parliament: ${scenario.totalSeats} seats, ${scenario.majorityThreshold} seats required for a majority.`
 }
 
 interface ScenarioSummaryProps {
@@ -77,6 +99,10 @@ export function ScenarioSummary({
     scenario?.status === 'ready' || scenario?.status === 'empty'
       ? scenario
       : undefined
+  const scenarioAnnouncement = describeScenarioForAssistiveTechnology(
+    filters,
+    scenario,
+  )
 
   return (
     <section className="scenario-summary" aria-labelledby="scenario-title">
@@ -139,6 +165,16 @@ export function ScenarioSummary({
             </button>
           ))}
         </div>
+      ) : null}
+
+      {scenarioAnnouncement ? (
+        <output
+          className="visually-hidden"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {scenarioAnnouncement}
+        </output>
       ) : null}
     </section>
   )

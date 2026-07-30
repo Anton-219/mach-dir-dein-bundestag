@@ -1,3 +1,5 @@
+import { isGermanyStatesGeoJson } from '../lib/map/germany-map.ts'
+import type { GermanyStatesGeoJson } from '../lib/map/germany-map.ts'
 import type {
   AgeGroup,
   DirectMandateWinner,
@@ -15,6 +17,7 @@ const dataFiles = {
   secondVotes: 'second_votes.json',
   statVotes: 'stat_votes.json',
   directMandates: 'election_results_direktmandate.json',
+  germanyStates: 'germany_states_map.geo.json',
 } as const
 
 const genders = ['m', 'w'] as const satisfies readonly Gender[]
@@ -41,6 +44,7 @@ export interface ElectionData {
   secondVotes: VoteEntry[]
   statVotes: StatVotes[]
   directMandates: DirectMandateWinner[]
+  germanyStates: GermanyStatesGeoJson
 }
 
 export class ElectionDataLoadError extends Error {
@@ -198,16 +202,57 @@ async function fetchJson(
   }
 }
 
+function verifyStateCoverage(
+  secondVotes: readonly VoteEntry[],
+  germanyStates: GermanyStatesGeoJson,
+): void {
+  const voteStateNames = new Set(secondVotes.map((entry) => entry.state))
+  const mapStateNames = new Set(
+    germanyStates.features.map((feature) => feature.properties.name),
+  )
+  const statesMissingFromMap = [...voteStateNames].filter(
+    (state) => !mapStateNames.has(state),
+  )
+  const statesMissingFromVotes = [...mapStateNames].filter(
+    (state) => !voteStateNames.has(state),
+  )
+
+  if (statesMissingFromMap.length === 0 && statesMissingFromVotes.length === 0) {
+    return
+  }
+
+  const details = [
+    statesMissingFromMap.length > 0
+      ? `missing map geometry for ${statesMissingFromMap.join(', ')}`
+      : undefined,
+    statesMissingFromVotes.length > 0
+      ? `map states without vote data: ${statesMissingFromVotes.join(', ')}`
+      : undefined,
+  ]
+    .filter((detail): detail is string => detail !== undefined)
+    .join('; ')
+
+  throw new ElectionDataLoadError(
+    `${dataFiles.germanyStates} does not match the federal states in ${dataFiles.secondVotes}: ${details}.`,
+  )
+}
+
 export async function loadElectionData(
   fetcher: JsonFetcher = fetch,
 ): Promise<ElectionData> {
-  const [partiesJson, secondVotesJson, statVotesJson, directMandatesJson] =
-    await Promise.all([
-      fetchJson(dataFiles.parties, fetcher),
-      fetchJson(dataFiles.secondVotes, fetcher),
-      fetchJson(dataFiles.statVotes, fetcher),
-      fetchJson(dataFiles.directMandates, fetcher),
-    ])
+  const [
+    partiesJson,
+    secondVotesJson,
+    statVotesJson,
+    directMandatesJson,
+    germanyStatesJson,
+  ] = await Promise.all([
+    fetchJson(dataFiles.parties, fetcher),
+    fetchJson(dataFiles.secondVotes, fetcher),
+    fetchJson(dataFiles.statVotes, fetcher),
+    fetchJson(dataFiles.directMandates, fetcher),
+    fetchJson(dataFiles.germanyStates, fetcher),
+  ])
 
   const directMandates = parseArray(
     directMandatesJson,
@@ -217,19 +262,29 @@ export async function loadElectionData(
     party,
     districtsWon: districts_won,
   }))
+  const secondVotes = parseArray(
+    secondVotesJson,
+    dataFiles.secondVotes,
+    normalizeVoteEntry,
+  )
+
+  if (!isGermanyStatesGeoJson(germanyStatesJson)) {
+    throw new ElectionDataLoadError(
+      `${dataFiles.germanyStates} does not contain a valid state FeatureCollection.`,
+    )
+  }
+
+  verifyStateCoverage(secondVotes, germanyStatesJson)
 
   return {
     parties: parseArray(partiesJson, dataFiles.parties, (item) =>
       isParty(item) ? item : undefined,
     ),
-    secondVotes: parseArray(
-      secondVotesJson,
-      dataFiles.secondVotes,
-      normalizeVoteEntry,
-    ),
+    secondVotes,
     statVotes: parseArray(statVotesJson, dataFiles.statVotes, (item) =>
       isStatVotes(item) ? item : undefined,
     ),
     directMandates,
+    germanyStates: germanyStatesJson,
   }
 }
