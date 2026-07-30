@@ -93,11 +93,12 @@ export function DemographicPanel({
       <div className="demographic-content">
         <figure className="age-gender-chart">
           <figcaption>Age and gender distribution</figcaption>
-          <div
-            className="age-gender-plot"
-            role="img"
-            aria-label="Reference distribution by age group and recorded gender. Excluded filter values are muted."
-          >
+          <p className="visually-hidden">
+            Reference distribution by age group and recorded gender. Excluded filter
+            values are visually muted; the filter controls provide the current selection
+            state.
+          </p>
+          <div className="age-gender-plot" aria-hidden="true">
             {ageGroups.map(({ value, label }) => {
               const ageExcluded = filters.ageGroups.includes(value)
               const menExcluded = ageExcluded || filters.genders.includes('m')
@@ -134,11 +135,7 @@ export function DemographicPanel({
 
         <figure className="method-chart">
           <figcaption>Voting method</figcaption>
-          <div
-            className="method-track"
-            role="img"
-            aria-label={`Postal voting ${formatShare(methodTotals.postal, totalMethodVotes)}; in-person voting ${formatShare(methodTotals['in-person'], totalMethodVotes)}. Excluded methods are muted.`}
-          >
+          <div className="method-track" aria-hidden="true">
             <span
               className={`method-segment method-segment-postal${filters.electionMethods.includes('postal') ? ' demographic-bar-excluded' : ''}`}
               style={{ width: `${postalShare * 100}%` }}
