@@ -1,11 +1,20 @@
+:root {
+  --desktop-germany-map-max-width: 25rem;
+}
+
 .scenario-summary {
-  grid-template-columns: minmax(24rem, 1.25fr) minmax(38rem, 2fr);
+  grid-template-columns: minmax(0, 1fr) max-content;
 }
 
 .scenario-title-group h2 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.scenario-facts {
+  width: max-content;
+  justify-self: end;
 }
 
 .scenario-data-status {
@@ -32,6 +41,14 @@
   height: 100%;
 }
 
+.parliament-chart {
+  width: min(100%, 28.5rem);
+}
+
+.majority-axis {
+  width: min(100%, 29.5rem);
+}
+
 .workspace-column-center .party-panel .party-list {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.38rem;
@@ -39,13 +56,44 @@
 }
 
 .workspace-column-center .party-panel .party-row {
-  min-height: 3.35rem;
-  padding: 0.44rem 0.5rem;
+  min-height: 3.65rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  padding: 0.46rem 0.5rem;
+  background: #fff;
+}
+
+.workspace-column-center .party-panel .party-row::before {
+  background: radial-gradient(
+    ellipse at top left,
+    color-mix(in srgb, var(--party-color) 27%, transparent) 0%,
+    color-mix(in srgb, var(--party-color) 14%, transparent) 34%,
+    transparent 72%
+  );
+}
+
+.workspace-column-center .party-panel .party-identity {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.workspace-column-center .party-panel .party-seats {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+}
+
+.workspace-column-center .party-panel .party-share {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: end;
+  margin-top: 0.2rem;
 }
 
 .party-track {
+  height: 0.58rem;
   border: 1px solid rgb(71 87 80 / 34%);
-  background: rgb(238 241 239 / 88%);
+  background: rgb(248 250 249 / 92%);
   box-shadow: 0 1px 1px rgb(255 255 255 / 70%) inset;
 }
 
@@ -67,11 +115,25 @@
 }
 
 .map-panel {
-  padding: 0.58rem;
+  padding: 0.42rem;
+}
+
+.map-panel-heading {
+  margin-bottom: 0.12rem;
+}
+
+.map-content,
+.germany-map-shell {
+  gap: 0.14rem;
 }
 
 .germany-map {
-  width: min(100%, 22rem);
+  width: min(100%, var(--desktop-germany-map-max-width));
+}
+
+.map-status {
+  min-height: 1.85rem;
+  padding-top: 0.24rem;
 }
 
 .map-state .map-state-hit-area,
