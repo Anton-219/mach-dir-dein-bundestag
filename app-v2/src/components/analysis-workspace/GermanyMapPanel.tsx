@@ -1,4 +1,4 @@
-import type { KeyboardEvent, MouseEvent } from 'react'
+import { useState, type KeyboardEvent, type MouseEvent } from 'react'
 
 import { describeStateSelection } from '../../lib/filters/index.ts'
 import {
@@ -10,15 +10,14 @@ interface GermanyMapPanelProps {
   features: readonly GermanyStateFeature[]
   excludedStates: readonly string[]
   onToggleState: (state: string) => void
-  onEditStates: () => void
 }
 
 export function GermanyMapPanel({
   features,
   excludedStates,
   onToggleState,
-  onEditStates,
 }: GermanyMapPanelProps) {
+  const [highlightedState, setHighlightedState] = useState<string | null>(null)
   const statePaths = buildGermanyStatePaths(features)
   const stateControlsAvailable = statePaths.length > 0
   const includedStateCount = Math.max(statePaths.length - excludedStates.length, 0)
@@ -33,7 +32,7 @@ export function GermanyMapPanel({
 
   return (
     <section className="workspace-panel map-panel" aria-labelledby="map-title">
-      <div className="panel-heading">
+      <div className="panel-heading map-panel-heading">
         <div>
           <p className="panel-kicker">Regional selection</p>
           <h2 id="map-title">Germany map</h2>
@@ -43,8 +42,8 @@ export function GermanyMapPanel({
         </span>
       </div>
 
-      <div className="map-content">
-        {stateControlsAvailable ? (
+      {stateControlsAvailable ? (
+        <div className="map-content">
           <div className="germany-map-shell">
             <svg
               className="germany-map"
@@ -83,12 +82,16 @@ export function GermanyMapPanel({
                     href="#filter-menu-states"
                     aria-label={`${state.name}: ${included ? 'included' : 'excluded'}. Activate to ${action}.`}
                     key={state.id}
+                    onBlur={() => setHighlightedState(null)}
                     onClick={(event) => activateState(event, state.name)}
+                    onFocus={() => setHighlightedState(state.name)}
                     onKeyDown={(event) => {
                       if (event.key === ' ') {
                         activateState(event, state.name)
                       }
                     }}
+                    onMouseEnter={() => setHighlightedState(state.name)}
+                    onMouseLeave={() => setHighlightedState(null)}
                   >
                     <path d={state.path} fillRule="evenodd">
                       <title>
@@ -109,31 +112,21 @@ export function GermanyMapPanel({
               </span>
             </div>
           </div>
-        ) : (
-          <p className="result-empty">The federal-state map is not available yet.</p>
-        )}
 
-        <div className="map-copy">
-          <strong>
-            {stateControlsAvailable
-              ? describeStateSelection(excludedStates)
-              : 'State data is not available yet'}
-          </strong>
-          <p id="map-control-description">
-            {stateControlsAvailable
-              ? 'Select states directly on the map or use the labelled state editor. Both controls update the same filter.'
-              : 'The map and labelled state editor become available after the election data has loaded.'}
+          <p className="map-status" aria-live="polite">
+            <strong>{highlightedState ?? describeStateSelection(excludedStates)}</strong>
+            <span>
+              {highlightedState
+                ? excludedStates.includes(highlightedState)
+                  ? 'Excluded · activate to include'
+                  : 'Included · activate to exclude'
+                : 'Select a state directly on the map.'}
+            </span>
           </p>
-          <button
-            type="button"
-            disabled={!stateControlsAvailable}
-            aria-describedby="map-control-description"
-            onClick={onEditStates}
-          >
-            Edit state filter
-          </button>
         </div>
-      </div>
+      ) : (
+        <p className="result-empty">The federal-state map is not available yet.</p>
+      )}
     </section>
   )
 }
