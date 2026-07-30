@@ -1,8 +1,5 @@
 import {
-  countActiveFilterDimensions,
-  getActiveFilterSummaries,
   summarizeFilterState,
-  type FilterDimension,
   type FilterState,
 } from '../../lib/filters/index.ts'
 import type { DataState, ScenarioResult } from './types.ts'
@@ -82,19 +79,13 @@ interface ScenarioSummaryProps {
   dataState: DataState
   filters: FilterState
   scenario?: ScenarioResult
-  onClearFilter: (dimension: FilterDimension) => void
-  onReset: () => void
 }
 
 export function ScenarioSummary({
   dataState,
   filters,
   scenario,
-  onClearFilter,
-  onReset,
 }: ScenarioSummaryProps) {
-  const activeFilters = getActiveFilterSummaries(filters)
-  const activeCount = countActiveFilterDimensions(filters)
   const voteScenario =
     scenario?.status === 'ready' || scenario?.status === 'empty'
       ? scenario
@@ -140,32 +131,6 @@ export function ScenarioSummary({
       </dl>
 
       <DataStatus dataState={dataState} scenario={scenario} />
-
-      <button
-        className="secondary-action"
-        type="button"
-        disabled={activeCount === 0}
-        onClick={onReset}
-      >
-        Reset all filters
-      </button>
-
-      {activeFilters.length > 0 ? (
-        <div className="active-filter-list" aria-label="Active filters">
-          {activeFilters.map((filter) => (
-            <button
-              className="active-filter"
-              type="button"
-              key={filter.dimension}
-              onClick={() => onClearFilter(filter.dimension)}
-              aria-label={`Remove filter: ${filter.label}`}
-            >
-              <span>{filter.label}</span>
-              <span aria-hidden="true">×</span>
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {scenarioAnnouncement ? (
         <output
