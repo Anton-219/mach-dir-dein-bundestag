@@ -203,10 +203,6 @@
   pointer-events: all;
 }
 
-.state-landscape-slot {
-  min-height: 0;
-}
-
 .state-landscape-panel {
   min-height: 0;
   overflow: hidden;
@@ -221,6 +217,19 @@
   max-width: 8.5rem;
   text-align: right;
   white-space: normal;
+}
+
+.state-landscape-placeholder {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  flex: 1;
+  margin: 0;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.62rem;
+  background: rgb(248 250 249 / 72%);
+  text-align: center;
 }
 
 .state-party-list {
