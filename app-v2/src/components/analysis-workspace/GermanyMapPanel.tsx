@@ -50,6 +50,10 @@ export function GermanyMapPanel({
     onToggleState(state)
   }
 
+  const resetStates = () => {
+    excludedStates.forEach((state) => onToggleState(state))
+  }
+
   return (
     <section className="workspace-panel map-panel" aria-labelledby="map-title">
       <div className="panel-heading map-panel-heading">
@@ -57,9 +61,22 @@ export function GermanyMapPanel({
           <p className="panel-kicker">Regional selection</p>
           <h2 id="map-title">Germany map</h2>
         </div>
-        <span className="panel-badge">
-          {stateControlsAvailable ? `${includedStateCount} included` : 'Unavailable'}
-        </span>
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+        >
+          <span className="panel-badge">
+            {stateControlsAvailable ? `${includedStateCount} included` : 'Unavailable'}
+          </span>
+          <button
+            className="secondary-action"
+            type="button"
+            disabled={!stateControlsAvailable || excludedStates.length === 0}
+            aria-label="Reset federal state selection"
+            onClick={resetStates}
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       {stateControlsAvailable ? (
