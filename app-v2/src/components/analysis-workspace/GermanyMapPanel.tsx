@@ -1,4 +1,9 @@
-import { useState, type KeyboardEvent, type MouseEvent } from 'react'
+import {
+  useEffect,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from 'react'
 
 import { describeStateSelection } from '../../lib/filters/index.ts'
 import {
@@ -12,12 +17,14 @@ interface GermanyMapPanelProps {
   features: readonly GermanyStateFeature[]
   excludedStates: readonly string[]
   onToggleState: (state: string) => void
+  onHighlightedStateChange: (state: string | null) => void
 }
 
 export function GermanyMapPanel({
   features,
   excludedStates,
   onToggleState,
+  onHighlightedStateChange,
 }: GermanyMapPanelProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null)
   const [focusedState, setFocusedState] = useState<string | null>(null)
@@ -30,6 +37,10 @@ export function GermanyMapPanel({
   )
   const stateControlsAvailable = statePaths.length > 0
   const includedStateCount = Math.max(statePaths.length - excludedStates.length, 0)
+
+  useEffect(() => {
+    onHighlightedStateChange(highlightedState)
+  }, [highlightedState, onHighlightedStateChange])
 
   const activateState = (
     event: MouseEvent<HTMLAnchorElement> | KeyboardEvent<HTMLAnchorElement>,
