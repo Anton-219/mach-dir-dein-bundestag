@@ -136,25 +136,60 @@
   padding-top: 0.24rem;
 }
 
-.map-state .map-state-hit-area,
-.map-state:hover .map-state-hit-area,
-.map-state:focus-visible .map-state-hit-area {
-  fill: transparent;
-  stroke: transparent;
-  stroke-width: 14;
-  opacity: 0;
-  pointer-events: all;
+.map-state-fill {
+  stroke: none;
+  pointer-events: none;
+  transition:
+    fill 140ms ease,
+    opacity 140ms ease;
+}
+
+.map-state-fill-included {
+  fill: var(--accent-soft);
+}
+
+.map-state-fill-excluded {
+  fill: url(#excluded-state-pattern);
+  opacity: 0.78;
+}
+
+.map-boundaries,
+.map-state-highlight {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
   vector-effect: non-scaling-stroke;
 }
 
-.map-state .map-state-shape {
-  pointer-events: none;
+.map-boundaries {
+  stroke: var(--panel-background);
   stroke-width: 1.35;
 }
 
-.map-state:hover .map-state-shape,
-.map-state:focus-visible .map-state-shape {
+.map-state-highlight {
   stroke: var(--accent);
   stroke-width: 1.75;
+}
+
+.map-state-control {
+  cursor: pointer;
+}
+
+.map-state-control:focus-visible {
+  outline: none;
+}
+
+.map-state-control .map-state-hit-area {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 0;
   opacity: 1;
+  pointer-events: fill;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-state-control-compact .map-state-hit-area {
+  stroke-width: 18;
+  pointer-events: all;
 }
