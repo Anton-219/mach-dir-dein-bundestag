@@ -19,7 +19,9 @@ export function GermanyMapPanel({
   excludedStates,
   onToggleState,
 }: GermanyMapPanelProps) {
-  const [highlightedState, setHighlightedState] = useState<string | null>(null)
+  const [hoveredState, setHoveredState] = useState<string | null>(null)
+  const [focusedState, setFocusedState] = useState<string | null>(null)
+  const highlightedState = hoveredState ?? focusedState
   const statePaths = buildGermanyStatePaths(features)
   const stateInteractionPaths = orderGermanyStatePathsForInteraction(statePaths)
   const boundaryPath = buildGermanyBoundaryPath(statePaths)
@@ -130,16 +132,16 @@ export function GermanyMapPanel({
                       href="#filter-menu-states"
                       aria-label={`${state.name}: ${included ? 'included' : 'excluded'}. Activate to ${action}.`}
                       key={state.id}
-                      onBlur={() => setHighlightedState(null)}
+                      onBlur={() => setFocusedState(null)}
                       onClick={(event) => activateState(event, state.name)}
-                      onFocus={() => setHighlightedState(state.name)}
+                      onFocus={() => setFocusedState(state.name)}
                       onKeyDown={(event) => {
                         if (event.key === ' ') {
                           activateState(event, state.name)
                         }
                       }}
-                      onMouseEnter={() => setHighlightedState(state.name)}
-                      onMouseLeave={() => setHighlightedState(null)}
+                      onMouseEnter={() => setHoveredState(state.name)}
+                      onMouseLeave={() => setHoveredState(null)}
                     >
                       <title>
                         {state.name}: {included ? 'included' : 'excluded'}
