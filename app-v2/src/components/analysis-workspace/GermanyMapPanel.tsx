@@ -78,14 +78,19 @@ export function GermanyMapPanel({
               <g className="map-state-fills" aria-hidden="true">
                 {statePaths.map((state) => {
                   const included = !excludedStates.includes(state.name)
+                  const highlighted = highlightedState === state.name
 
                   return (
                     <path
-                      className={
+                      className={[
+                        'map-state-fill',
                         included
-                          ? 'map-state-fill map-state-fill-included'
-                          : 'map-state-fill map-state-fill-excluded'
-                      }
+                          ? 'map-state-fill-included'
+                          : 'map-state-fill-excluded',
+                        highlighted ? 'map-state-fill-highlighted' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
                       d={state.path}
                       fillRule="evenodd"
                       key={state.id}
