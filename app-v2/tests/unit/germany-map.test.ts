@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import test from 'node:test'
 
 import {
@@ -217,5 +219,33 @@ test('places compact states above surrounding states for pointer interaction', (
   assert.deepEqual(
     orderGermanyStatePathsForInteraction(paths).map(({ name }) => name),
     ['Brandenburg', 'Berlin'],
+  )
+})
+
+test('classifies the city states as compact in the committed map data', () => {
+  const rawMap = JSON.parse(
+    readFileSync(resolve('public/data/germany_states_map.geo.json'), 'utf8'),
+  ) as unknown
+
+  assert.equal(isGermanyStatesGeoJson(rawMap), true)
+
+  if (!isGermanyStatesGeoJson(rawMap)) {
+    throw new Error('The committed Germany map data is invalid.')
+  }
+
+  const paths = buildGermanyStatePaths(rawMap.features)
+  const pathsByName = new Map(paths.map((path) => [path.name, path]))
+  const interactionOrder = orderGermanyStatePathsForInteraction(paths).map(
+    ({ name }) => name,
+  )
+
+  for (const cityState of ['Berlin', 'Bremen', 'Hamburg']) {
+    assert.equal(pathsByName.get(cityState)?.isCompact, true)
+  }
+
+  assert.ok(interactionOrder.indexOf('Berlin') > interactionOrder.indexOf('Brandenburg'))
+  assert.ok(interactionOrder.indexOf('Bremen') > interactionOrder.indexOf('Niedersachsen'))
+  assert.ok(
+    interactionOrder.indexOf('Hamburg') > interactionOrder.indexOf('Schleswig-Holstein'),
   )
 })
