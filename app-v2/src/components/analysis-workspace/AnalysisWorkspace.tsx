@@ -214,31 +214,31 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         id="analysis-workspace"
         aria-busy={dataState.status === 'loading'}
       >
+        <div className="workspace-column workspace-column-left">
+          <FilterPanel
+            filters={filters}
+            states={availableStates}
+            openFilter={openFilter}
+            scenario={scenario}
+            onChange={setFilters}
+            onOpenFilterChange={setOpenFilter}
+            onClearFilter={(dimension) =>
+              setFilters((currentFilters) =>
+                clearFilterDimension(currentFilters, dimension),
+              )
+            }
+            onReset={resetFilters}
+          />
+          <DemographicPanel
+            statVotes={statVotes}
+            secondVotes={secondVotes}
+            filters={filters}
+          />
+        </div>
+
         <ScenarioSummary dataState={dataState} filters={filters} scenario={scenario} />
 
-        <div className="analysis-workspace" aria-label="Election analysis workspace">
-          <div className="workspace-column workspace-column-left">
-            <FilterPanel
-              filters={filters}
-              states={availableStates}
-              openFilter={openFilter}
-              scenario={scenario}
-              onChange={setFilters}
-              onOpenFilterChange={setOpenFilter}
-              onClearFilter={(dimension) =>
-                setFilters((currentFilters) =>
-                  clearFilterDimension(currentFilters, dimension),
-                )
-              }
-              onReset={resetFilters}
-            />
-            <DemographicPanel
-              statVotes={statVotes}
-              secondVotes={secondVotes}
-              filters={filters}
-            />
-          </div>
-
+        <div className="analysis-workspace" aria-label="Election results workspace">
           <div className="workspace-column workspace-column-center">
             <ParliamentPanel parties={parties} scenario={scenario} />
             <PartySummaryPanel parties={parties} scenario={scenario} />
