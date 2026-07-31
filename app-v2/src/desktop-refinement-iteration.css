@@ -141,6 +141,7 @@
   pointer-events: none;
   transition:
     fill 140ms ease,
+    filter 140ms ease,
     opacity 140ms ease;
 }
 
@@ -151,6 +152,10 @@
 .map-state-fill-excluded {
   fill: url(#excluded-state-pattern);
   opacity: 0.78;
+}
+
+.map-state-fill-highlighted {
+  filter: brightness(0.8) saturate(1.08);
 }
 
 .map-boundaries,
