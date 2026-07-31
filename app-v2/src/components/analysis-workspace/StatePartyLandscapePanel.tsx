@@ -17,7 +17,25 @@ export function StatePartyLandscapePanel({
   excluded,
 }: StatePartyLandscapePanelProps) {
   if (state === null) {
-    return <div className="state-landscape-slot" aria-hidden="true" />
+    return (
+      <section
+        className="workspace-panel state-landscape-panel"
+        aria-labelledby="state-landscape-title"
+        aria-live="polite"
+      >
+        <div className="panel-heading state-landscape-heading">
+          <div>
+            <p className="panel-kicker">State election landscape</p>
+            <h2 id="state-landscape-title">Federal state</h2>
+          </div>
+          <span className="panel-badge">Explore the map</span>
+        </div>
+
+        <p className="result-empty state-landscape-placeholder">
+          Hover over or focus a federal state on the map to see its party shares.
+        </p>
+      </section>
+    )
   }
 
   const partiesByAbbreviation = new Map(
