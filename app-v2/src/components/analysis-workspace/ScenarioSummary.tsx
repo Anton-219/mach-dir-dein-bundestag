@@ -91,11 +91,10 @@ export function ScenarioSummary({
   )
 
   return (
-    <section className="scenario-summary" aria-labelledby="scenario-title">
-      <div className="scenario-title-group">
-        <p className="panel-kicker">Active scenario</p>
-        <h2 id="scenario-title">{summarizeFilterState(filters)}</h2>
-      </div>
+    <section className="scenario-summary" aria-labelledby="scenario-summary-title">
+      <h2 className="visually-hidden" id="scenario-summary-title">
+        Election scenario overview
+      </h2>
 
       <dl className="scenario-facts">
         <div>
