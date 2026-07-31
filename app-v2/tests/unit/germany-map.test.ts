@@ -2,8 +2,10 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  buildGermanyBoundaryPath,
   buildGermanyStatePaths,
   isGermanyStatesGeoJson,
+  orderGermanyStatePathsForInteraction,
   type GermanyStateFeature,
   type GermanyStatesGeoJson,
 } from '../../src/lib/map/germany-map.ts'
@@ -62,6 +64,52 @@ const fixture: GermanyStatesGeoJson = {
   ],
 }
 
+const interactionFixture: GermanyStatesGeoJson = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        id: 'DE-BB',
+        name: 'Brandenburg',
+        type: 'State',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [12, 51],
+            [14, 51],
+            [14, 53],
+            [12, 53],
+            [12, 51],
+          ],
+        ],
+      },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        id: 'DE-BE',
+        name: 'Berlin',
+        type: 'State',
+      },
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [13, 52],
+            [13.1, 52],
+            [13.1, 52.1],
+            [13, 52.1],
+            [13, 52],
+          ],
+        ],
+      },
+    },
+  ],
+}
+
 function extractCoordinates(path: string): readonly (readonly [number, number])[] {
   return [...path.matchAll(/(?:M|L)(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g)].map(
     (match) => [Number(match[1]), Number(match[2])] as const,
@@ -98,6 +146,20 @@ test('projects every state into a shared bounded SVG coordinate system', () => {
   assert.equal(coordinates.length > 0, true)
   assert.equal(coordinates.every(([x]) => x >= 0 && x <= 220), true)
   assert.equal(coordinates.every(([, y]) => y >= 0 && y <= 260), true)
+  assert.equal(
+    paths.every(
+      ({ bounds }) =>
+        bounds.x >= 0 &&
+        bounds.y >= 0 &&
+        bounds.x + bounds.width <= 220 &&
+        bounds.y + bounds.height <= 260 &&
+        bounds.centerX >= bounds.x &&
+        bounds.centerX <= bounds.x + bounds.width &&
+        bounds.centerY >= bounds.y &&
+        bounds.centerY <= bounds.y + bounds.height,
+    ),
+    true,
+  )
 })
 
 test('corrects longitude scale for the map central latitude', () => {
@@ -134,4 +196,26 @@ test('corrects longitude scale for the map central latitude', () => {
 
   assert.equal(coordinates.length > 0, true)
   assert.ok(Math.abs(renderedWidth / renderedHeight - 0.5) < 0.01)
+})
+
+test('renders boundaries as one shared path element', () => {
+  const paths = buildGermanyStatePaths(fixture.features)
+
+  assert.equal(
+    buildGermanyBoundaryPath(paths),
+    paths.map(({ path }) => path).join(' '),
+  )
+})
+
+test('places compact states above surrounding states for pointer interaction', () => {
+  const paths = buildGermanyStatePaths(interactionFixture.features)
+  const berlin = paths.find(({ name }) => name === 'Berlin')
+  const brandenburg = paths.find(({ name }) => name === 'Brandenburg')
+
+  assert.equal(berlin?.isCompact, true)
+  assert.equal(brandenburg?.isCompact, false)
+  assert.deepEqual(
+    orderGermanyStatePathsForInteraction(paths).map(({ name }) => name),
+    ['Brandenburg', 'Berlin'],
+  )
 })
