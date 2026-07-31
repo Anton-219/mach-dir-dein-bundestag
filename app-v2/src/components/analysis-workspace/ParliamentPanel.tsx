@@ -82,13 +82,6 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
                   </title>
                 </path>
               ))}
-              <line
-                className="majority-marker"
-                x1="92"
-                x2="92"
-                y1="12"
-                y2="30"
-              />
             </svg>
 
             <div className="parliament-cutout" aria-hidden="true">
