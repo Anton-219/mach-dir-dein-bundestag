@@ -57,35 +57,65 @@ const filters: FilterState = {
 }
 
 test('builds a sorted party landscape for one state', () => {
-  assert.deepEqual(buildStatePartyLandscape(entries, parties, 'Berlin', filters), [
-    {
-      partyAbbreviation: 'SPD',
-      votes: 60,
-      percentage: 0.6,
-      seatPosition: -15,
-    },
-    {
-      partyAbbreviation: 'CDU',
-      votes: 40,
-      percentage: 0.4,
-      seatPosition: 33,
-    },
-  ])
+  assert.deepEqual(buildStatePartyLandscape(entries, parties, 'Berlin', filters), {
+    status: 'ready',
+    results: [
+      {
+        partyAbbreviation: 'SPD',
+        votes: 60,
+        percentage: 0.6,
+        seatPosition: -15,
+      },
+      {
+        partyAbbreviation: 'CDU',
+        votes: 40,
+        percentage: 0.4,
+        seatPosition: 33,
+      },
+    ],
+  })
 })
 
 test('ignores state exclusions but applies demographic filters', () => {
-  const results = buildStatePartyLandscape(entries, parties, 'Berlin', {
+  const landscape = buildStatePartyLandscape(entries, parties, 'Berlin', {
     ...filters,
     ageGroups: ['18-24'],
     genders: [],
   })
 
-  assert.deepEqual(results, [
-    {
-      partyAbbreviation: 'CDU',
-      votes: 100,
-      percentage: 1,
-      seatPosition: 33,
-    },
-  ])
+  assert.deepEqual(landscape, {
+    status: 'ready',
+    results: [
+      {
+        partyAbbreviation: 'CDU',
+        votes: 100,
+        percentage: 1,
+        seatPosition: 33,
+      },
+    ],
+  })
+})
+
+test('returns an invalid result instead of throwing for negative votes', () => {
+  const landscape = buildStatePartyLandscape(
+    [
+      ...entries,
+      {
+        ...entries[0],
+        votes: -1,
+      },
+    ],
+    parties,
+    'Berlin',
+    filters,
+  )
+
+  assert.equal(landscape.status, 'invalid')
+
+  if (landscape.status !== 'invalid') {
+    assert.fail('Expected the state party landscape to be invalid.')
+  }
+
+  assert.deepEqual(landscape.results, [])
+  assert.match(landscape.message, /could not be calculated/i)
 })
