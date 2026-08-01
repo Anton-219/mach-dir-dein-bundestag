@@ -1,4 +1,9 @@
-import { useState, type KeyboardEvent, type MouseEvent } from 'react'
+import {
+  useEffect,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+} from 'react'
 
 import { describeStateSelection } from '../../lib/filters/index.ts'
 import {
@@ -12,12 +17,14 @@ interface GermanyMapPanelProps {
   features: readonly GermanyStateFeature[]
   excludedStates: readonly string[]
   onToggleState: (state: string) => void
+  onHighlightedStateChange: (state: string | null) => void
 }
 
 export function GermanyMapPanel({
   features,
   excludedStates,
   onToggleState,
+  onHighlightedStateChange,
 }: GermanyMapPanelProps) {
   const [hoveredState, setHoveredState] = useState<string | null>(null)
   const [focusedState, setFocusedState] = useState<string | null>(null)
@@ -31,12 +38,20 @@ export function GermanyMapPanel({
   const stateControlsAvailable = statePaths.length > 0
   const includedStateCount = Math.max(statePaths.length - excludedStates.length, 0)
 
+  useEffect(() => {
+    onHighlightedStateChange(highlightedState)
+  }, [highlightedState, onHighlightedStateChange])
+
   const activateState = (
     event: MouseEvent<HTMLAnchorElement> | KeyboardEvent<HTMLAnchorElement>,
     state: string,
   ) => {
     event.preventDefault()
     onToggleState(state)
+  }
+
+  const resetStates = () => {
+    excludedStates.forEach((state) => onToggleState(state))
   }
 
   return (
@@ -46,9 +61,29 @@ export function GermanyMapPanel({
           <p className="panel-kicker">Regional selection</p>
           <h2 id="map-title">Germany map</h2>
         </div>
-        <span className="panel-badge">
-          {stateControlsAvailable ? `${includedStateCount} included` : 'Unavailable'}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+          <span className="panel-badge">
+            {stateControlsAvailable ? `${includedStateCount} included` : 'Unavailable'}
+          </span>
+          <button
+            className="secondary-action"
+            type="button"
+            disabled={!stateControlsAvailable || excludedStates.length === 0}
+            aria-label="Reset federal state selection"
+            style={{
+              minHeight: '1.45rem',
+              padding: '0.12rem 0.3rem',
+              borderColor: 'transparent',
+              background: 'transparent',
+              color: 'var(--muted)',
+              fontSize: '0.56rem',
+              fontWeight: 700,
+            }}
+            onClick={resetStates}
+          >
+            Reset
+          </button>
+        </div>
       </div>
 
       {stateControlsAvailable ? (

@@ -7,12 +7,10 @@ import {
 } from 'react'
 
 import {
-  countActiveFilterDimensions,
   describeAgeGroupSelection,
   describeElectionMethodSelection,
   describeGenderSelection,
   describeStateSelection,
-  getActiveFilterSummaries,
   summarizeFilterState,
   toggleExcludedValue,
   type FilterDimension,
@@ -51,7 +49,6 @@ interface FilterPanelProps {
   scenario?: ScenarioResult
   onChange: (filters: FilterState) => void
   onOpenFilterChange: (dimension: FilterDimension | null) => void
-  onClearFilter: (dimension: FilterDimension) => void
   onReset: () => void
 }
 
@@ -293,14 +290,16 @@ export function FilterPanel({
   scenario,
   onChange,
   onOpenFilterChange,
-  onClearFilter,
   onReset,
 }: FilterPanelProps) {
   const stateTriggerRef = useRef<HTMLButtonElement>(null)
   const statesOpen = openFilter === 'states'
   const stateControlsAvailable = states.length > 0
-  const activeFilters = getActiveFilterSummaries(filters)
-  const activeCount = countActiveFilterDimensions(filters)
+  const exclusionCount =
+    filters.states.length +
+    filters.ageGroups.length +
+    filters.genders.length +
+    filters.electionMethods.length
   const includedShare =
     scenario?.status === 'ready' || scenario?.status === 'empty'
       ? scenario.includedShare.toLocaleString('en-US', {
@@ -308,6 +307,10 @@ export function FilterPanel({
           maximumFractionDigits: 1,
         })
       : '—'
+  const exclusionSummary =
+    exclusionCount === 0
+      ? 'No exclusions are active.'
+      : `${exclusionCount} ${exclusionCount === 1 ? 'exclusion is' : 'exclusions are'} active.`
 
   const closeStateEditor = useCallback(() => {
     onOpenFilterChange(null)
@@ -325,7 +328,7 @@ export function FilterPanel({
           <p className="panel-kicker">Scenario controls</p>
           <h2 id="filters-title">Filters</h2>
         </div>
-        <span className="panel-badge">{activeCount} active</span>
+        <span className="panel-badge">{exclusionCount} excluded</span>
       </div>
 
       <section className="filter-scenario-card" aria-label="Active scenario">
@@ -338,31 +341,16 @@ export function FilterPanel({
           <button
             className="secondary-action"
             type="button"
-            disabled={activeCount === 0}
+            disabled={exclusionCount === 0}
             onClick={onReset}
           >
             Reset
           </button>
         </div>
 
-        {activeFilters.length > 0 ? (
-          <div className="active-filter-list" aria-label="Active filters">
-            {activeFilters.map((filter) => (
-              <button
-                className="active-filter"
-                type="button"
-                key={filter.dimension}
-                onClick={() => onClearFilter(filter.dimension)}
-                aria-label={`Remove filter: ${filter.label}`}
-              >
-                <span>{filter.label}</span>
-                <span aria-hidden="true">×</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <p className="filter-scenario-empty">No exclusions are active.</p>
-        )}
+        <p className="filter-scenario-empty" aria-live="polite">
+          {exclusionSummary}
+        </p>
       </section>
 
       <div className="filter-list">

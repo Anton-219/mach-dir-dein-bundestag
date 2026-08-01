@@ -7,13 +7,13 @@ import {
 } from '../../lib/election/index.ts'
 import {
   applyFilterState,
-  clearFilterDimension,
   countVotes,
   createEmptyFilterState,
   toggleExcludedValue,
   type FilterDimension,
   type FilterState,
 } from '../../lib/filters/index.ts'
+import { buildStatePartyLandscape } from '../../lib/results/state-party-landscape.ts'
 import { CoalitionPanel } from './CoalitionPanel.tsx'
 import { DemographicPanel } from './DemographicPanel.tsx'
 import { FilterPanel } from './FilterPanel.tsx'
@@ -21,6 +21,7 @@ import { GermanyMapPanel } from './GermanyMapPanel.tsx'
 import { ParliamentPanel } from './ParliamentPanel.tsx'
 import { PartySummaryPanel } from './PartySummaryPanel.tsx'
 import { ScenarioSummary } from './ScenarioSummary.tsx'
+import { StatePartyLandscapePanel } from './StatePartyLandscapePanel.tsx'
 import type { DataState, ScenarioResult } from './types.ts'
 import { WorkspaceHeader } from './WorkspaceHeader.tsx'
 
@@ -50,6 +51,7 @@ function createUnavailableScenario(
 export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
+  const [highlightedState, setHighlightedState] = useState<string | null>(null)
 
   const availableStates = useMemo(() => {
     if (dataState.status !== 'ready') {
@@ -171,6 +173,19 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     }
   }, [dataState, filters])
 
+  const statePartyLandscape = useMemo(() => {
+    if (dataState.status !== 'ready' || highlightedState === null) {
+      return undefined
+    }
+
+    return buildStatePartyLandscape(
+      dataState.data.secondVotes,
+      dataState.data.parties,
+      highlightedState,
+      filters,
+    )
+  }, [dataState, filters, highlightedState])
+
   const resetFilters = () => {
     setFilters(createEmptyFilterState())
     setOpenFilter(null)
@@ -198,26 +213,26 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         id="analysis-workspace"
         aria-busy={dataState.status === 'loading'}
       >
+        <div className="workspace-column workspace-column-left">
+          <FilterPanel
+            filters={filters}
+            states={availableStates}
+            openFilter={openFilter}
+            scenario={scenario}
+            onChange={setFilters}
+            onOpenFilterChange={setOpenFilter}
+            onReset={resetFilters}
+          />
+          <DemographicPanel
+            statVotes={statVotes}
+            secondVotes={secondVotes}
+            filters={filters}
+          />
+        </div>
+
         <ScenarioSummary dataState={dataState} filters={filters} scenario={scenario} />
 
-        <div className="analysis-workspace" aria-label="Election analysis workspace">
-          <div className="workspace-column workspace-column-left">
-            <FilterPanel
-              filters={filters}
-              states={availableStates}
-              openFilter={openFilter}
-              scenario={scenario}
-              onChange={setFilters}
-              onOpenFilterChange={setOpenFilter}
-              onClearFilter={(dimension) =>
-                setFilters((currentFilters) =>
-                  clearFilterDimension(currentFilters, dimension),
-                )
-              }
-              onReset={resetFilters}
-            />
-          </div>
-
+        <div className="analysis-workspace" aria-label="Election results workspace">
           <div className="workspace-column workspace-column-center">
             <ParliamentPanel parties={parties} scenario={scenario} />
             <PartySummaryPanel parties={parties} scenario={scenario} />
@@ -230,11 +245,15 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
               features={germanyStates}
               excludedStates={filters.states}
               onToggleState={toggleState}
+              onHighlightedStateChange={setHighlightedState}
             />
-            <DemographicPanel
-              statVotes={statVotes}
-              secondVotes={secondVotes}
-              filters={filters}
+            <StatePartyLandscapePanel
+              state={highlightedState}
+              landscape={statePartyLandscape}
+              parties={parties}
+              excluded={
+                highlightedState !== null && filters.states.includes(highlightedState)
+              }
             />
           </div>
         </div>
