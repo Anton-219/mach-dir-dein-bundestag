@@ -73,6 +73,8 @@ test('builds a sorted party landscape for one state', () => {
         seatPosition: 33,
       },
     ],
+    votes: 100,
+    shareOfVoters: 100 / 600,
   })
 })
 
@@ -93,6 +95,8 @@ test('ignores state exclusions but applies demographic filters', () => {
         seatPosition: 33,
       },
     ],
+    votes: 100,
+    shareOfVoters: 1,
   })
 })
 

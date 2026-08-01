@@ -7,6 +7,8 @@ export type StatePartyLandscape =
   | {
       status: 'ready'
       results: ElectionResult[]
+      votes: number
+      shareOfVoters: number
     }
   | {
       status: 'invalid'
@@ -21,13 +23,18 @@ export function buildStatePartyLandscape(
   filters: FilterState,
 ): StatePartyLandscape {
   try {
-    const stateEntries = entries.filter(
+    const demographicEntries = entries.filter(
       (entry) =>
-        entry.state === state &&
         !filters.ageGroups.includes(entry.ageGroup) &&
         !filters.genders.includes(entry.gender) &&
         !filters.electionMethods.includes(entry.electionMethod),
     )
+    const stateEntries = demographicEntries.filter((entry) => entry.state === state)
+
+    const countVotes = (selection: readonly VoteEntry[]) =>
+      selection.reduce((total, entry) => total + entry.votes, 0)
+    const votes = countVotes(stateEntries)
+    const nationwideVotes = countVotes(demographicEntries)
 
     const results = aggregateElectionResults(stateEntries, parties)
       .filter((result) => result.votes > 0)
@@ -38,7 +45,12 @@ export function buildStatePartyLandscape(
           left.partyAbbreviation.localeCompare(right.partyAbbreviation),
       )
 
-    return { status: 'ready', results }
+    return {
+      status: 'ready',
+      results,
+      votes,
+      shareOfVoters: nationwideVotes > 0 ? votes / nationwideVotes : 0,
+    }
   } catch (error) {
     const detail = error instanceof Error ? ` ${error.message}` : ''
 

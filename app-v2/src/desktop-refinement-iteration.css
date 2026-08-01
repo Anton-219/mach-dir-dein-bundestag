@@ -370,6 +370,25 @@
   margin-bottom: 0.34rem;
 }
 
+.state-landscape-weight {
+  display: flex;
+  gap: 0.3rem;
+  align-items: baseline;
+  margin: 0 0 0.36rem;
+  padding-bottom: 0.32rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.state-landscape-weight strong {
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.state-landscape-weight span {
+  color: var(--muted);
+  font-size: 0.58rem;
+}
+
 .state-landscape-heading .panel-badge {
   max-width: 8.5rem;
   text-align: right;
