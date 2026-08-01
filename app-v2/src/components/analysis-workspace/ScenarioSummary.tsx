@@ -98,10 +98,6 @@ export function ScenarioSummary({
 
       <dl className="scenario-facts">
         <div>
-          <dt>Election</dt>
-          <dd>2021 confirmed result</dd>
-        </div>
-        <div>
           <dt>Included votes</dt>
           <dd>
             {voteScenario
@@ -112,15 +108,9 @@ export function ScenarioSummary({
               : '—'}
           </dd>
         </div>
-        <div>
-          <dt>Parliament</dt>
-          <dd>
-            {scenario?.status === 'ready'
-              ? `${scenario.totalSeats} seats · ${scenario.majorityThreshold} majority`
-              : scenario?.status === 'empty'
-                ? 'No included votes'
-                : '—'}
-          </dd>
+        <div className="scenario-fact-election">
+          <dt>Election</dt>
+          <dd>2021 confirmed result</dd>
         </div>
       </dl>
 
