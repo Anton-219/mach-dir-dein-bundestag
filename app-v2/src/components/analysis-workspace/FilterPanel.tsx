@@ -6,21 +6,22 @@ import {
   type RefObject,
 } from 'react'
 
+import {
+  describeAgeGroupSelection,
+  describeElectionMethodSelection,
+  describeGenderSelection,
+  describeStateSelection,
+  summarizeFilterState,
+  toggleExcludedValue,
+  type FilterDimension,
+  type FilterState,
+} from '../../lib/filters/index.ts'
 import type {
   AgeGroup,
   ElectionMethod,
   Gender,
 } from '../../models/json-contracts.ts'
-import {
-  countActiveFilterDimensions,
-  describeAgeGroupSelection,
-  describeElectionMethodSelection,
-  describeGenderSelection,
-  describeStateSelection,
-  toggleExcludedValue,
-  type FilterDimension,
-  type FilterState,
-} from '../../lib/filters/index.ts'
+import type { ScenarioResult } from './types.ts'
 
 const ageGroupOptions = [
   { value: '18-24', label: '18–24' },
@@ -45,8 +46,10 @@ interface FilterPanelProps {
   filters: FilterState
   states: readonly string[]
   openFilter: FilterDimension | null
+  scenario?: ScenarioResult
   onChange: (filters: FilterState) => void
   onOpenFilterChange: (dimension: FilterDimension | null) => void
+  onReset: () => void
 }
 
 interface FilterOption<T extends string> {
@@ -284,12 +287,30 @@ export function FilterPanel({
   filters,
   states,
   openFilter,
+  scenario,
   onChange,
   onOpenFilterChange,
+  onReset,
 }: FilterPanelProps) {
   const stateTriggerRef = useRef<HTMLButtonElement>(null)
   const statesOpen = openFilter === 'states'
   const stateControlsAvailable = states.length > 0
+  const exclusionCount =
+    filters.states.length +
+    filters.ageGroups.length +
+    filters.genders.length +
+    filters.electionMethods.length
+  const includedShare =
+    scenario?.status === 'ready' || scenario?.status === 'empty'
+      ? scenario.includedShare.toLocaleString('en-US', {
+          style: 'percent',
+          maximumFractionDigits: 1,
+        })
+      : '—'
+  const exclusionSummary =
+    exclusionCount === 0
+      ? 'No exclusions are active.'
+      : `${exclusionCount} ${exclusionCount === 1 ? 'exclusion is' : 'exclusions are'} active.`
 
   const closeStateEditor = useCallback(() => {
     onOpenFilterChange(null)
@@ -302,15 +323,35 @@ export function FilterPanel({
       aria-labelledby="filters-title"
       aria-describedby="filter-help"
     >
-      <div className="panel-heading">
+      <div className="panel-heading filter-panel-heading">
         <div>
           <p className="panel-kicker">Scenario controls</p>
           <h2 id="filters-title">Filters</h2>
         </div>
-        <span className="panel-badge">
-          {countActiveFilterDimensions(filters)} active
-        </span>
+        <span className="panel-badge">{exclusionCount} excluded</span>
       </div>
+
+      <section className="filter-scenario-card" aria-label="Active scenario">
+        <div className="filter-scenario-heading">
+          <div>
+            <span>Active scenario</span>
+            <strong>{summarizeFilterState(filters)}</strong>
+            <small>{includedShare} of votes included</small>
+          </div>
+          <button
+            className="secondary-action"
+            type="button"
+            disabled={exclusionCount === 0}
+            onClick={onReset}
+          >
+            Reset
+          </button>
+        </div>
+
+        <p className="filter-scenario-empty" aria-live="polite">
+          {exclusionSummary}
+        </p>
+      </section>
 
       <div className="filter-list">
         <StateFilterControl
@@ -368,8 +409,7 @@ export function FilterPanel({
       </div>
 
       <p className="filter-help" id="filter-help">
-        All values are included by default. Select one to toggle it. Press Escape to
-        close the federal state editor.
+        All values start included. Select a value to include or exclude it.
       </p>
     </section>
   )

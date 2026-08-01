@@ -2,6 +2,7 @@ export type GeoPosition = readonly [longitude: number, latitude: number]
 export type LinearRing = readonly GeoPosition[]
 export type PolygonCoordinates = readonly LinearRing[]
 export type MultiPolygonCoordinates = readonly PolygonCoordinates[]
+type ProjectedPosition = readonly [x: number, y: number]
 
 export interface GermanyStateProperties {
   id: string
@@ -31,10 +32,22 @@ export interface GermanyStatesGeoJson {
   features: readonly GermanyStateFeature[]
 }
 
+export interface GermanyStatePathBounds {
+  x: number
+  y: number
+  width: number
+  height: number
+  centerX: number
+  centerY: number
+  area: number
+}
+
 export interface GermanyStatePath {
   id: string
   name: string
   path: string
+  bounds: GermanyStatePathBounds
+  isCompact: boolean
 }
 
 interface MapSize {
@@ -48,6 +61,8 @@ const defaultMapSize: MapSize = {
   height: 260,
   padding: 8,
 }
+
+const compactStateMaximumDimension = 18
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -132,6 +147,27 @@ function getPositions(features: readonly GermanyStateFeature[]): GeoPosition[] {
   )
 }
 
+function buildBounds(positions: readonly ProjectedPosition[]): GermanyStatePathBounds {
+  const xs = positions.map(([x]) => x)
+  const ys = positions.map(([, y]) => y)
+  const x = Math.min(...xs)
+  const y = Math.min(...ys)
+  const maxX = Math.max(...xs)
+  const maxY = Math.max(...ys)
+  const width = maxX - x
+  const height = maxY - y
+
+  return {
+    x,
+    y,
+    width,
+    height,
+    centerX: x + width / 2,
+    centerY: y + height / 2,
+    area: width * height,
+  }
+}
+
 function formatCoordinate(value: number): string {
   return Number(value.toFixed(2)).toString()
 }
@@ -173,17 +209,23 @@ export function buildGermanyStatePaths(
   const offsetX = (size.width - renderedWidth) / 2
   const offsetY = (size.height - renderedHeight) / 2
 
-  const project = ([longitude, latitude]: GeoPosition): readonly [number, number] => [
+  const project = ([longitude, latitude]: GeoPosition): ProjectedPosition => [
     offsetX + (longitude - minLongitude) * longitudeScale * scale,
     offsetY + (maxLatitude - latitude) * scale,
   ]
 
   return features.map((feature) => {
-    const path = getPolygons(feature)
+    const projectedPolygons = getPolygons(feature).map((polygon) =>
+      polygon.map((ring) => ring.map(project)),
+    )
+    const projectedPositions = projectedPolygons.flatMap((polygon) =>
+      polygon.flatMap((ring) => ring),
+    )
+    const bounds = buildBounds(projectedPositions)
+    const path = projectedPolygons
       .flatMap((polygon) =>
         polygon.map((ring) => {
-          const commands = ring.map((position, index) => {
-            const [x, y] = project(position)
+          const commands = ring.map(([x, y], index) => {
             const command = index === 0 ? 'M' : 'L'
             return `${command}${formatCoordinate(x)} ${formatCoordinate(y)}`
           })
@@ -197,6 +239,22 @@ export function buildGermanyStatePaths(
       id: feature.properties.id,
       name: feature.properties.name,
       path,
+      bounds,
+      isCompact: Math.max(bounds.width, bounds.height) < compactStateMaximumDimension,
     }
   })
+}
+
+export function buildGermanyBoundaryPath(
+  statePaths: readonly GermanyStatePath[],
+): string {
+  return statePaths.map(({ path }) => path).join(' ')
+}
+
+export function orderGermanyStatePathsForInteraction(
+  statePaths: readonly GermanyStatePath[],
+): GermanyStatePath[] {
+  return [...statePaths].sort(
+    (left, right) => right.bounds.area - left.bounds.area || left.name.localeCompare(right.name),
+  )
 }

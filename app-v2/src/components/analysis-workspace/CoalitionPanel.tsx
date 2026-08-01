@@ -1,5 +1,7 @@
 /* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- The fixed-height coalition list must remain keyboard-scrollable. */
 
+import type { CSSProperties } from 'react'
+
 import {
   getPartyIdentity,
   prioritizeCoalitions,
@@ -25,7 +27,7 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
       className="workspace-panel coalition-panel"
       aria-labelledby="coalitions-title"
     >
-      <div className="panel-heading">
+      <div className="panel-heading coalition-heading">
         <div>
           <p className="panel-kicker">Majority options</p>
           <h2 id="coalitions-title">Coalitions</h2>
@@ -37,11 +39,11 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
         </span>
       </div>
 
-      {coalitionRows.length > 0 ? (
+      {coalitionRows.length > 0 && scenario?.status === 'ready' ? (
         <>
           <p className="result-note coalition-note" id="coalition-result-note">
-            {coalitionRows.length} options, prioritised by fewer parties and the
-            highest majority margin. CDU and CSU are grouped as CDU+CSU.
+            {coalitionRows.length} minimal winning options, prioritised by fewer parties
+            and majority margin. CDU and CSU are grouped as CDU+CSU.
           </p>
 
           <ol
@@ -50,26 +52,28 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
             aria-labelledby="coalitions-title"
             aria-describedby="coalition-result-note"
           >
-            {coalitionRows.map((coalition, index) => (
-              <li
-                className="coalition-row"
-                key={coalition.members
-                  .map((member) => member.partyAbbreviation)
-                  .join('-')}
-              >
-                <span className="coalition-rank" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
+            {coalitionRows.map((coalition, index) => {
+              const members = coalition.members.map((member) => ({
+                member,
+                identity: getPartyIdentity(member.partyAbbreviation, parties),
+              }))
+              const majorityPosition =
+                (scenario.majorityThreshold / scenario.totalSeats) * 100
 
-                <div className="coalition-combination">
-                  <div className="coalition-members">
-                    {coalition.members.map((member) => {
-                      const identity = getPartyIdentity(
-                        member.partyAbbreviation,
-                        parties,
-                      )
+              return (
+                <li
+                  className="coalition-row"
+                  key={coalition.members
+                    .map((member) => member.partyAbbreviation)
+                    .join('-')}
+                >
+                  <span className="coalition-rank" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
 
-                      return (
+                  <div className="coalition-combination">
+                    <div className="coalition-members">
+                      {members.map(({ member, identity }) => (
                         <span
                           className="coalition-member"
                           title={identity.name}
@@ -83,22 +87,45 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
                           {identity.abbreviation}
                           <span className="visually-hidden"> ({identity.name})</span>
                         </span>
-                      )
-                    })}
-                  </div>
-                  <small>
-                    Minimal winning coalition · {coalition.members.length}{' '}
-                    {coalition.members.length === 1 ? 'party' : 'parties'}
-                  </small>
-                </div>
+                      ))}
+                    </div>
 
-                <div className="coalition-metrics">
-                  <strong>{coalition.seats}</strong>
-                  <span>seats</span>
-                  <small>+{coalition.surplus} majority margin</small>
-                </div>
-              </li>
-            ))}
+                    <div className="coalition-composition" aria-hidden="true">
+                      <div className="coalition-composition-segments">
+                        {members.map(({ member, identity }) => (
+                          <span
+                            key={member.partyAbbreviation}
+                            style={{
+                              width: `${(member.seats / scenario.totalSeats) * 100}%`,
+                              backgroundColor: identity.color,
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <span
+                        className="coalition-majority-marker"
+                        style={
+                          {
+                            '--majority-position': `${majorityPosition}%`,
+                          } as CSSProperties
+                        }
+                      />
+                    </div>
+
+                    <small>
+                      Minimal winning coalition · {coalition.members.length}{' '}
+                      {coalition.members.length === 1 ? 'party' : 'parties'}
+                    </small>
+                  </div>
+
+                  <div className="coalition-metrics">
+                    <strong>{coalition.seats}</strong>
+                    <span>seats</span>
+                    <small>+{coalition.surplus} majority margin</small>
+                  </div>
+                </li>
+              )
+            })}
           </ol>
         </>
       ) : (

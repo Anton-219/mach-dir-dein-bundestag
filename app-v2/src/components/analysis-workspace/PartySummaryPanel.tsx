@@ -1,5 +1,7 @@
 /* oxlint-disable jsx-a11y/no-noninteractive-tabindex -- The fixed-height result list must remain keyboard-scrollable. */
 
+import type { CSSProperties } from 'react'
+
 import {
   buildPresentedPartyResults,
   sortPartyResultsBySeats,
@@ -56,7 +58,11 @@ export function PartySummaryPanel({
             })
 
             return (
-              <li className="party-row" key={result.abbreviation}>
+              <li
+                className="party-row"
+                key={result.abbreviation}
+                style={{ '--party-color': result.color } as CSSProperties}
+              >
                 <span className="party-identity">
                   <span
                     className="party-swatch"
@@ -110,8 +116,7 @@ export function PartySummaryPanel({
       )}
 
       <p className="result-note" id="party-result-note">
-        Rows include every party with seats and are ordered by seat count. Labels and
-        numbers carry the result independently of party color.
+        Rows include every represented party and remain readable independently of color.
       </p>
     </section>
   )
