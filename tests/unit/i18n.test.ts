@@ -31,7 +31,7 @@ test('provides complete German and English presentation tools', () => {
   assert.equal(english.stateName('Bayern'), 'Bavaria')
   assert.equal(
     summarizeFilterState(emptyFilters, german),
-    'Alle Wählerinnen und Wähler in Deutschland',
+    'Alle Wählerstimmen in Deutschland',
   )
   assert.equal(
     summarizeFilterState(emptyFilters, english),
