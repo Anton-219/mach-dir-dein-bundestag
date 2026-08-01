@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint --react-plugin --jsx-a11y-plugin --deny-warnings .",
+    "lint": "oxlint --react-plugin --jsx-a11y-plugin --deny-warnings . && npm run check:copy",
+    "check:copy": "node scripts/check-ui-copy.mjs",
     "test": "tsc -p tsconfig.test.json && node --test .test-dist/tests/unit/*.test.js"
   },
   "dependencies": {
