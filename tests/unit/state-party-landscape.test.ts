@@ -121,5 +121,5 @@ test('returns an invalid result instead of throwing for negative votes', () => {
   }
 
   assert.deepEqual(landscape.results, [])
-  assert.match(landscape.message, /could not be calculated/i)
+  assert.equal(landscape.reason, 'calculationFailed')
 })
