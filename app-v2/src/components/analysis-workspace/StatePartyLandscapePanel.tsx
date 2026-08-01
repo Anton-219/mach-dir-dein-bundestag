@@ -1,18 +1,18 @@
 import type { CSSProperties } from 'react'
 
-import type { ElectionResult } from '../../models/calculation-results.ts'
+import type { StatePartyLandscape } from '../../lib/results/state-party-landscape.ts'
 import type { Party } from '../../models/json-contracts.ts'
 
 interface StatePartyLandscapePanelProps {
   state: string | null
-  results: readonly ElectionResult[]
+  landscape: StatePartyLandscape | undefined
   parties: readonly Party[]
   excluded: boolean
 }
 
 export function StatePartyLandscapePanel({
   state,
-  results,
+  landscape,
   parties,
   excluded,
 }: StatePartyLandscapePanelProps) {
@@ -38,6 +38,7 @@ export function StatePartyLandscapePanel({
     )
   }
 
+  const results = landscape?.status === 'ready' ? landscape.results : []
   const partiesByAbbreviation = new Map(
     parties.map((party) => [party.abbreviation, party]),
   )
@@ -63,11 +64,21 @@ export function StatePartyLandscapePanel({
           <h2 id="state-landscape-title">{state}</h2>
         </div>
         <span className="panel-badge">
-          {excluded ? 'Excluded from scenario' : 'Included in scenario'}
+          {landscape?.status === 'invalid'
+            ? 'Data error'
+            : excluded
+              ? 'Excluded from scenario'
+              : 'Included in scenario'}
         </span>
       </div>
 
-      {partyRows.length > 0 ? (
+      {landscape?.status === 'invalid' ? (
+        <p className="result-empty" role="alert">
+          {landscape.message}
+        </p>
+      ) : landscape?.status !== 'ready' ? (
+        <p className="result-empty">The state result is not available yet.</p>
+      ) : partyRows.length > 0 ? (
         <ul className="state-party-list" aria-labelledby="state-landscape-title">
           {partyRows.map((result) => {
             const percentage = Math.min(Math.max(result.percentage, 0), 1)
@@ -119,10 +130,12 @@ export function StatePartyLandscapePanel({
         </p>
       )}
 
-      <p className="state-landscape-note">
-        Shares respect age, gender, and voting-method filters. State exclusions do not
-        hide this comparison.
-      </p>
+      {landscape?.status === 'ready' ? (
+        <p className="state-landscape-note">
+          Shares respect age, gender, and voting-method filters. State exclusions do not
+          hide this comparison.
+        </p>
+      ) : null}
     </section>
   )
 }
