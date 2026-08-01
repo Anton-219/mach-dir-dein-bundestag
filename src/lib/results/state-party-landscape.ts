@@ -51,8 +51,7 @@ export function buildStatePartyLandscape(
       votes,
       shareOfVoters: nationwideVotes > 0 ? votes / nationwideVotes : 0,
     }
-  } catch (error) {
-    console.error(error)
+  } catch {
     return {
       status: 'invalid',
       results: [],
