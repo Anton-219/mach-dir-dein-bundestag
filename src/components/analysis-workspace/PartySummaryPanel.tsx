@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react'
 
+import { getScenarioReasonText, useI18n } from '../../i18n/index.ts'
 import {
   buildPresentedPartyResults,
   sortPartyResultsBySeats,
@@ -18,6 +19,8 @@ export function PartySummaryPanel({
   parties,
   scenario,
 }: PartySummaryPanelProps) {
+  const i18n = useI18n()
+  const { messages } = i18n
   const partyRows =
     scenario?.status === 'ready'
       ? sortPartyResultsBySeats(
@@ -28,18 +31,19 @@ export function PartySummaryPanel({
           ),
         )
       : []
-  const resultMessage =
-    scenario?.message ?? 'Results are unavailable until the election data has loaded.'
+  const resultMessage = getScenarioReasonText(scenario?.reason, i18n)
 
   return (
     <section className="workspace-panel party-panel" aria-labelledby="parties-title">
       <div className="panel-heading">
         <div>
-          <p className="panel-kicker">Current result</p>
-          <h2 id="parties-title">Parties</h2>
+          <p className="panel-kicker">{messages.parties.kicker}</p>
+          <h2 id="parties-title">{messages.parties.title}</h2>
         </div>
         <span className="panel-badge">
-          {partyRows.length > 0 ? `${partyRows.length} represented` : 'No result'}
+          {partyRows.length > 0
+            ? messages.parties.represented(partyRows.length)
+            : messages.common.noResult}
         </span>
       </div>
 
@@ -52,10 +56,7 @@ export function PartySummaryPanel({
         >
           {partyRows.map((result) => {
             const percentage = Math.min(Math.max(result.percentage, 0), 1)
-            const formattedPercentage = percentage.toLocaleString('en-US', {
-              style: 'percent',
-              maximumFractionDigits: 1,
-            })
+            const formattedPercentage = i18n.formatPercent(percentage)
 
             return (
               <li
@@ -91,17 +92,21 @@ export function PartySummaryPanel({
                     />
                   </span>
                   <strong>
-                    <span className="visually-hidden">Vote share: </span>
+                    <span className="visually-hidden">
+                      {messages.parties.voteShare}{' '}
+                    </span>
                     {formattedPercentage}
                   </strong>
                 </span>
 
                 <span className="party-seats">
                   <strong>
-                    <span className="visually-hidden">Seats: </span>
+                    <span className="visually-hidden">
+                      {messages.parties.seats}{' '}
+                    </span>
                     {result.seats}
                   </strong>
-                  <small aria-hidden="true">seats</small>
+                  <small aria-hidden="true">{messages.parties.seatsShort}</small>
                 </span>
               </li>
             )
@@ -116,7 +121,7 @@ export function PartySummaryPanel({
       )}
 
       <p className="result-note" id="party-result-note">
-        Rows include every represented party and remain readable independently of color.
+        {messages.parties.note}
       </p>
     </section>
   )

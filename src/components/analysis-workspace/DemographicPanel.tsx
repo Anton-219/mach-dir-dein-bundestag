@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/index.ts'
 import type { FilterState } from '../../lib/filters/index.ts'
 import type {
   AgeGroup,
@@ -14,13 +15,6 @@ const ageGroups = [
   { value: '25-34', label: '25–34' },
   { value: '18-24', label: '18–24' },
 ] as const satisfies readonly { value: AgeGroup; label: string }[]
-
-function formatShare(value: number, total: number) {
-  return (total > 0 ? value / total : 0).toLocaleString('en-US', {
-    style: 'percent',
-    maximumFractionDigits: 1,
-  })
-}
 
 function buildAgeGenderTotals(statVotes: readonly StatVotes[]) {
   const totals: Record<Gender, Record<AgeGroup, number>> = {
@@ -58,6 +52,7 @@ export function DemographicPanel({
   secondVotes: readonly VoteEntry[]
   filters: FilterState
 }) {
+  const { messages, formatPercent } = useI18n()
   const ageGenderTotals = buildAgeGenderTotals(statVotes)
   const maximumAgeGenderValue = Math.max(
     1,
@@ -84,19 +79,17 @@ export function DemographicPanel({
     >
       <div className="panel-heading demographic-heading">
         <div>
-          <p className="panel-kicker">Electorate context</p>
-          <h2 id="demographic-title">Demographics</h2>
+          <p className="panel-kicker">{messages.demographics.kicker}</p>
+          <h2 id="demographic-title">{messages.demographics.title}</h2>
         </div>
-        <span className="panel-badge">Reference data</span>
+        <span className="panel-badge">{messages.demographics.badge}</span>
       </div>
 
       <div className="demographic-content">
         <figure className="age-gender-chart">
-          <figcaption>Age and gender distribution</figcaption>
+          <figcaption>{messages.demographics.ageGenderTitle}</figcaption>
           <p className="visually-hidden">
-            Reference distribution by age group and recorded gender. Excluded filter
-            values are visually muted; the filter controls provide the current selection
-            state.
+            {messages.demographics.ageGenderDescription}
           </p>
           <div className="age-gender-plot" aria-hidden="true">
             {ageGroups.map(({ value, label }) => {
@@ -128,13 +121,13 @@ export function DemographicPanel({
             })}
           </div>
           <div className="demographic-axis" aria-hidden="true">
-            <span>Men</span>
-            <span>Women</span>
+            <span>{messages.demographics.men}</span>
+            <span>{messages.demographics.women}</span>
           </div>
         </figure>
 
         <figure className="method-chart">
-          <figcaption>Voting method</figcaption>
+          <figcaption>{messages.demographics.votingMethod}</figcaption>
           <div className="method-track" aria-hidden="true">
             <span
               className={`method-segment method-segment-postal${filters.electionMethods.includes('postal') ? ' demographic-bar-excluded' : ''}`}
@@ -147,12 +140,12 @@ export function DemographicPanel({
           </div>
           <div className="method-labels">
             <span>
-              <strong>Postal</strong>
-              {formatShare(methodTotals.postal, totalMethodVotes)}
+              <strong>{messages.demographics.postal}</strong>
+              {formatPercent(postalShare)}
             </span>
             <span>
-              <strong>In person</strong>
-              {formatShare(methodTotals['in-person'], totalMethodVotes)}
+              <strong>{messages.demographics.inPerson}</strong>
+              {formatPercent(inPersonShare)}
             </span>
           </div>
         </figure>

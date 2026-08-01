@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { useI18n, type ScenarioReason } from '../../i18n/index.ts'
 import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts'
 import {
   aggregateElectionResults,
@@ -27,13 +28,13 @@ import { WorkspaceHeader } from './WorkspaceHeader.tsx'
 
 function createUnavailableScenario(
   status: 'empty' | 'invalid',
-  message: string,
+  reason: ScenarioReason,
   includedVotes: number,
   totalVotes: number,
 ): ScenarioResult {
   return {
     status,
-    message,
+    reason,
     electionResults: [],
     seatResults: [],
     coalitions: [],
@@ -49,6 +50,7 @@ function createUnavailableScenario(
 }
 
 export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
+  const { messages } = useI18n()
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
   const [highlightedState, setHighlightedState] = useState<string | null>(null)
@@ -75,18 +77,13 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
       totalVotes = countVotes(dataState.data.secondVotes)
 
       if (!Number.isFinite(totalVotes) || totalVotes <= 0) {
-        return createUnavailableScenario(
-          'invalid',
-          'The election data contains no usable second votes.',
-          0,
-          0,
-        )
+        return createUnavailableScenario('invalid', 'noUsableVotes', 0, 0)
       }
 
       if (!Number.isFinite(includedVotes) || includedVotes < 0) {
         return createUnavailableScenario(
           'invalid',
-          'The active filters produced an invalid vote total.',
+          'invalidVoteTotal',
           0,
           totalVotes,
         )
@@ -95,7 +92,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
       if (includedVotes === 0) {
         return createUnavailableScenario(
           'empty',
-          'No votes are included. Re-enable at least one value in the filters.',
+          'noVotesIncluded',
           includedVotes,
           totalVotes,
         )
@@ -139,7 +136,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
       ) {
         return createUnavailableScenario(
           'invalid',
-          'The active scenario produced an invalid parliamentary result.',
+          'invalidParliament',
           includedVotes,
           totalVotes,
         )
@@ -161,12 +158,10 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         totalSeats,
         majorityThreshold,
       }
-    } catch (error) {
-      const detail = error instanceof Error ? ` ${error.message}` : ''
-
+    } catch {
       return createUnavailableScenario(
         'invalid',
-        `The active scenario could not be calculated.${detail}`,
+        'calculationFailed',
         includedVotes,
         totalVotes,
       )
@@ -211,6 +206,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
       <main
         className="analysis-shell"
         id="analysis-workspace"
+        aria-label={messages.workspace.ariaLabel}
         aria-busy={dataState.status === 'loading'}
       >
         <div className="workspace-column workspace-column-left">
@@ -232,7 +228,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
 
         <ScenarioSummary dataState={dataState} filters={filters} scenario={scenario} />
 
-        <div className="analysis-workspace" aria-label="Election results workspace">
+        <div className="analysis-workspace">
           <div className="workspace-column workspace-column-center">
             <ParliamentPanel parties={parties} scenario={scenario} />
             <PartySummaryPanel parties={parties} scenario={scenario} />
@@ -265,12 +261,10 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         aria-labelledby="methodology-title"
       >
         <h2 className="visually-hidden" id="methodology-title">
-          Methodology and data
+          {messages.footer.title}
         </h2>
         <p>
-          <strong>Methodology:</strong> confirmed 2021 election data and published
-          statistical voting groups. Filtered scenarios are exploratory comparisons,
-          not forecasts or voting recommendations.
+          <strong>{messages.footer.label}</strong> {messages.footer.text}
         </p>
       </footer>
     </div>

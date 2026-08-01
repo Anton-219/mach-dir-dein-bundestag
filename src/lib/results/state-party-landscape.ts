@@ -13,7 +13,7 @@ export type StatePartyLandscape =
   | {
       status: 'invalid'
       results: []
-      message: string
+      reason: 'calculationFailed'
     }
 
 export function buildStatePartyLandscape(
@@ -51,13 +51,11 @@ export function buildStatePartyLandscape(
       votes,
       shareOfVoters: nationwideVotes > 0 ? votes / nationwideVotes : 0,
     }
-  } catch (error) {
-    const detail = error instanceof Error ? ` ${error.message}` : ''
-
+  } catch {
     return {
       status: 'invalid',
       results: [],
-      message: `The state result could not be calculated.${detail}`,
+      reason: 'calculationFailed',
     }
   }
 }
