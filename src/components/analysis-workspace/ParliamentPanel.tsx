@@ -1,3 +1,4 @@
+import { getScenarioReasonText, useI18n } from '../../i18n/index.ts'
 import {
   buildParliamentSegments,
   buildPresentedPartyResults,
@@ -13,6 +14,8 @@ interface ParliamentPanelProps {
 const parliamentArc = 'M 12 92 A 80 80 0 0 1 172 92'
 
 export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
+  const i18n = useI18n()
+  const { messages } = i18n
   const readyScenario = scenario?.status === 'ready' ? scenario : undefined
   const partyResults = readyScenario
     ? buildPresentedPartyResults(
@@ -22,8 +25,7 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
       )
     : []
   const segments = buildParliamentSegments(partyResults)
-  const resultMessage =
-    scenario?.message ?? 'Results are unavailable until the election data has loaded.'
+  const resultMessage = getScenarioReasonText(scenario?.reason, i18n)
 
   return (
     <section
@@ -32,18 +34,21 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
     >
       <div className="panel-heading parliament-heading">
         <div>
-          <p className="panel-kicker">Calculated result</p>
-          <h2 id="parliament-title">Bundestag</h2>
+          <p className="panel-kicker">{messages.parliament.kicker}</p>
+          <h2 id="parliament-title">{messages.parliament.title}</h2>
         </div>
         <div className="parliament-totals">
           <span>
-            <strong>{readyScenario?.totalSeats ?? '—'}</strong> seats
+            <strong>{readyScenario?.totalSeats ?? '—'}</strong>{' '}
+            {messages.parliament.seats}
           </span>
           <span>
-            <strong>{readyScenario?.majorityThreshold ?? '—'}</strong> majority
+            <strong>{readyScenario?.majorityThreshold ?? '—'}</strong>{' '}
+            {messages.parliament.majority}
           </span>
           <span>
-            <strong>{segments.length > 0 ? partyResults.length : '—'}</strong> parties
+            <strong>{segments.length > 0 ? partyResults.length : '—'}</strong>{' '}
+            {messages.parliament.parties}
           </span>
         </div>
       </div>
@@ -55,12 +60,21 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
               viewBox="0 0 184 104"
               aria-labelledby="parliament-chart-title parliament-chart-description"
             >
-              <title id="parliament-chart-title">Bundestag seat distribution</title>
+              <title id="parliament-chart-title">
+                {messages.parliament.chartTitle}
+              </title>
               <desc id="parliament-chart-description">
-                {partyResults
-                  .map((result) => `${result.name}: ${result.seats} seats`)
-                  .join(', ')}
-                . The majority threshold is {readyScenario.majorityThreshold} seats.
+                {messages.parliament.chartDescription(
+                  i18n.formatList(
+                    partyResults.map((result) =>
+                      messages.parliament.partySeatDescription(
+                        result.name,
+                        result.seats,
+                      ),
+                    ),
+                  ),
+                  readyScenario.majorityThreshold,
+                )}
               </desc>
               <path
                 className="parliament-track"
@@ -78,7 +92,10 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
                   key={segment.abbreviation}
                 >
                   <title>
-                    {segment.name}: {segment.seats} seats
+                    {messages.parliament.partySeatDescription(
+                      segment.name,
+                      segment.seats,
+                    )}
                   </title>
                 </path>
               ))}
@@ -86,16 +103,21 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
 
             <div className="parliament-cutout" aria-hidden="true">
               <strong>{readyScenario.totalSeats}</strong>
-              <span>total seats</span>
+              <span>{messages.parliament.totalSeats}</span>
             </div>
           </div>
 
           <p className="majority-axis">
-            Majority threshold:{' '}
-            <strong>{readyScenario.majorityThreshold} seats</strong>
+            {messages.parliament.majorityThreshold}{' '}
+            <strong>
+              {messages.common.seatCount(readyScenario.majorityThreshold)}
+            </strong>
           </p>
 
-          <ul className="parliament-legend" aria-label="Parties represented in parliament">
+          <ul
+            className="parliament-legend"
+            aria-label={messages.parliament.representedPartiesAriaLabel}
+          >
             {partyResults.map((result) => (
               <li key={result.abbreviation}>
                 <span
@@ -106,7 +128,10 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
                 <span className="visually-hidden">{result.name}, </span>
                 <span>{result.abbreviation}</span>
                 <strong>{result.seats}</strong>
-                <span className="visually-hidden"> seats</span>
+                <span className="visually-hidden">
+                  {' '}
+                  {messages.parliament.seats}
+                </span>
               </li>
             ))}
           </ul>
@@ -119,10 +144,7 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
         </p>
       )}
 
-      <p className="result-note parliament-note">
-        Parties follow their left-to-right seat positions. CDU and CSU remain separate
-        here and are grouped only for coalition calculations.
-      </p>
+      <p className="result-note parliament-note">{messages.parliament.note}</p>
     </section>
   )
 }
