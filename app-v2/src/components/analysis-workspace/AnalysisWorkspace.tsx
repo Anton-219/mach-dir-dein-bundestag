@@ -173,9 +173,9 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     }
   }, [dataState, filters])
 
-  const statePartyResults = useMemo(() => {
+  const statePartyLandscape = useMemo(() => {
     if (dataState.status !== 'ready' || highlightedState === null) {
-      return []
+      return undefined
     }
 
     return buildStatePartyLandscape(
@@ -249,7 +249,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
             />
             <StatePartyLandscapePanel
               state={highlightedState}
-              results={statePartyResults}
+              landscape={statePartyLandscape}
               parties={parties}
               excluded={
                 highlightedState !== null && filters.states.includes(highlightedState)
