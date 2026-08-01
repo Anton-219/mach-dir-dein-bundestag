@@ -7,6 +7,11 @@ import {
   describeStateSelection,
   summarizeFilterState,
 } from '../../src/i18n/formatters.ts'
+import {
+  readStorageValue,
+  writeStorageValue,
+  type KeyValueStorage,
+} from '../../src/i18n/storage.ts'
 import type { FilterState } from '../../src/lib/filters/filter-state.ts'
 
 const emptyFilters: FilterState = {
@@ -58,4 +63,26 @@ test('uses locale-specific number and percentage formatting', () => {
   assert.equal(english.formatNumber(1234567), '1,234,567')
   assert.match(german.formatPercent(0.125), /12,5/)
   assert.match(english.formatPercent(0.125), /12\.5/)
+})
+
+test('tolerates unavailable locale storage', () => {
+  const throwingStorage: KeyValueStorage = {
+    getItem: () => {
+      throw new Error('Storage blocked')
+    },
+    setItem: () => {
+      throw new Error('Storage blocked')
+    },
+  }
+
+  assert.equal(
+    readStorageValue(() => {
+      throw new Error('Storage unavailable')
+    }, 'locale'),
+    null,
+  )
+  assert.equal(readStorageValue(() => throwingStorage, 'locale'), null)
+  assert.doesNotThrow(() =>
+    writeStorageValue(() => throwingStorage, 'locale', 'de'),
+  )
 })
