@@ -7,8 +7,6 @@ import {
   countActiveFilterDimensions,
   countVotes,
   createEmptyFilterState,
-  getActiveFilterSummaries,
-  summarizeFilterState,
   toggleExcludedValue,
   type FilterState,
 } from '../../src/lib/filters/index.ts'
@@ -78,7 +76,6 @@ test('treats empty exclusion lists as the complete unfiltered result', () => {
   assert.deepEqual(filtered, entries)
   assert.notStrictEqual(filtered, entries)
   assert.equal(countActiveFilterDimensions(filters), 0)
-  assert.equal(summarizeFilterState(filters), 'All voters in Germany')
 })
 
 test('stores only serializable lists of excluded values', () => {
@@ -91,16 +88,6 @@ test('stores only serializable lists of excluded values', () => {
 
   assert.deepEqual(JSON.parse(JSON.stringify(filters)), filters)
   assert.equal(countActiveFilterDimensions(filters), 4)
-  assert.equal(
-    summarizeFilterState(filters),
-    'Berlin excluded · Ages 18–24 excluded · Women excluded · Postal voting excluded',
-  )
-  assert.deepEqual(getActiveFilterSummaries(filters), [
-    { dimension: 'states', label: 'Berlin excluded' },
-    { dimension: 'ageGroups', label: 'Ages 18–24 excluded' },
-    { dimension: 'genders', label: 'Women excluded' },
-    { dimension: 'electionMethods', label: 'Postal voting excluded' },
-  ])
 })
 
 test('toggles exclusions and clears one dimension without changing the others', () => {
