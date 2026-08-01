@@ -51,7 +51,7 @@
   border-left: 0;
 }
 
-.scenario-fact-election {
+.scenario-facts .scenario-fact-election {
   margin-left: auto;
   padding-left: 0;
   border-left: 0;
@@ -145,7 +145,6 @@
   flex: none;
   margin: 0.5rem 0 0;
   padding-top: 0.48rem;
-  border-top: 1px solid var(--border);
   font-size: 0.64rem;
   line-height: 1.4;
 }
