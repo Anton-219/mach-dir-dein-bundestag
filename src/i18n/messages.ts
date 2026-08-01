@@ -330,7 +330,7 @@ export const germanMessages: MessageCatalog = {
     excludedCount: (count: number) => `${count} ausgeschlossen`,
     stateDataUnavailable: 'Bundeslanddaten sind noch nicht verfügbar',
     summaries: {
-      allVoters: 'Alle Wählerinnen und Wähler in Deutschland',
+      allVoters: 'Alle Wählerstimmen in Deutschland',
       allStates: 'Alle Bundesländer einbezogen',
       statesCount: (count: number) => `${count} Bundesländer ausgeschlossen`,
       statesNamed: (names: string) => `${names} ausgeschlossen`,
@@ -393,7 +393,7 @@ export const germanMessages: MessageCatalog = {
     majorityThreshold: 'Mehrheitsschwelle:',
     representedPartiesAriaLabel: 'Im Parlament vertretene Parteien',
     note:
-      'Die Parteien folgen ihrer Sitzposition von links nach rechts. CDU und CSU bleiben hier getrennt und werden nur für Koalitionsberechnungen zusammengefasst.',
+      'Die Parteien folgen ihrer Sitzposition. CDU und CSU bleiben hier getrennt.',
   },
   parties: {
     kicker: 'Aktuelles Ergebnis',
