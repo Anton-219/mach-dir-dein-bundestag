@@ -1,12 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
+import { I18nProvider } from './i18n/index.ts'
 import './styles.css'
 import './filter-styles.css'
 import './result-styles.css'
 import './accessibility-styles.css'
 import './desktop-refinement.css'
 import './desktop-refinement-iteration.css'
+import './i18n-styles.css'
 
 const rootElement = document.getElementById('root')
 
@@ -16,6 +18,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App />
+    <I18nProvider>
+      <App />
+    </I18nProvider>
   </StrictMode>,
 )
