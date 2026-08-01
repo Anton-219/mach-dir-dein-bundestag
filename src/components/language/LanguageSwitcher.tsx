@@ -1,15 +1,15 @@
-import { supportedLocales } from '../../i18n/messages.ts'
 import { useI18n } from '../../i18n/index.ts'
+import { supportedLocales } from '../../i18n/messages.ts'
 
 export function LanguageSwitcher() {
   const { locale, messages, setLocale } = useI18n()
 
   return (
-    <div
-      className="language-switcher"
-      role="group"
-      aria-label={messages.language.selectionLabel}
-    >
+    <fieldset className="language-switcher">
+      <legend className="visually-hidden">
+        {messages.language.selectionLabel}
+      </legend>
+
       <svg
         className="language-switcher-icon"
         viewBox="0 0 24 24"
@@ -40,6 +40,6 @@ export function LanguageSwitcher() {
           </span>
         )
       })}
-    </div>
+    </fieldset>
   )
 }
