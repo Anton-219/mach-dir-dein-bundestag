@@ -1,15 +1,39 @@
-import './App.css'
-import { BackgroundIconPlugin } from './components/charts/chart-plugins/BackgrounIconPlugin.tsx';
-import OverviewLayout from "./components/layout/OverviewLayout.tsx";
-import {Chart} from "chart.js";
-import ChartAnnotation from "chartjs-plugin-annotation";
+import { useEffect, useState } from 'react'
 
+import { AnalysisWorkspace } from './components/analysis-workspace/AnalysisWorkspace.tsx'
+import type { DataState } from './components/analysis-workspace/types.ts'
+import { loadElectionData } from './data/loaders.ts'
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error
+    ? error.message
+    : 'The election data could not be loaded for an unknown reason.'
+}
 
 function App() {
-    Chart.register(ChartAnnotation, BackgroundIconPlugin);
-    return <div>
-        <OverviewLayout/>
-    </div>
+  const [dataState, setDataState] = useState<DataState>({ status: 'loading' })
+
+  useEffect(() => {
+    let isCurrent = true
+
+    loadElectionData()
+      .then((data) => {
+        if (isCurrent) {
+          setDataState({ status: 'ready', data })
+        }
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setDataState({ status: 'error', message: getErrorMessage(error) })
+        }
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
+  return <AnalysisWorkspace dataState={dataState} />
 }
 
 export default App
