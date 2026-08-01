@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 
+import { useI18n } from '../../i18n/index.ts'
 import type { StatePartyLandscape } from '../../lib/results/state-party-landscape.ts'
 import type { Party } from '../../models/json-contracts.ts'
 
@@ -16,6 +17,9 @@ export function StatePartyLandscapePanel({
   parties,
   excluded,
 }: StatePartyLandscapePanelProps) {
+  const i18n = useI18n()
+  const { messages } = i18n
+
   if (state === null) {
     return (
       <section
@@ -25,13 +29,13 @@ export function StatePartyLandscapePanel({
       >
         <div className="panel-heading state-landscape-heading">
           <div>
-            <h2 id="state-landscape-title">Federal state</h2>
+            <h2 id="state-landscape-title">{messages.stateLandscape.title}</h2>
           </div>
-          <span className="panel-badge">Explore the map</span>
+          <span className="panel-badge">{messages.stateLandscape.exploreMap}</span>
         </div>
 
         <p className="result-empty state-landscape-placeholder">
-          Hover over or focus a federal state on the map to see its party shares.
+          {messages.stateLandscape.placeholder}
         </p>
       </section>
     )
@@ -59,45 +63,37 @@ export function StatePartyLandscapePanel({
     >
       <div className="panel-heading state-landscape-heading">
         <div>
-          <h2 id="state-landscape-title">{state}</h2>
+          <h2 id="state-landscape-title">{i18n.stateName(state)}</h2>
         </div>
         <span className="panel-badge">
           {landscape?.status === 'invalid'
-            ? 'Data error'
+            ? messages.stateLandscape.dataError
             : excluded
-              ? 'Excluded from scenario'
-              : 'Included in scenario'}
+              ? messages.stateLandscape.excludedFromScenario
+              : messages.stateLandscape.includedInScenario}
         </span>
       </div>
 
       {landscape?.status === 'ready' ? (
         <p className="state-landscape-weight">
-          <strong>
-            {landscape.shareOfVoters.toLocaleString('en-US', {
-              style: 'percent',
-              maximumFractionDigits: 1,
-            })}
-          </strong>{' '}
-          <span>
-            of all voters · {landscape.votes.toLocaleString('en-US')} votes
-          </span>
+          {messages.stateLandscape.weight(
+            i18n.formatPercent(landscape.shareOfVoters),
+            i18n.formatNumber(landscape.votes),
+          )}
         </p>
       ) : null}
 
       {landscape?.status === 'invalid' ? (
         <p className="result-empty" role="alert">
-          {landscape.message}
+          {messages.stateLandscape.calculationFailed}
         </p>
       ) : landscape?.status !== 'ready' ? (
-        <p className="result-empty">The state result is not available yet.</p>
+        <p className="result-empty">{messages.stateLandscape.unavailable}</p>
       ) : partyRows.length > 0 ? (
         <ul className="state-party-list" aria-labelledby="state-landscape-title">
           {partyRows.map((result) => {
             const percentage = Math.min(Math.max(result.percentage, 0), 1)
-            const formattedPercentage = percentage.toLocaleString('en-US', {
-              style: 'percent',
-              maximumFractionDigits: 1,
-            })
+            const formattedPercentage = i18n.formatPercent(percentage)
 
             return (
               <li
@@ -126,7 +122,9 @@ export function StatePartyLandscapePanel({
                     />
                   </span>
                   <strong>
-                    <span className="visually-hidden">Vote share: </span>
+                    <span className="visually-hidden">
+                      {messages.stateLandscape.voteShare}{' '}
+                    </span>
                     {formattedPercentage}
                   </strong>
                 </span>
@@ -135,16 +133,11 @@ export function StatePartyLandscapePanel({
           })}
         </ul>
       ) : (
-        <p className="result-empty">
-          No votes match the active demographic filters for this state.
-        </p>
+        <p className="result-empty">{messages.stateLandscape.noMatchingVotes}</p>
       )}
 
       {landscape?.status === 'ready' ? (
-        <p className="state-landscape-note">
-          Shares respect age, gender, and voting-method filters. State exclusions do not
-          hide this comparison.
-        </p>
+        <p className="state-landscape-note">{messages.stateLandscape.note}</p>
       ) : null}
     </section>
   )
