@@ -7,9 +7,11 @@
 }
 
 .language-switcher {
+  min-inline-size: 0;
   display: inline-flex;
   align-items: center;
   gap: 0.22rem;
+  margin: 0;
   padding: 0.18rem 0.32rem;
   border: 1px solid var(--border);
   border-radius: 999px;
