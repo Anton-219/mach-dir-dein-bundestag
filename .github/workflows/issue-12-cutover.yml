@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - agent/issue-12-root-cutover
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -11,6 +14,7 @@ permissions:
 jobs:
   migrate:
     name: Move app-v2 to the repository root
+    if: github.event_name == 'push' || github.head_ref == 'agent/issue-12-root-cutover'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
