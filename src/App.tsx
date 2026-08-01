@@ -4,12 +4,6 @@ import { AnalysisWorkspace } from './components/analysis-workspace/AnalysisWorks
 import type { DataState } from './components/analysis-workspace/types.ts'
 import { loadElectionData } from './data/loaders.ts'
 
-function getErrorMessage(error: unknown): string {
-  return error instanceof Error
-    ? error.message
-    : 'The election data could not be loaded for an unknown reason.'
-}
-
 function App() {
   const [dataState, setDataState] = useState<DataState>({ status: 'loading' })
 
@@ -23,8 +17,9 @@ function App() {
         }
       })
       .catch((error: unknown) => {
+        console.error(error)
         if (isCurrent) {
-          setDataState({ status: 'error', message: getErrorMessage(error) })
+          setDataState({ status: 'error' })
         }
       })
 
