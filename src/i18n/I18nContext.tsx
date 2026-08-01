@@ -13,6 +13,7 @@ import {
   supportedLocales,
   type Locale,
 } from './messages.ts'
+import { readStorageValue, writeStorageValue } from './storage.ts'
 
 interface I18nContextValue extends TranslationTools {
   setLocale: (locale: Locale) => void
@@ -30,7 +31,7 @@ function detectInitialLocale(): Locale {
     return defaultLocale
   }
 
-  const storedLocale = window.localStorage.getItem(storageKey)
+  const storedLocale = readStorageValue(() => window.localStorage, storageKey)
   if (isLocale(storedLocale)) {
     return storedLocale
   }
@@ -53,7 +54,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   )
 
   useEffect(() => {
-    window.localStorage.setItem(storageKey, locale)
+    writeStorageValue(() => window.localStorage, storageKey, locale)
     document.documentElement.lang = locale
     document.title = translationTools.messages.meta.title
 
