@@ -187,6 +187,7 @@ h2 {
 }
 
 .scenario-facts dd {
+  margin-left: 0;
   margin-bottom: 0;
   overflow: hidden;
   font-size: 0.76rem;
