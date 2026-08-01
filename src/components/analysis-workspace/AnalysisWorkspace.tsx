@@ -158,8 +158,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         totalSeats,
         majorityThreshold,
       }
-    } catch (error) {
-      console.error(error)
+    } catch {
       return createUnavailableScenario(
         'invalid',
         'calculationFailed',
