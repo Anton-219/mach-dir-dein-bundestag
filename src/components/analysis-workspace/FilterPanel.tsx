@@ -12,6 +12,9 @@ import {
   describeGenderSelection,
   describeStateSelection,
   summarizeFilterState,
+  useI18n,
+} from '../../i18n/index.ts'
+import {
   toggleExcludedValue,
   type FilterDimension,
   type FilterState,
@@ -32,15 +35,11 @@ const ageGroupOptions = [
   { value: '65+', label: '65+' },
 ] as const satisfies readonly { value: AgeGroup; label: string }[]
 
-const genderOptions = [
-  { value: 'm', label: 'Men' },
-  { value: 'w', label: 'Women' },
-] as const satisfies readonly { value: Gender; label: string }[]
-
-const electionMethodOptions = [
-  { value: 'postal', label: 'Postal voting' },
-  { value: 'in-person', label: 'In-person voting' },
-] as const satisfies readonly { value: ElectionMethod; label: string }[]
+const genderValues = ['m', 'w'] as const satisfies readonly Gender[]
+const electionMethodValues = [
+  'postal',
+  'in-person',
+] as const satisfies readonly ElectionMethod[]
 
 interface FilterPanelProps {
   filters: FilterState
@@ -70,9 +69,13 @@ function ValueToggleGroup<T extends string>({
   wide?: boolean
   onChange: (excludedValues: readonly T[]) => void
 }) {
+  const { messages } = useI18n()
+
   return (
     <fieldset className="filter-value-group">
-      <legend className="visually-hidden">{label} values</legend>
+      <legend className="visually-hidden">
+        {messages.filters.valuesLegend(label)}
+      </legend>
       <div
         className={
           wide
@@ -82,13 +85,19 @@ function ValueToggleGroup<T extends string>({
       >
         {options.map((option) => {
           const included = !excludedValues.includes(option.value)
+          const stateLabel = included
+            ? messages.common.included
+            : messages.common.excluded
 
           return (
             <button
               className="filter-value-button"
               type="button"
               aria-pressed={included}
-              aria-label={`${option.label}: ${included ? 'included' : 'excluded'}`}
+              aria-label={messages.filters.optionAriaLabel(
+                option.label,
+                stateLabel,
+              )}
               key={option.value}
               onClick={() =>
                 onChange(toggleExcludedValue(excludedValues, option.value))
@@ -96,7 +105,7 @@ function ValueToggleGroup<T extends string>({
             >
               <span className="filter-value-label">{option.label}</span>
               <span className="filter-value-state" aria-hidden="true">
-                {included ? 'Included' : 'Excluded'}
+                {stateLabel}
               </span>
             </button>
           )
@@ -117,6 +126,7 @@ function StateSelectionEditor({
   onChange: (excludedStates: readonly string[]) => void
   onClose: () => void
 }) {
+  const { messages } = useI18n()
   const editorRef = useRef<HTMLElement>(null)
   const includedCount = Math.max(options.length - excludedStates.length, 0)
 
@@ -147,13 +157,15 @@ function StateSelectionEditor({
     >
       <div className="filter-menu-heading">
         <div>
-          <strong id="filter-menu-states-title">Federal state</strong>
-          <span>Every state starts included. Select one to exclude it.</span>
+          <strong id="filter-menu-states-title">
+            {messages.filters.federalState}
+          </strong>
+          <span>{messages.filters.stateEditorHelp}</span>
         </div>
         <button
           className="filter-menu-close"
           type="button"
-          aria-label="Close federal state filter"
+          aria-label={messages.filters.closeStateFilter}
           onClick={onClose}
         >
           ×
@@ -161,7 +173,7 @@ function StateSelectionEditor({
       </div>
 
       <ValueToggleGroup
-        label="Federal state"
+        label={messages.filters.federalState}
         excludedValues={excludedStates}
         options={options}
         wide
@@ -170,14 +182,14 @@ function StateSelectionEditor({
 
       <div className="filter-menu-actions">
         <span>
-          {includedCount} of {options.length} included
+          {messages.filters.includedOfTotal(includedCount, options.length)}
         </span>
         <button
           type="button"
           disabled={excludedStates.length === 0}
           onClick={() => onChange([])}
         >
-          Include all
+          {messages.common.includeAll}
         </button>
       </div>
     </section>
@@ -185,6 +197,7 @@ function StateSelectionEditor({
 }
 
 function StateFilterControl({
+  label,
   summary,
   excludedCount,
   disabled,
@@ -193,6 +206,7 @@ function StateFilterControl({
   onOpenChange,
   children,
 }: {
+  label: string
   summary: string
   excludedCount: number
   disabled: boolean
@@ -201,6 +215,8 @@ function StateFilterControl({
   onOpenChange: (isOpen: boolean) => void
   children: ReactNode
 }) {
+  const { messages } = useI18n()
+
   return (
     <div
       className={
@@ -219,15 +235,15 @@ function StateFilterControl({
         onClick={() => onOpenChange(!isOpen)}
       >
         <span className="filter-control-copy">
-          <strong>Federal state</strong>
+          <strong>{label}</strong>
           <small>{summary}</small>
         </span>
         <span className="filter-control-status">
           {disabled
-            ? 'Unavailable'
+            ? messages.common.unavailable
             : excludedCount === 0
-              ? 'All included'
-              : `${excludedCount} excluded`}
+              ? messages.filters.allIncluded
+              : messages.filters.excludedCount(excludedCount)}
           <span className="filter-control-chevron" aria-hidden="true">
             ⌄
           </span>
@@ -253,12 +269,16 @@ function InlineSelectionEditor<T extends string>({
   wide?: boolean
   onChange: (excludedValues: readonly T[]) => void
 }) {
+  const { messages } = useI18n()
   const className = wide
     ? 'inline-filter-card inline-filter-card-wide'
     : 'inline-filter-card'
 
   return (
-    <section className={className} aria-label={`${label} filter`}>
+    <section
+      className={className}
+      aria-label={messages.filters.filterAriaLabel(label)}
+    >
       <div className="inline-filter-heading">
         <div>
           <strong>{label}</strong>
@@ -269,7 +289,7 @@ function InlineSelectionEditor<T extends string>({
           disabled={excludedValues.length === 0}
           onClick={() => onChange([])}
         >
-          Include all
+          {messages.common.includeAll}
         </button>
       </div>
 
@@ -292,6 +312,8 @@ export function FilterPanel({
   onOpenFilterChange,
   onReset,
 }: FilterPanelProps) {
+  const i18n = useI18n()
+  const { messages } = i18n
   const stateTriggerRef = useRef<HTMLButtonElement>(null)
   const statesOpen = openFilter === 'states'
   const stateControlsAvailable = states.length > 0
@@ -302,15 +324,19 @@ export function FilterPanel({
     filters.electionMethods.length
   const includedShare =
     scenario?.status === 'ready' || scenario?.status === 'empty'
-      ? scenario.includedShare.toLocaleString('en-US', {
-          style: 'percent',
-          maximumFractionDigits: 1,
-        })
+      ? i18n.formatPercent(scenario.includedShare)
       : '—'
-  const exclusionSummary =
-    exclusionCount === 0
-      ? 'No exclusions are active.'
-      : `${exclusionCount} ${exclusionCount === 1 ? 'exclusion is' : 'exclusions are'} active.`
+  const genderOptions = genderValues.map((value) => ({
+    value,
+    label: value === 'm' ? messages.filters.men : messages.filters.women,
+  }))
+  const electionMethodOptions = electionMethodValues.map((value) => ({
+    value,
+    label:
+      value === 'postal'
+        ? messages.filters.postalVoting
+        : messages.filters.inPersonVoting,
+  }))
 
   const closeStateEditor = useCallback(() => {
     onOpenFilterChange(null)
@@ -325,18 +351,23 @@ export function FilterPanel({
     >
       <div className="panel-heading filter-panel-heading">
         <div>
-          <p className="panel-kicker">Scenario controls</p>
-          <h2 id="filters-title">Filters</h2>
+          <p className="panel-kicker">{messages.filters.kicker}</p>
+          <h2 id="filters-title">{messages.filters.title}</h2>
         </div>
-        <span className="panel-badge">{exclusionCount} excluded</span>
+        <span className="panel-badge">
+          {messages.filters.excludedBadge(exclusionCount)}
+        </span>
       </div>
 
-      <section className="filter-scenario-card" aria-label="Active scenario">
+      <section
+        className="filter-scenario-card"
+        aria-label={messages.filters.activeScenario}
+      >
         <div className="filter-scenario-heading">
           <div>
-            <span>Active scenario</span>
-            <strong>{summarizeFilterState(filters)}</strong>
-            <small>{includedShare} of votes included</small>
+            <span>{messages.filters.activeScenario}</span>
+            <strong>{summarizeFilterState(filters, i18n)}</strong>
+            <small>{messages.filters.votesIncluded(includedShare)}</small>
           </div>
           <button
             className="secondary-action"
@@ -344,21 +375,22 @@ export function FilterPanel({
             disabled={exclusionCount === 0}
             onClick={onReset}
           >
-            Reset
+            {messages.common.reset}
           </button>
         </div>
 
         <p className="filter-scenario-empty" aria-live="polite">
-          {exclusionSummary}
+          {messages.filters.activeExclusions(exclusionCount)}
         </p>
       </section>
 
       <div className="filter-list">
         <StateFilterControl
+          label={messages.filters.federalState}
           summary={
             stateControlsAvailable
-              ? describeStateSelection(filters.states)
-              : 'State data is not available yet'
+              ? describeStateSelection(filters.states, i18n)
+              : messages.filters.stateDataUnavailable
           }
           excludedCount={filters.states.length}
           disabled={!stateControlsAvailable}
@@ -368,7 +400,10 @@ export function FilterPanel({
         >
           <StateSelectionEditor
             excludedStates={filters.states}
-            options={states.map((state) => ({ value: state, label: state }))}
+            options={states.map((state) => ({
+              value: state,
+              label: i18n.stateName(state),
+            }))}
             onChange={(excludedStates) =>
               onChange({ ...filters, states: excludedStates })
             }
@@ -377,8 +412,8 @@ export function FilterPanel({
         </StateFilterControl>
 
         <InlineSelectionEditor
-          label="Age group"
-          summary={describeAgeGroupSelection(filters.ageGroups)}
+          label={messages.filters.ageGroup}
+          summary={describeAgeGroupSelection(filters.ageGroups, i18n)}
           excludedValues={filters.ageGroups}
           options={ageGroupOptions}
           wide
@@ -388,8 +423,8 @@ export function FilterPanel({
         />
 
         <InlineSelectionEditor
-          label="Gender"
-          summary={describeGenderSelection(filters.genders)}
+          label={messages.filters.gender}
+          summary={describeGenderSelection(filters.genders, i18n)}
           excludedValues={filters.genders}
           options={genderOptions}
           onChange={(excludedGenders) =>
@@ -398,8 +433,11 @@ export function FilterPanel({
         />
 
         <InlineSelectionEditor
-          label="Voting method"
-          summary={describeElectionMethodSelection(filters.electionMethods)}
+          label={messages.filters.votingMethod}
+          summary={describeElectionMethodSelection(
+            filters.electionMethods,
+            i18n,
+          )}
           excludedValues={filters.electionMethods}
           options={electionMethodOptions}
           onChange={(excludedMethods) =>
@@ -409,7 +447,7 @@ export function FilterPanel({
       </div>
 
       <p className="filter-help" id="filter-help">
-        All values start included. Select a value to include or exclude it.
+        {messages.filters.help}
       </p>
     </section>
   )
