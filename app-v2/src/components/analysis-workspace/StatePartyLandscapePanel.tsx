@@ -105,16 +105,14 @@ export function StatePartyLandscapePanel({
                 key={result.partyAbbreviation}
                 style={{ '--party-color': result.color } as CSSProperties}
               >
-                <span className="state-party-identity">
+                <span className="state-party-identity" title={result.name}>
                   <span
                     className="party-swatch"
                     style={{ backgroundColor: result.color }}
                     aria-hidden="true"
                   />
-                  <span>
-                    <strong>{result.partyAbbreviation}</strong>
-                    <small title={result.name}>{result.name}</small>
-                  </span>
+                  <strong>{result.partyAbbreviation}</strong>
+                  <span className="visually-hidden"> — {result.name}</span>
                 </span>
 
                 <span className="state-party-share">
