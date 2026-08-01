@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react'
 
+import { getScenarioReasonText, useI18n } from '../../i18n/index.ts'
 import {
   getPartyIdentity,
   prioritizeCoalitions,
@@ -15,12 +16,13 @@ interface CoalitionPanelProps {
 }
 
 export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
+  const i18n = useI18n()
+  const { messages } = i18n
   const coalitionRows =
     scenario?.status === 'ready'
       ? prioritizeCoalitions(scenario.coalitions, scenario.coalitions.length)
       : []
-  const resultMessage =
-    scenario?.message ?? 'Results are unavailable until the election data has loaded.'
+  const resultMessage = getScenarioReasonText(scenario?.reason, i18n)
 
   return (
     <section
@@ -29,21 +31,20 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
     >
       <div className="panel-heading coalition-heading">
         <div>
-          <p className="panel-kicker">Majority options</p>
-          <h2 id="coalitions-title">Coalitions</h2>
+          <p className="panel-kicker">{messages.coalitions.kicker}</p>
+          <h2 id="coalitions-title">{messages.coalitions.title}</h2>
         </div>
         <span className="panel-badge">
           {scenario?.status === 'ready'
-            ? `${scenario.majorityThreshold} needed`
-            : 'No result'}
+            ? messages.coalitions.needed(scenario.majorityThreshold)
+            : messages.common.noResult}
         </span>
       </div>
 
       {coalitionRows.length > 0 && scenario?.status === 'ready' ? (
         <>
           <p className="result-note coalition-note" id="coalition-result-note">
-            {coalitionRows.length} minimal winning options, prioritised by fewer parties
-            and majority margin. CDU and CSU are grouped as CDU+CSU.
+            {messages.coalitions.summary(coalitionRows.length)}
           </p>
 
           <ol
@@ -113,15 +114,18 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
                     </div>
 
                     <small>
-                      Minimal winning coalition · {coalition.members.length}{' '}
-                      {coalition.members.length === 1 ? 'party' : 'parties'}
+                      {messages.coalitions.minimalWinning(
+                        coalition.members.length,
+                      )}
                     </small>
                   </div>
 
                   <div className="coalition-metrics">
                     <strong>{coalition.seats}</strong>
-                    <span>seats</span>
-                    <small>+{coalition.surplus} majority margin</small>
+                    <span>{messages.coalitions.seats}</span>
+                    <small>
+                      {messages.coalitions.majorityMargin(coalition.surplus)}
+                    </small>
                   </div>
                 </li>
               )
@@ -133,7 +137,7 @@ export function CoalitionPanel({ parties, scenario }: CoalitionPanelProps) {
           className={`result-empty${scenario?.status === 'invalid' ? ' result-empty-error' : ''}`}
         >
           {scenario?.status === 'ready'
-            ? 'No minimal winning coalition is available for the current scenario.'
+            ? messages.coalitions.noCoalition
             : resultMessage}
         </p>
       )}
