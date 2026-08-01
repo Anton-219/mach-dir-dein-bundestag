@@ -34,14 +34,23 @@
 }
 
 .scenario-facts {
-  width: min(100%, 34rem);
-  grid-template-columns: repeat(3, minmax(9.5rem, 1fr));
-  justify-self: end;
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-self: stretch;
 }
 
 .scenario-facts div:first-child {
   padding-left: 0;
   border-left: 0;
+}
+
+.scenario-fact-election {
+  margin-left: auto;
+  padding-left: 0;
+  border-left: 0;
+  text-align: right;
 }
 
 .scenario-data-status {
