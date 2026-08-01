@@ -1,3 +1,12 @@
+import {
+  createTranslationTools,
+  describeAgeGroupSelection as describeLocalizedAgeGroupSelection,
+  describeElectionMethodSelection as describeLocalizedElectionMethodSelection,
+  describeGenderSelection as describeLocalizedGenderSelection,
+  describeStateSelection as describeLocalizedStateSelection,
+  getActiveFilterSummaries as getLocalizedActiveFilterSummaries,
+  summarizeFilterState as summarizeLocalizedFilterState,
+} from '../../i18n/formatters.ts'
 import type {
   AgeGroup,
   ElectionMethod,
@@ -18,6 +27,8 @@ export interface ActiveFilterSummary {
   dimension: FilterDimension
   label: string
 }
+
+const legacyEnglishCopy = createTranslationTools('en')
 
 export function createEmptyFilterState(): FilterState {
   return {
@@ -71,106 +82,50 @@ export function countActiveFilterDimensions(filters: FilterState): number {
     .length
 }
 
-function joinLabels(labels: readonly string[]): string {
-  if (labels.length < 2) {
-    return labels[0] ?? ''
-  }
-
-  if (labels.length === 2) {
-    return `${labels[0]} and ${labels[1]}`
-  }
-
-  return `${labels.slice(0, -1).join(', ')}, and ${labels.at(-1)}`
-}
-
-function formatAgeGroup(ageGroup: AgeGroup): string {
-  return ageGroup.replace('-', '–')
-}
-
+/**
+ * @deprecated UI code should call the locale-aware formatter from src/i18n.
+ */
 export function describeStateSelection(excludedStates: readonly string[]): string {
-  if (excludedStates.length === 0) {
-    return 'All federal states included'
-  }
-
-  if (excludedStates.length > 2) {
-    return `${excludedStates.length} federal states excluded`
-  }
-
-  return `${joinLabels(excludedStates)} excluded`
+  return describeLocalizedStateSelection(excludedStates, legacyEnglishCopy)
 }
 
+/**
+ * @deprecated UI code should call the locale-aware formatter from src/i18n.
+ */
 export function describeAgeGroupSelection(
   excludedAgeGroups: readonly AgeGroup[],
 ): string {
-  if (excludedAgeGroups.length === 0) {
-    return 'All age groups included'
-  }
-
-  if (excludedAgeGroups.length > 2) {
-    return `${excludedAgeGroups.length} age groups excluded`
-  }
-
-  return `Ages ${joinLabels(excludedAgeGroups.map(formatAgeGroup))} excluded`
+  return describeLocalizedAgeGroupSelection(excludedAgeGroups, legacyEnglishCopy)
 }
 
+/**
+ * @deprecated UI code should call the locale-aware formatter from src/i18n.
+ */
 export function describeGenderSelection(excludedGenders: readonly Gender[]): string {
-  if (excludedGenders.length === 0) {
-    return 'All recorded genders included'
-  }
-
-  const labels = excludedGenders.map((value) => (value === 'm' ? 'Men' : 'Women'))
-  return `${joinLabels(labels)} excluded`
+  return describeLocalizedGenderSelection(excludedGenders, legacyEnglishCopy)
 }
 
+/**
+ * @deprecated UI code should call the locale-aware formatter from src/i18n.
+ */
 export function describeElectionMethodSelection(
   excludedMethods: readonly ElectionMethod[],
 ): string {
-  if (excludedMethods.length === 0) {
-    return 'Postal and in-person voting included'
-  }
-
-  const labels = excludedMethods.map((value) =>
-    value === 'postal' ? 'Postal voting' : 'In-person voting',
-  )
-  return `${joinLabels(labels)} excluded`
+  return describeLocalizedElectionMethodSelection(excludedMethods, legacyEnglishCopy)
 }
 
+/**
+ * @deprecated UI code should call the locale-aware formatter from src/i18n.
+ */
 export function getActiveFilterSummaries(
   filters: FilterState,
 ): ActiveFilterSummary[] {
-  const summaries: ActiveFilterSummary[] = []
-
-  if (filters.states.length > 0) {
-    summaries.push({
-      dimension: 'states',
-      label: describeStateSelection(filters.states),
-    })
-  }
-  if (filters.ageGroups.length > 0) {
-    summaries.push({
-      dimension: 'ageGroups',
-      label: describeAgeGroupSelection(filters.ageGroups),
-    })
-  }
-  if (filters.genders.length > 0) {
-    summaries.push({
-      dimension: 'genders',
-      label: describeGenderSelection(filters.genders),
-    })
-  }
-  if (filters.electionMethods.length > 0) {
-    summaries.push({
-      dimension: 'electionMethods',
-      label: describeElectionMethodSelection(filters.electionMethods),
-    })
-  }
-
-  return summaries
+  return getLocalizedActiveFilterSummaries(filters, legacyEnglishCopy)
 }
 
+/**
+ * @deprecated UI code should call the locale-aware formatter from src/i18n.
+ */
 export function summarizeFilterState(filters: FilterState): string {
-  const summaries = getActiveFilterSummaries(filters)
-  return summaries.length === 0
-    ? 'All voters in Germany'
-    : summaries.map((summary) => summary.label).join(' · ')
+  return summarizeLocalizedFilterState(filters, legacyEnglishCopy)
 }
