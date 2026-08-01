@@ -61,9 +61,7 @@ export function GermanyMapPanel({
           <p className="panel-kicker">Regional selection</p>
           <h2 id="map-title">Germany map</h2>
         </div>
-        <div
-          style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-        >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
           <span className="panel-badge">
             {stateControlsAvailable ? `${includedStateCount} included` : 'Unavailable'}
           </span>
@@ -72,6 +70,15 @@ export function GermanyMapPanel({
             type="button"
             disabled={!stateControlsAvailable || excludedStates.length === 0}
             aria-label="Reset federal state selection"
+            style={{
+              minHeight: '1.45rem',
+              padding: '0.12rem 0.3rem',
+              borderColor: 'transparent',
+              background: 'transparent',
+              color: 'var(--muted)',
+              fontSize: '0.56rem',
+              fontWeight: 700,
+            }}
             onClick={resetStates}
           >
             Reset
