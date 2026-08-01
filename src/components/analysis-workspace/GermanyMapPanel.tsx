@@ -5,7 +5,7 @@ import {
   type MouseEvent,
 } from 'react'
 
-import { describeStateSelection } from '../../lib/filters/index.ts'
+import { describeStateSelection, useI18n } from '../../i18n/index.ts'
 import {
   buildGermanyBoundaryPath,
   buildGermanyStatePaths,
@@ -26,6 +26,8 @@ export function GermanyMapPanel({
   onToggleState,
   onHighlightedStateChange,
 }: GermanyMapPanelProps) {
+  const i18n = useI18n()
+  const { messages } = i18n
   const [hoveredState, setHoveredState] = useState<string | null>(null)
   const [focusedState, setFocusedState] = useState<string | null>(null)
   const highlightedState = hoveredState ?? focusedState
@@ -58,18 +60,20 @@ export function GermanyMapPanel({
     <section className="workspace-panel map-panel" aria-labelledby="map-title">
       <div className="panel-heading map-panel-heading">
         <div>
-          <p className="panel-kicker">Regional selection</p>
-          <h2 id="map-title">Germany map</h2>
+          <p className="panel-kicker">{messages.map.kicker}</p>
+          <h2 id="map-title">{messages.map.title}</h2>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
           <span className="panel-badge">
-            {stateControlsAvailable ? `${includedStateCount} included` : 'Unavailable'}
+            {stateControlsAvailable
+              ? messages.map.includedBadge(includedStateCount)
+              : messages.common.unavailable}
           </span>
           <button
             className="secondary-action"
             type="button"
             disabled={!stateControlsAvailable || excludedStates.length === 0}
-            aria-label="Reset federal state selection"
+            aria-label={messages.map.resetAriaLabel}
             style={{
               minHeight: '1.45rem',
               padding: '0.12rem 0.3rem',
@@ -81,7 +85,7 @@ export function GermanyMapPanel({
             }}
             onClick={resetStates}
           >
-            Reset
+            {messages.common.reset}
           </button>
         </div>
       </div>
@@ -94,10 +98,9 @@ export function GermanyMapPanel({
               viewBox="0 0 220 260"
               aria-labelledby="germany-map-title germany-map-description"
             >
-              <title id="germany-map-title">Interactive map of German federal states</title>
+              <title id="germany-map-title">{messages.map.svgTitle}</title>
               <desc id="germany-map-description">
-                Select a federal state to include or exclude it from the active election
-                scenario. Included states are solid; excluded states use a hatched pattern.
+                {messages.map.svgDescription}
               </desc>
               <defs>
                 <pattern
@@ -155,7 +158,13 @@ export function GermanyMapPanel({
               <g className="map-state-controls">
                 {stateInteractionPaths.map((state) => {
                   const included = !excludedStates.includes(state.name)
-                  const action = included ? 'exclude' : 'include'
+                  const stateLabel = i18n.stateName(state.name)
+                  const currentState = included
+                    ? messages.common.included
+                    : messages.common.excluded
+                  const action = included
+                    ? messages.map.actionExclude
+                    : messages.map.actionInclude
 
                   return (
                     <a
@@ -165,7 +174,11 @@ export function GermanyMapPanel({
                           : 'map-state-control'
                       }
                       href="#filter-menu-states"
-                      aria-label={`${state.name}: ${included ? 'included' : 'excluded'}. Activate to ${action}.`}
+                      aria-label={messages.map.stateControlAriaLabel(
+                        stateLabel,
+                        currentState,
+                        action,
+                      )}
                       key={state.id}
                       onBlur={() => setFocusedState(null)}
                       onClick={(event) => activateState(event, state.name)}
@@ -179,7 +192,7 @@ export function GermanyMapPanel({
                       onMouseLeave={() => setHoveredState(null)}
                     >
                       <title>
-                        {state.name}: {included ? 'included' : 'excluded'}
+                        {stateLabel}: {currentState}
                       </title>
                       <path
                         className="map-state-hit-area"
@@ -195,27 +208,33 @@ export function GermanyMapPanel({
 
             <div className="map-legend" aria-hidden="true">
               <span>
-                <i className="map-legend-included" />Included
+                <i className="map-legend-included" />
+                {messages.common.included}
               </span>
               <span>
-                <i className="map-legend-excluded" />Excluded
+                <i className="map-legend-excluded" />
+                {messages.common.excluded}
               </span>
             </div>
           </div>
 
           <p className="map-status" aria-live="polite">
-            <strong>{highlightedState ?? describeStateSelection(excludedStates)}</strong>
+            <strong>
+              {highlightedState
+                ? i18n.stateName(highlightedState)
+                : describeStateSelection(excludedStates, i18n)}
+            </strong>
             <span>
               {highlightedState
                 ? excludedStates.includes(highlightedState)
-                  ? 'Excluded · activate to include'
-                  : 'Included · activate to exclude'
-                : 'Select a state directly on the map.'}
+                  ? messages.map.excludedActivateInclude
+                  : messages.map.includedActivateExclude
+                : messages.map.prompt}
             </span>
           </p>
         </div>
       ) : (
-        <p className="result-empty">The federal-state map is not available yet.</p>
+        <p className="result-empty">{messages.map.unavailable}</p>
       )}
     </section>
   )
