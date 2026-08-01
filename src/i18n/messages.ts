@@ -248,7 +248,7 @@ export const germanMessages: MessageCatalog = {
     eyebrow: 'Bundestagswahl 2021 entdecken',
     title: 'Mach dir deinen Bundestag',
     introduction:
-      'Passe ein Wählerszenario an und vergleiche Parlament, Parteiergebnisse und mögliche Mehrheiten in einer gemeinsamen Arbeitsfläche.',
+      'Passe ein Wählerszenario an und vergleiche Parlament, Parteiergebnisse und mögliche Mehrheiten.',
     methodology: 'Methodik & Daten',
   },
   workspace: {
@@ -310,7 +310,7 @@ export const germanMessages: MessageCatalog = {
       count === 0
         ? 'Keine Ausschlüsse aktiv.'
         : `${count} ${count === 1 ? 'Ausschluss ist' : 'Ausschlüsse sind'} aktiv.`,
-    help: 'Alle Werte sind anfangs einbezogen. Wähle einen Wert, um ihn ein- oder auszuschließen.',
+    help: 'Alle Werte sind anfangs einbezogen.',
     federalState: 'Bundesland',
     ageGroup: 'Altersgruppe',
     gender: 'Geschlecht',
