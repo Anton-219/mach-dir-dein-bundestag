@@ -239,23 +239,23 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
           </div>
 
           <CoalitionPanel parties={parties} scenario={scenario} />
+        </div>
 
-          <div className="workspace-column workspace-column-context">
-            <GermanyMapPanel
-              features={germanyStates}
-              excludedStates={filters.states}
-              onToggleState={toggleState}
-              onHighlightedStateChange={setHighlightedState}
-            />
-            <StatePartyLandscapePanel
-              state={highlightedState}
-              landscape={statePartyLandscape}
-              parties={parties}
-              excluded={
-                highlightedState !== null && filters.states.includes(highlightedState)
-              }
-            />
-          </div>
+        <div className="workspace-column workspace-column-context">
+          <GermanyMapPanel
+            features={germanyStates}
+            excludedStates={filters.states}
+            onToggleState={toggleState}
+            onHighlightedStateChange={setHighlightedState}
+          />
+          <StatePartyLandscapePanel
+            state={highlightedState}
+            landscape={statePartyLandscape}
+            parties={parties}
+            excluded={
+              highlightedState !== null && filters.states.includes(highlightedState)
+            }
+          />
         </div>
       </main>
 
