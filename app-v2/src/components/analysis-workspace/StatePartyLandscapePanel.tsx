@@ -25,7 +25,6 @@ export function StatePartyLandscapePanel({
       >
         <div className="panel-heading state-landscape-heading">
           <div>
-            <p className="panel-kicker">State election landscape</p>
             <h2 id="state-landscape-title">Federal state</h2>
           </div>
           <span className="panel-badge">Explore the map</span>
@@ -60,7 +59,6 @@ export function StatePartyLandscapePanel({
     >
       <div className="panel-heading state-landscape-heading">
         <div>
-          <p className="panel-kicker">State election landscape</p>
           <h2 id="state-landscape-title">{state}</h2>
         </div>
         <span className="panel-badge">
@@ -71,6 +69,20 @@ export function StatePartyLandscapePanel({
               : 'Included in scenario'}
         </span>
       </div>
+
+      {landscape?.status === 'ready' ? (
+        <p className="state-landscape-weight">
+          <strong>
+            {landscape.shareOfVoters.toLocaleString('en-US', {
+              style: 'percent',
+              maximumFractionDigits: 1,
+            })}
+          </strong>{' '}
+          <span>
+            of all voters · {landscape.votes.toLocaleString('en-US')} votes
+          </span>
+        </p>
+      ) : null}
 
       {landscape?.status === 'invalid' ? (
         <p className="result-empty" role="alert">
