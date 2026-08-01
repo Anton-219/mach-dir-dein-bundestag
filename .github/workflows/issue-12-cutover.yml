@@ -4,17 +4,17 @@ on:
   push:
     branches:
       - agent/issue-12-root-cutover
-  pull_request:
-    branches:
-      - main
 
 permissions:
   contents: write
 
+concurrency:
+  group: issue-12-root-cutover
+  cancel-in-progress: true
+
 jobs:
   migrate:
     name: Move app-v2 to the repository root
-    if: github.event_name == 'push' || github.head_ref == 'agent/issue-12-root-cutover'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -49,64 +49,6 @@ jobs:
 
           rm -rf app-v2
           rm -rf docs/rebuild
-          rm -f .github/workflows/app-v2-ci.yml
-
-          cat > .github/workflows/frontend-ci.yml <<'EOF'
-          name: Frontend CI
-
-          on:
-            pull_request:
-              paths:
-                - 'src/**'
-                - 'public/**'
-                - 'tests/**'
-                - 'index.html'
-                - 'package.json'
-                - 'package-lock.json'
-                - 'tsconfig*.json'
-                - 'vite.config.ts'
-                - '.github/workflows/frontend-ci.yml'
-            workflow_dispatch:
-
-          permissions:
-            contents: read
-
-          concurrency:
-            group: frontend-ci-${{ github.event.pull_request.number || github.ref }}
-            cancel-in-progress: true
-
-          jobs:
-            validate:
-              name: Validate frontend
-              runs-on: ubuntu-latest
-              timeout-minutes: 5
-
-              steps:
-                - name: Check out repository
-                  uses: actions/checkout@v6
-
-                - name: Set up Node.js
-                  uses: actions/setup-node@v6
-                  with:
-                    node-version: 22
-                    cache: npm
-                    cache-dependency-path: package-lock.json
-
-                - name: Install dependencies
-                  run: npm ci
-
-                - name: Audit dependencies
-                  run: npm audit
-
-                - name: Test application
-                  run: npm test
-
-                - name: Lint application
-                  run: npm run lint
-
-                - name: Build application
-                  run: npm run build
-          EOF
 
           cat > README.md <<'EOF'
           # Mach dir deinen Bundestag
@@ -206,8 +148,6 @@ jobs:
 
           The source-generation notebook should eventually correct this defect and validate the generated contract before writing the JSON file.
           EOF
-
-          rm -f .github/workflows/issue-12-cutover.yml
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
