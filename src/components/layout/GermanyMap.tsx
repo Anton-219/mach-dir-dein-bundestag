@@ -1,18 +1,22 @@
-import {useState} from "react";
-import {ActiveStates, FilterRule} from "../../types/FilterRule.tsx";
-import GermanyGeoJson from "../../data/germany_states_map.geo.json"
-import {ComposableMap, Geographies, Geography,} from 'react-simple-maps';
+import { useState } from "react";
+import { ActiveStates, FilterRule } from "../../types/FilterRule.tsx";
+import GermanyGeoJson from "../../data/germany_states_map.geo.json";
+import {
+    ComposableMap,
+    Geographies,
+    Geography,
+} from 'react-simple-maps';
 
 interface GermanyMapProps {
     addFilter: (filterRule: FilterRule) => void;
     removeFilter: (filterId: string) => void;
 }
 
-
-const GermanyMap = function ({addFilter, removeFilter}: GermanyMapProps) {
+const GermanyMap = function ({ addFilter, removeFilter }: GermanyMapProps) {
     const [activeStates, setActiveStates] = useState<ActiveStates>({});
 
     const handleStateClick = (stateName: string) => {
+        // ... (keep your existing logic)
         const isActive = !activeStates[stateName];
         if (isActive) {
             addFilter({
@@ -31,43 +35,62 @@ const GermanyMap = function ({addFilter, removeFilter}: GermanyMapProps) {
     };
 
     const getFillColor = (stateName: string) => {
+        // ... (keep your existing logic)
         return activeStates[stateName] ? "#D6D6DA" : "#343434";
     };
+
+    // --- Style for the wrapper ---
+    const mapContainerStyle: React.CSSProperties = {
+        display: 'flex',
+        alignItems: 'stretch', // Vertically center
+        justifyContent: 'center', // Horizontally center (optional, but often desired)
+        width: '100%', // Take full available width
+        height: '100%', // Take full available height of parent container
+        minHeight: '0', // Allow shrinking below content height
+        // Removed fixed height percentage to allow component to shrink
+    };
+
     return (
-        <ComposableMap
-            projection="geoMercator"
-            projectionConfig={{scale: 2600, center: [10, 51]}} // adjust these for best view
-        >
-            <Geographies geography={GermanyGeoJson}>
-                {({geographies}) =>
-                    geographies.map((geo) => {
-                        const stateName = geo.properties.name;
-                        return (
-                            <Geography
-                                key={geo.rsmKey}
-                                geography={geo}
-                                onClick={() => handleStateClick(stateName)}
-                                stroke="#000000"
-                                style={{
-                                    default: {
-                                        fill: getFillColor(stateName),
-                                        transition: "fill 0.1s"
-                                    },
-                                    hover: {
-                                        fill: activeStates[stateName] ? "#8d8d8d" : "#515151",
-                                        outline: "none"
-                                    },
-                                    pressed: {
-                                        fill: activeStates[stateName] ? "#777777" : "#3d3d3d",
-                                        outline: "none"
-                                    }
-                                }}
-                            />
-                        );
-                    })
-                }
-            </Geographies>
-        </ComposableMap>
+        // --- Wrapper Div ---
+        <div style={mapContainerStyle}>
+            <ComposableMap
+                projection="geoMercator"
+                projectionConfig={{ scale: 3200, center: [10, 51] }}
+                // Optional: Add width/height to ComposableMap if needed,
+                // but flexbox often handles sizing implicitly.
+                // style={{ maxWidth: '100%', height: 'auto' }} // Example sizing for map itself
+            >
+                <Geographies geography={GermanyGeoJson}>
+                    {({ geographies }) =>
+                        geographies.map((geo) => {
+                            const stateName = geo.properties.name;
+                            return (
+                                <Geography
+                                    key={geo.rsmKey}
+                                    geography={geo}
+                                    onClick={() => handleStateClick(stateName)}
+                                    stroke="#000000"
+                                    style={{
+                                        default: {
+                                            fill: getFillColor(stateName),
+                                            transition: "fill 0.1s"
+                                        },
+                                        hover: {
+                                            fill: activeStates[stateName] ? "#8d8d8d" : "#515151",
+                                            outline: "none"
+                                        },
+                                        pressed: {
+                                            fill: activeStates[stateName] ? "#777777" : "#3d3d3d",
+                                            outline: "none"
+                                        }
+                                    }}
+                                />
+                            );
+                        })
+                    }
+                </Geographies>
+            </ComposableMap>
+        </div> // --- End Wrapper Div ---
     );
 };
 

@@ -1,0 +1,30 @@
+[
+    {
+        "party": "SPD",
+        "districts_won": 121
+    },
+    {
+        "party": "CDU",
+        "districts_won": 98
+    },
+    {
+        "party": "CSU",
+        "districts_won": 45
+    },
+    {
+        "party": "GRÜNE",
+        "districts_won": 16
+    },
+    {
+        "party": "AfD",
+        "districts_won": 16
+    },
+    {
+        "party": "DIE LINKE",
+        "districts_won": 3
+    },
+    {
+        "party": "SSW",
+        "districts_won": 3
+    }
+]
