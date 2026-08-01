@@ -16,8 +16,7 @@ function App() {
           setDataState({ status: 'ready', data })
         }
       })
-      .catch((error: unknown) => {
-        console.error(error)
+      .catch(() => {
         if (isCurrent) {
           setDataState({ status: 'error' })
         }
