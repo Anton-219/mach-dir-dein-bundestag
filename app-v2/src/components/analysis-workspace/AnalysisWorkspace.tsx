@@ -7,7 +7,6 @@ import {
 } from '../../lib/election/index.ts'
 import {
   applyFilterState,
-  clearFilterDimension,
   countVotes,
   createEmptyFilterState,
   toggleExcludedValue,
@@ -222,11 +221,6 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
             scenario={scenario}
             onChange={setFilters}
             onOpenFilterChange={setOpenFilter}
-            onClearFilter={(dimension) =>
-              setFilters((currentFilters) =>
-                clearFilterDimension(currentFilters, dimension),
-              )
-            }
             onReset={resetFilters}
           />
           <DemographicPanel
