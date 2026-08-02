@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "rootDir": ".",
+    "outDir": ".test-dist",
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": [
+    "src/lib/**/*.ts",
+    "src/models/calculation-results.ts",
+    "src/models/json-contracts.ts",
+    "src/models/normalized-inputs.ts",
+    "tests/unit/**/*.ts"
+  ]
+}

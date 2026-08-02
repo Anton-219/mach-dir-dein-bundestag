@@ -11,7 +11,15 @@ class VoteEntry:
     party: str
     voteType: str
     electionMethod: str
-    votes: int
+    votes: float
+
+
+@dataclass
+class StatVoteEntry:
+    gender: str
+    ageGroup: str
+    party: str
+    votes: float
 
 
 _age_mapping = {
@@ -114,5 +122,3 @@ def calculate_votes(by_demographic, by_state, party, total_votes):
     if total_votes == 0:
         return 0
     return by_demographic[party] * by_state[party] / total_votes
-
-

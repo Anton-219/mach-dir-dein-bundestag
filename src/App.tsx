@@ -1,10 +1,33 @@
-import './App.css'
-import OverviewLayout from "./components/layout/OverviewLayout.tsx";
+import { useEffect, useState } from 'react'
+
+import { AnalysisWorkspace } from './components/analysis-workspace/AnalysisWorkspace.tsx'
+import type { DataState } from './components/analysis-workspace/types.ts'
+import { loadElectionData } from './data/loaders.ts'
 
 function App() {
-    return <div>
-        <OverviewLayout/>
-    </div>
+  const [dataState, setDataState] = useState<DataState>({ status: 'loading' })
+
+  useEffect(() => {
+    let isCurrent = true
+
+    loadElectionData()
+      .then((data) => {
+        if (isCurrent) {
+          setDataState({ status: 'ready', data })
+        }
+      })
+      .catch(() => {
+        if (isCurrent) {
+          setDataState({ status: 'error' })
+        }
+      })
+
+    return () => {
+      isCurrent = false
+    }
+  }, [])
+
+  return <AnalysisWorkspace dataState={dataState} />
 }
 
 export default App
