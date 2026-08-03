@@ -1,19 +1,17 @@
 # Static election data
 
-The primary frontend loads the confirmed election datasets from `public/data` as same-origin static assets.
+The primary frontend loads the prepared election datasets from `public/data` as same-origin static assets.
 
 | Purpose | Application file |
 | --- | --- |
 | Party names, abbreviations, colours, and seat positions | `public/data/partyData.json` |
-| Second-vote records used by the scenario filters | `public/data/second_votes.json` |
+| Constituency-aware first-vote records used to determine district winners | `public/data/first_votes.json` |
+| Constituency-aware second-vote records used by the scenario calculation | `public/data/second_votes.json` |
 | Demographic reference vote records | `public/data/stat_votes.json` |
-| Direct-mandate totals by party | `public/data/election_results_direktmandate.json` |
 | Federal-state geometry used by the interactive map | `public/data/germany_states_map.geo.json` |
 
-`src/data/loaders.ts` is the only application module that knows the concrete asset paths and raw field differences. Presentation components consume typed application values, including the normalized `districtsWon` property. The loader also verifies that the map and vote datasets contain matching federal-state coverage.
+`src/data/loaders.ts` is the only application module that knows the concrete asset paths. It validates the shared vote-entry contract, requires first- and second-vote records to carry the correct `voteType`, verifies positive constituency IDs, and checks that both vote files agree on constituency-to-state and federal-state coverage.
 
-## Known source normalization
+The active scenario applies the same state, age-group, gender, and election-method filters to both vote files. Second votes determine party results and seat allocation. First votes are aggregated by constituency and party to calculate the district winners used by the three-direct-mandate qualification rule.
 
-The final 24 SSW entries in `second_votes.json` contain the election method (`in-person` or `postal`) in `voteType` instead of the second-vote literal `2`. The committed JSON remains unchanged; the loader narrowly recognizes these Schleswig-Holstein SSW records and exposes their application-facing `voteType` as `2`.
-
-The source-generation notebook should eventually correct this defect and validate the generated contract before writing the JSON file.
+The generated JSON model and its preparation methodology are documented in `scripts/README.md`.

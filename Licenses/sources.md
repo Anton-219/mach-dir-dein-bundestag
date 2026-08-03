@@ -14,7 +14,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For more information, please refer to https://unlicense.org
 
 ## Election results
-The election results are taken from https://bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/repraesentative-wahlstatistik.html
+The election results are taken from 
+- https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/weitere-ergebnisse.html
+- https://bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/repraesentative-wahlstatistik.html
+- The overall results are inside `btw21_wbz_ergebnisse.csv`. There are in a zip folder: https://www.bundeswahlleiterin.de/dam/jcr/c2cd99e6-064e-4ebc-b634-f86b5c0e14b3/btw21_wbz.zip
+- The statistics: https://bundeswahlleiterin.de/dam/jcr/2aaec1fb-745a-422d-9ef0-0be7c9ca0ac9/btw21_rws_bw2.csv
+
 ### License
 Datenlizenz Deutschland – Namensnennung – Version 2.0
 

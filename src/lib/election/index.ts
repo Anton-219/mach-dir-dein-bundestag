@@ -1,5 +1,6 @@
 export * from './aggregate-election-results.ts'
 export * from './allocate-seats.ts'
+export * from './calculate-direct-mandates.ts'
 export * from './constants.ts'
 export * from './filter-votes.ts'
 export * from './qualify-parties.ts'

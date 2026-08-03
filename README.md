@@ -37,7 +37,7 @@ npm run build
 
 - `src/components/analysis-workspace/` contains the connected filters, Germany map, parliament result, party summaries, demographic context, and coalition presentation.
 - `src/lib/` contains framework-independent filter, election, map, result, and coalition logic.
-- `src/models/` contains the preserved JSON compatibility contracts and calculated result models.
+- `src/models/` contains the prepared JSON contracts and calculated result models.
 - `src/data/loaders.ts` loads and validates the static application data.
 - `tests/unit/` contains calculation, filter, presentation, map, and regional-result tests.
 
@@ -48,24 +48,30 @@ The project uses one application entry point and no backend, router, database, a
 The primary application loads these same-origin assets from `public/data/`:
 
 - `partyData.json`: party names, abbreviations, colours, and parliamentary positions
-- `second_votes.json`: second-vote records used by the scenario calculation
+- `first_votes.json`: constituency-aware first-vote records used to calculate district winners
+- `second_votes.json`: constituency-aware second-vote records used by the scenario calculation
 - `stat_votes.json`: demographic reference vote records
-- `election_results_direktmandate.json`: direct-mandate totals by party
 - `germany_states_map.geo.json`: federal-state geometry for the interactive map
 
-The JSON-facing field names and literal values in `src/models/json-contracts.ts` are compatibility contracts. They must not be changed without migrating the corresponding data files.
-
-The final 24 SSW entries in the current `second_votes.json` source contain a known legacy `voteType` defect. The loader narrowly normalizes those application-facing records to second votes while leaving the committed JSON unchanged. The data-preparation source should eventually correct this at generation time.
+The JSON-facing field names and literal values in `src/models/json-contracts.ts` are application data contracts. They must not be changed without migrating the corresponding prepared data files.
 
 ## Calculation scope
 
-The application aggregates included second votes, applies the documented party-qualification assumptions, distributes a fixed 630 seats through the current odd-divisor implementation, and enumerates minimal winning coalitions. CDU and CSU remain separate in party and parliament results and are normalized to `CDU+CSU` for coalition enumeration.
+The application applies the active scenario filters separately to first and second votes. Filtered second votes determine party results and the national seat allocation. Filtered first votes are aggregated by constituency and party to determine district winners for the three-direct-mandate qualification rule.
 
-These calculations reproduce the agreed reference behavior of the former prototype. Known methodological and electoral-law assumptions are documented beside the domain modules and in the project vision.
+An exact tie in a constituency is left without a winner by the default resolver. That exceptional rule is isolated in its own function so it can be replaced later without changing the surrounding calculation.
+
+The SSW is represented as a party exempt from the general vote-share threshold. It participates in the same seat allocation as every other qualified party, so the allocation itself determines whether its second-vote total is sufficient for a seat; there is no separate hard-coded minimum-vote constant.
+
+The application distributes a fixed 630 seats through the current odd-divisor implementation and enumerates minimal winning coalitions. CDU and CSU remain separate in party and parliament results and are normalized to `CDU+CSU` for coalition enumeration.
+
+These calculations reproduce the agreed reference behavior of the former prototype while replacing its static direct-mandate totals with scenario-specific constituency results. Known methodological and electoral-law assumptions are documented beside the domain modules and in the project vision.
 
 ## Data preparation and methodology
 
 Python and Jupyter sources under `scripts/` prepare the election datasets outside the React application. Some demographic values are modelled from differently aggregated source tables and must not be interpreted as individual-level observations.
+
+The primary workflow lives in `scripts/notebooks/btw2021/`. See `scripts/README.md` for inputs, methodology, generated files, validation, and known limitations.
 
 See [`docs/PROJECT_VISION.md`](docs/PROJECT_VISION.md) for the product scope, transparency requirements, technical principles, and known methodological limitations. More detailed source disclosure and methodology presentation remain tracked separately from this repository cut-over.
 

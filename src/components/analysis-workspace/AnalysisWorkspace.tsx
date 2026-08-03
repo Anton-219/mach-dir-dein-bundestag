@@ -5,6 +5,7 @@ import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts
 import {
   aggregateElectionResults,
   allocateSeats,
+  calculateDirectMandates,
 } from '../../lib/election/index.ts'
 import {
   applyFilterState,
@@ -72,8 +73,15 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     let totalVotes = 0
 
     try {
-      const filteredVotes = applyFilterState(dataState.data.secondVotes, filters)
-      includedVotes = countVotes(filteredVotes)
+      const filteredSecondVotes = applyFilterState(
+        dataState.data.secondVotes,
+        filters,
+      )
+      const filteredFirstVotes = applyFilterState(
+        dataState.data.firstVotes,
+        filters,
+      )
+      includedVotes = countVotes(filteredSecondVotes)
       totalVotes = countVotes(dataState.data.secondVotes)
 
       if (!Number.isFinite(totalVotes) || totalVotes <= 0) {
@@ -99,13 +107,11 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
       }
 
       const electionResults = aggregateElectionResults(
-        filteredVotes,
+        filteredSecondVotes,
         dataState.data.parties,
       )
-      const seatResults = allocateSeats(
-        electionResults,
-        dataState.data.directMandates,
-      )
+      const directMandates = calculateDirectMandates(filteredFirstVotes)
+      const seatResults = allocateSeats(electionResults, directMandates)
       const totalSeats = seatResults.reduce(
         (total, result) => total + result.seats,
         0,

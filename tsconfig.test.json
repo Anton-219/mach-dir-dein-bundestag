@@ -18,7 +18,6 @@
     "src/lib/**/*.ts",
     "src/models/calculation-results.ts",
     "src/models/json-contracts.ts",
-    "src/models/normalized-inputs.ts",
     "tests/unit/**/*.ts"
   ]
 }

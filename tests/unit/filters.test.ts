@@ -14,6 +14,7 @@ import type { VoteEntry } from '../../src/models/json-contracts.ts'
 
 const entries: VoteEntry[] = [
   {
+    districtId: 1,
     state: 'Berlin',
     gender: 'm',
     ageGroup: '18-24',
@@ -23,6 +24,7 @@ const entries: VoteEntry[] = [
     votes: 100,
   },
   {
+    districtId: 1,
     state: 'Berlin',
     gender: 'w',
     ageGroup: '18-24',
@@ -32,6 +34,7 @@ const entries: VoteEntry[] = [
     votes: 50,
   },
   {
+    districtId: 18,
     state: 'Hamburg',
     gender: 'm',
     ageGroup: '25-34',
@@ -41,6 +44,7 @@ const entries: VoteEntry[] = [
     votes: 25,
   },
   {
+    districtId: 18,
     state: 'Hamburg',
     gender: 'm',
     ageGroup: '25-34',
