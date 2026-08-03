@@ -2,8 +2,6 @@ import { isGermanyStatesGeoJson } from '../lib/map/germany-map.ts'
 import type { GermanyStatesGeoJson } from '../lib/map/germany-map.ts'
 import type {
   AgeGroup,
-  DirectMandateWinner,
-  DirectMandateWinnerJson,
   ElectionMethod,
   Gender,
   Party,
@@ -14,9 +12,9 @@ import type {
 
 const dataFiles = {
   parties: 'partyData.json',
+  firstVotes: 'first_votes.json',
   secondVotes: 'second_votes.json',
   statVotes: 'stat_votes.json',
-  directMandates: 'election_results_direktmandate.json',
   germanyStates: 'germany_states_map.geo.json',
 } as const
 
@@ -29,7 +27,6 @@ const ageGroups = [
   '55-64',
   '65+',
 ] as const satisfies readonly AgeGroup[]
-const voteTypes = ['1', '2'] as const satisfies readonly VoteType[]
 const electionMethods = [
   'postal',
   'in-person',
@@ -41,9 +38,9 @@ type JsonRecord = Record<string, unknown>
 
 export interface ElectionData {
   parties: Party[]
+  firstVotes: VoteEntry[]
   secondVotes: VoteEntry[]
   statVotes: StatVotes[]
-  directMandates: DirectMandateWinner[]
   germanyStates: GermanyStatesGeoJson
 }
 
@@ -82,42 +79,32 @@ function isParty(value: unknown): value is Party {
   )
 }
 
-function normalizeVoteEntry(value: unknown): VoteEntry | undefined {
+function normalizeVoteEntry(
+  value: unknown,
+  expectedVoteType: VoteType,
+): VoteEntry | undefined {
   if (
     !isRecord(value) ||
+    !Number.isInteger(value.districtId) ||
+    (value.districtId as number) <= 0 ||
     typeof value.state !== 'string' ||
     !isOneOf(value.gender, genders) ||
     !isOneOf(value.ageGroup, ageGroups) ||
     typeof value.party !== 'string' ||
+    value.voteType !== expectedVoteType ||
     !isOneOf(value.electionMethod, electionMethods) ||
     !isFiniteNumber(value.votes)
   ) {
     return undefined
   }
 
-  let voteType: VoteType
-  if (isOneOf(value.voteType, voteTypes)) {
-    voteType = value.voteType
-  } else if (
-    value.state === 'Schleswig-Holstein' &&
-    value.party === 'SSW' &&
-    value.voteType === value.electionMethod
-  ) {
-    // The restored legacy file contains 24 appended SSW second-vote records
-    // whose voteType accidentally repeats the election method. The old app
-    // accepted these through a type assertion. Keep the raw file unchanged and
-    // normalize this narrowly identified legacy defect at the data boundary.
-    voteType = '2'
-  } else {
-    return undefined
-  }
-
   return {
+    districtId: value.districtId as number,
     state: value.state,
     gender: value.gender,
     ageGroup: value.ageGroup,
     party: value.party,
-    voteType,
+    voteType: expectedVoteType,
     electionMethod: value.electionMethod,
     votes: value.votes,
   }
@@ -130,16 +117,6 @@ function isStatVotes(value: unknown): value is StatVotes {
     isOneOf(value.ageGroup, ageGroups) &&
     typeof value.party === 'string' &&
     isFiniteNumber(value.votes)
-  )
-}
-
-function isDirectMandateWinnerJson(
-  value: unknown,
-): value is DirectMandateWinnerJson {
-  return (
-    isRecord(value) &&
-    typeof value.party === 'string' &&
-    isFiniteNumber(value.districts_won)
   )
 }
 
@@ -163,6 +140,16 @@ function parseArray<T>(
   }
 
   return parsedItems as T[]
+}
+
+function parseVoteEntries(
+  value: unknown,
+  fileName: string,
+  expectedVoteType: VoteType,
+): VoteEntry[] {
+  return parseArray(value, fileName, (item) =>
+    normalizeVoteEntry(item, expectedVoteType),
+  )
 }
 
 function createDataUrl(fileName: string): string {
@@ -202,13 +189,70 @@ async function fetchJson(
   }
 }
 
+function collectDistrictStates(
+  entries: readonly VoteEntry[],
+  fileName: string,
+): Map<number, string> {
+  const statesByDistrict = new Map<number, string>()
+
+  for (const entry of entries) {
+    const existingState = statesByDistrict.get(entry.districtId)
+    if (existingState !== undefined && existingState !== entry.state) {
+      throw new ElectionDataLoadError(
+        `${fileName} assigns district ${entry.districtId} to both ${existingState} and ${entry.state}.`,
+      )
+    }
+    statesByDistrict.set(entry.districtId, entry.state)
+  }
+
+  return statesByDistrict
+}
+
+function verifyDistrictCoverage(
+  firstVotes: readonly VoteEntry[],
+  secondVotes: readonly VoteEntry[],
+): void {
+  const firstVoteDistricts = collectDistrictStates(firstVotes, dataFiles.firstVotes)
+  const secondVoteDistricts = collectDistrictStates(
+    secondVotes,
+    dataFiles.secondVotes,
+  )
+  const firstOnly = [...firstVoteDistricts.keys()].filter(
+    (districtId) => !secondVoteDistricts.has(districtId),
+  )
+  const secondOnly = [...secondVoteDistricts.keys()].filter(
+    (districtId) => !firstVoteDistricts.has(districtId),
+  )
+  const conflictingStates = [...firstVoteDistricts].filter(
+    ([districtId, state]) => secondVoteDistricts.get(districtId) !== state,
+  )
+
+  if (
+    firstOnly.length === 0 &&
+    secondOnly.length === 0 &&
+    conflictingStates.length === 0
+  ) {
+    return
+  }
+
+  throw new ElectionDataLoadError(
+    `${dataFiles.firstVotes} and ${dataFiles.secondVotes} do not contain the same constituency-to-state coverage.`,
+  )
+}
+
 function verifyStateCoverage(
+  firstVotes: readonly VoteEntry[],
   secondVotes: readonly VoteEntry[],
   germanyStates: GermanyStatesGeoJson,
 ): void {
-  const voteStateNames = new Set(secondVotes.map((entry) => entry.state))
+  const firstVoteStates = new Set(firstVotes.map((entry) => entry.state))
+  const secondVoteStates = new Set(secondVotes.map((entry) => entry.state))
   const mapStateNames = new Set(
     germanyStates.features.map((feature) => feature.properties.name),
+  )
+  const voteStateNames = new Set([...firstVoteStates, ...secondVoteStates])
+  const inconsistentVoteStates = [...voteStateNames].filter(
+    (state) => !firstVoteStates.has(state) || !secondVoteStates.has(state),
   )
   const statesMissingFromMap = [...voteStateNames].filter(
     (state) => !mapStateNames.has(state),
@@ -217,11 +261,18 @@ function verifyStateCoverage(
     (state) => !voteStateNames.has(state),
   )
 
-  if (statesMissingFromMap.length === 0 && statesMissingFromVotes.length === 0) {
+  if (
+    inconsistentVoteStates.length === 0 &&
+    statesMissingFromMap.length === 0 &&
+    statesMissingFromVotes.length === 0
+  ) {
     return
   }
 
   const details = [
+    inconsistentVoteStates.length > 0
+      ? `first- and second-vote state coverage differs for ${inconsistentVoteStates.join(', ')}`
+      : undefined,
     statesMissingFromMap.length > 0
       ? `missing map geometry for ${statesMissingFromMap.join(', ')}`
       : undefined,
@@ -233,7 +284,7 @@ function verifyStateCoverage(
     .join('; ')
 
   throw new ElectionDataLoadError(
-    `${dataFiles.germanyStates} does not match the federal states in ${dataFiles.secondVotes}: ${details}.`,
+    `The prepared vote files do not match ${dataFiles.germanyStates}: ${details}.`,
   )
 }
 
@@ -242,30 +293,27 @@ export async function loadElectionData(
 ): Promise<ElectionData> {
   const [
     partiesJson,
+    firstVotesJson,
     secondVotesJson,
     statVotesJson,
-    directMandatesJson,
     germanyStatesJson,
   ] = await Promise.all([
     fetchJson(dataFiles.parties, fetcher),
+    fetchJson(dataFiles.firstVotes, fetcher),
     fetchJson(dataFiles.secondVotes, fetcher),
     fetchJson(dataFiles.statVotes, fetcher),
-    fetchJson(dataFiles.directMandates, fetcher),
     fetchJson(dataFiles.germanyStates, fetcher),
   ])
 
-  const directMandates = parseArray(
-    directMandatesJson,
-    dataFiles.directMandates,
-    (item) => (isDirectMandateWinnerJson(item) ? item : undefined),
-  ).map(({ party, districts_won }) => ({
-    party,
-    districtsWon: districts_won,
-  }))
-  const secondVotes = parseArray(
+  const firstVotes = parseVoteEntries(
+    firstVotesJson,
+    dataFiles.firstVotes,
+    '1',
+  )
+  const secondVotes = parseVoteEntries(
     secondVotesJson,
     dataFiles.secondVotes,
-    normalizeVoteEntry,
+    '2',
   )
 
   if (!isGermanyStatesGeoJson(germanyStatesJson)) {
@@ -274,17 +322,18 @@ export async function loadElectionData(
     )
   }
 
-  verifyStateCoverage(secondVotes, germanyStatesJson)
+  verifyDistrictCoverage(firstVotes, secondVotes)
+  verifyStateCoverage(firstVotes, secondVotes, germanyStatesJson)
 
   return {
     parties: parseArray(partiesJson, dataFiles.parties, (item) =>
       isParty(item) ? item : undefined,
     ),
+    firstVotes,
     secondVotes,
     statVotes: parseArray(statVotesJson, dataFiles.statVotes, (item) =>
       isStatVotes(item) ? item : undefined,
     ),
-    directMandates,
     germanyStates: germanyStatesJson,
   }
 }
