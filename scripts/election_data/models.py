@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Literal
 
 Gender = Literal["m", "w"]
@@ -28,14 +27,3 @@ class ValidationReport:
     sourceGroupCount: int
     maxDistrictMethodError: float
     maxStateDemographicError: float
-
-
-@dataclass(frozen=True)
-class PreparationResult:
-    firstVotes: list[VoteEntry]
-    secondVotes: list[VoteEntry]
-    districtTotals: object
-    profiles: object
-    validation: ValidationReport
-    firstVotesPath: Path | None
-    secondVotesPath: Path | None
