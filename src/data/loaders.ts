@@ -85,21 +85,23 @@ function normalizeVoteEntry(
 ): VoteEntry | undefined {
   if (
     !isRecord(value) ||
+    typeof value.districtId !== 'number' ||
     !Number.isInteger(value.districtId) ||
-    (value.districtId as number) <= 0 ||
+    value.districtId <= 0 ||
     typeof value.state !== 'string' ||
     !isOneOf(value.gender, genders) ||
     !isOneOf(value.ageGroup, ageGroups) ||
     typeof value.party !== 'string' ||
     value.voteType !== expectedVoteType ||
     !isOneOf(value.electionMethod, electionMethods) ||
-    !isFiniteNumber(value.votes)
+    !isFiniteNumber(value.votes) ||
+    value.votes < 0
   ) {
     return undefined
   }
 
   return {
-    districtId: value.districtId as number,
+    districtId: value.districtId,
     state: value.state,
     gender: value.gender,
     ageGroup: value.ageGroup,
@@ -224,7 +226,9 @@ function verifyDistrictCoverage(
     (districtId) => !firstVoteDistricts.has(districtId),
   )
   const conflictingStates = [...firstVoteDistricts].filter(
-    ([districtId, state]) => secondVoteDistricts.get(districtId) !== state,
+    ([districtId, state]) =>
+      secondVoteDistricts.has(districtId) &&
+      secondVoteDistricts.get(districtId) !== state,
   )
 
   if (
