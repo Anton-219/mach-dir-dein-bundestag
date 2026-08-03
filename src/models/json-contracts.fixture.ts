@@ -1,6 +1,5 @@
 import type {
   AgeGroup,
-  DirectMandateWinnerJson,
   ElectionMethod,
   Gender,
   Party,
@@ -10,7 +9,7 @@ import type {
 } from './json-contracts.ts'
 
 /**
- * Compile-time compatibility fixtures copied from representative restored JSON
+ * Compile-time compatibility fixtures copied from representative prepared JSON
  * records. This file is included by the app TypeScript build, so incompatible
  * contract changes fail compilation without adding a runtime test dependency.
  */
@@ -40,12 +39,8 @@ export const representativePartyRecord = {
   seatPosition: -15,
 } satisfies Party
 
-export const representativeDirectMandateRecord = {
-  party: 'SPD',
-  districts_won: 121,
-} satisfies DirectMandateWinnerJson
-
 export const representativeVoteEntryRecord = {
+  districtId: 1,
   state: 'Schleswig-Holstein',
   gender: 'm',
   ageGroup: '18-24',
