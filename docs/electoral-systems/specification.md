@@ -2,55 +2,56 @@
 
 Status: normative architecture specification for issue #37 and the implementation stories in epic #36.
 
-This document defines the legal variants, modeling assumptions, required data, filter semantics, deterministic reference scenarios, and aggregate output contract. Later stories may refine implementation details, but must not silently change these decisions.
+This document defines the supported variants, modeling assumptions, required data, filter semantics, deterministic reference scenarios, and aggregate output contract. Later stories may refine implementation details, but must not silently change these decisions.
 
-## 1. Scope and terminology
-
-The project supports exactly these calculator identifiers:
+## 1. Supported systems
 
 | `systemId` | Variant | Legal/modeling reference |
 | --- | --- | --- |
-| `de-2021-bwahlg` | Electoral law used for the Bundestag election on 26 September 2021 | Bundeswahlgesetz as amended on 14 November 2020, including up to three uncompensated overhang seats |
-| `de-2023-fixed-630` | Fixed-size law introduced in 2023 | Bundeswahlgesetz as amended on 8 June 2023, with the Federal Constitutional Court's transitional three-constituency rule of 30 July 2024 |
-| `union-parallel` | Configurable parallel/Grabenwahl model | The CDU/CSU 299 direct + 299 list-seat proposal; both tiers are independent |
+| `de-2021-bwahlg` | Electoral law used for the Bundestag election on 26 September 2021 | Bundeswahlgesetz as amended on 14 November 2020 |
+| `de-2023-fixed-630` | Fixed-size law introduced in 2023 | Bundeswahlgesetz as amended on 8 June 2023, including the Federal Constitutional Court's transitional three-constituency rule of 30 July 2024 |
+| `union-parallel` | Parallel/Grabenwahl model | Independent direct and list tiers, configured by the project as 299 + 299 |
 
-A **direct win** is the modeled first-vote plurality in a district that contains at least one modeled valid first vote. A **direct seat** is a direct win that actually receives a Bundestag seat.
+A **direct win** is the modeled first-vote plurality in a district containing at least one modeled valid first vote. A **direct seat** is a direct win that actually receives a Bundestag seat.
 
-Every direct win becomes a seat in the parallel model. Under the 2021 law this is also true, including for a party that wins only one or two districts but fails the list threshold. Under the 2023 law a plurality can remain uncovered.
+An **empty district** has zero modeled valid first votes. It has no winner and no direct win.
 
-An **empty district** is a district whose modeled valid first-vote total is zero. It has no winner and therefore no direct win. An **inactive state** is a state whose modeled first- and second-vote totals are both zero. It remains part of Germany, retains its population fixture and districts, and is not removed from the electoral territory.
+An **inactive state** is a state excluded through the regional filter. Its modeled first- and second-vote totals are both zero. It remains part of Germany, retains its districts and its configured historical seat contingent, and is not removed from the electoral territory.
 
-The result is party-level only. Candidate names, list positions, biographies, and statements about which individual candidate enters parliament are outside the epic.
+The result is party-level only. Candidate names, list positions, biographies, and statements about which individual candidate enters parliament are outside this epic.
 
 ## 2. Shared scenario boundary
 
 Vote filtering and seat allocation are separate stages:
 
-1. The scenario builder applies demographic and regional filters to second votes.
-2. The first-vote model applies the same active filters to first votes, using the repository's ratio-based interpolation and clamping rules.
+1. The scenario builder applies the same active demographic, voting-method, and regional filters to first and second votes.
+2. The existing first-vote model performs its interpolation and clamping outside the electoral-system calculators.
 3. The scenario is normalized once.
 4. Every electoral-system strategy receives that same normalized scenario.
 5. Each strategy applies only eligibility and seat-allocation rules.
 
 No strategy may read UI state, repeat demographic interpolation, load JSON files directly, derive population from the filtered electorate, remove states, or alter district boundaries.
 
-A normalized scenario must always retain all 16 states and all 299 districts, including states and districts with zero modeled votes:
+A normalized scenario always retains all 16 states and all 299 districts, including inactive states and empty districts:
 
 ```ts
 interface ElectoralScenario {
   mode: 'unfiltered-reference' | 'filtered-model'
   validSecondVotes: number
+
   parties: Record<PartySlug, {
     secondVotes: number
     isNationalMinorityParty: boolean
   }>
+
   states: Array<{
     state: StateSlug
+    isActive: boolean
     validFirstVotes: number
     validSecondVotes: number
     secondVotesByParty: Record<PartySlug, number>
-    germanPopulation?: number
   }>
+
   districts: Array<{
     districtId: number
     state: StateSlug
@@ -60,42 +61,94 @@ interface ElectoralScenario {
 }
 ```
 
-`germanPopulation` is required only by `de-2021-bwahlg`. It is a frozen legal input and must be identical for filtered and unfiltered scenarios. The other strategies must not depend on population data.
+State activity is an invariant, not an independently filterable property of each vote type:
 
-A scenario with zero valid second votes nationwide cannot perform a proportional allocation and returns typed error `NO_VALID_SECOND_VOTES`. Zero first votes nationwide are valid: they simply produce no district winners.
+```text
+state.isActive = false
+  => state.validFirstVotes = 0
+  => state.validSecondVotes = 0
+  => every district in the state has validFirstVotes = 0
+
+state.isActive = true
+  => first- and second-vote data are both included and modeled
+```
+
+The application does not support scenarios in which a state has first votes but no second votes, or second votes but no first votes. There is no first-vote-only or second-vote-only filter. A normalized scenario violating this contract returns `INCONSISTENT_STATE_ACTIVITY`.
+
+A scenario with zero valid second votes nationwide cannot perform a proportional allocation and returns `NO_VALID_SECOND_VOTES`. Because vote-type filtering is unsupported, this normally also means that no state is active and no first votes remain.
 
 ## 3. Meaning of filters
 
 Filters model **non-participation**, not a changed population or electoral territory.
 
-For every demographic, voting-method, state, or district filter:
+For every ordinary filter:
 
 - only matching first and second votes remain in the modeled vote totals;
-- state population remains unchanged;
-- all states remain present;
+- historical state seat contingents remain unchanged;
+- all states remain present in the normalized scenario;
 - all 299 districts and their boundaries remain present;
 - no district is transferred to another state;
 - no institutional seat capacity is recalculated from the filtered group.
 
-For example, selecting only voters aged 18–24 means: “What if only this group had cast votes?” It does not mean that Germany's population consists only of this group.
+Selecting only voters aged 18–24 therefore means: “What if only this group had cast votes?” It does not mean that Germany's population consists only of that group.
 
-Excluding a state means: “The state remains part of Germany, but no votes from it are counted.” It does not remove the state, its population, or its districts from the model.
+Excluding a state means: “The state remains part of Germany, but no first or second votes from it are counted.” It does not remove the state, its historical seat contingent, or its districts from the model.
 
 A future simulation of changed state borders, population bases, district maps, or institutional seat capacities is a separate feature and must not be implemented as ordinary filter behavior.
 
-## 4. District-winner resolution
+## 4. Historical state-seat-contingent fixture
+
+`de-2021-bwahlg` does not receive population figures. It receives the already calculated number of initial seats assigned to each state for the supported election year.
+
+The fixture is normative input to the calculator:
+
+```ts
+interface HistoricalStateSeatContingentFixture {
+  electionYear: number
+  legalVersion: string
+  baseSeatCount: 598
+  seatsByState: Record<StateSlug, number>
+}
+```
+
+Recommended JSON shape:
+
+```json
+{
+  "electionYear": 2021,
+  "legalVersion": "de-2021-bwahlg",
+  "baseSeatCount": 598,
+  "seatsByState": {
+    "Schleswig-Holstein": 0
+  }
+}
+```
+
+The example value is only structural; the committed fixture must contain the authoritative values for all 16 states.
+
+Validation rules:
+
+```text
+all 16 states occur exactly once
+all values are non-negative integers
+sum(seatsByState) = baseSeatCount = 598
+```
+
+The fixture is loaded and validated by the scenario/configuration adapter, not by the calculator itself. It remains identical for filtered and unfiltered scenarios.
+
+This deliberately replaces population data as a runtime dependency. The application does not recalculate state contingents and therefore needs no population statistics by gender, age, voting method, or active filter selection.
+
+The parallel model does not need this fixture. Its direct capacity per state is derived from the number of configured districts in that state; its list tier is allocated from second votes.
+
+## 5. District-winner resolution
 
 Winner resolution is shared by all calculators and happens before system-specific seat allocation.
 
-For district `d`, let:
+For district `d`:
 
 ```text
 E[d] = sum_P firstVotes[P,d]
-```
 
-Then:
-
-```text
 if E[d] == 0:
   winner[d] = none
 else:
@@ -104,9 +157,7 @@ else:
 
 A zero-vote district must never receive an artificial winner through array order, party slug, random choice, or the general tie-break rule.
 
-If two or more parties tie with the same positive maximum, resolve the tie by ascending stable party slug. Emit warning `DISTRICT_TIE_REPLACED_BY_STABLE_ORDER`. This is a deterministic simulation convention, not a reproduction of a legal lot.
-
-The set and count of direct wins are therefore scenario-dependent:
+If two or more parties tie at the same positive maximum, resolve the tie by ascending stable party slug and emit `DISTRICT_TIE_REPLACED_BY_STABLE_ORDER`. This is a deterministic simulation convention, not a reproduction of a legal lot.
 
 ```text
 allocatedDistrictCount = count(district where validFirstVotes > 0)
@@ -116,125 +167,144 @@ sum_P directWins[P] = allocatedDistrictCount
 
 For the unfiltered 2021 reference, `allocatedDistrictCount = 299`.
 
-## 5. Eligibility and special cases
+## 6. Eligibility and special cases
 
-A party participates in proportional/list-seat allocation when at least one condition is true:
+A party participates in proportional or list-seat allocation when at least one condition is true:
 
 - it receives at least 5% of all valid second votes nationwide;
-- it has the most first votes in at least three non-empty districts; or
+- it wins at least three non-empty districts; or
 - it is configured as a party of a national minority.
 
 The denominator is all valid second votes, including votes for parties that later fail the threshold.
 
-Minority status is explicit legal metadata, not inferred from vote totals or direct wins. For the 2021 data, `SSW` has `isNationalMinorityParty: true`. The exemption only admits SSW to apportionment; it does not guarantee a seat.
+Minority status is explicit legal metadata. For the 2021 data, `SSW` has `isNationalMinorityParty: true`. The exemption admits SSW to apportionment but does not guarantee a seat.
 
-A party below 5% with only one or two direct wins is handled differently by each system:
+A party below 5% with only one or two direct wins is handled differently:
 
-- `de-2021-bwahlg`: its direct winners receive seats, but its second votes do not participate in proportional allocation.
-- `de-2023-fixed-630`: it receives no party seats; its district pluralities are uncovered because the party has no second-vote allocation.
-- `union-parallel`: its direct winners receive direct-tier seats, but the party receives no list-tier seats.
+- `de-2021-bwahlg`: its direct winners receive seats, but its second votes do not participate in proportional allocation;
+- `de-2023-fixed-630`: it receives no party seats and its district pluralities are uncovered;
+- `union-parallel`: its direct winners receive direct-tier seats, but it receives no list-tier seats.
 
-Successful independent candidates are separate legal cases under both German statutes. The project has no candidate-level independent-vote contract and the 2021 reference election had no successful independent candidate. A scenario containing one must return typed error `UNSUPPORTED_INDEPENDENT_WINNER` rather than silently misallocate seats.
+Successful independent candidates are unsupported because the project has no candidate-level independent-vote contract. A scenario containing one returns `UNSUPPORTED_INDEPENDENT_WINNER` rather than silently misallocating seats.
 
-## 6. Common apportionment primitive
+## 7. Common apportionment primitive
 
-All proportional allocations use Sainte-Laguë/Schepers, the divisor method with standard rounding.
-
-For vote total `v_i` and divisor `d`:
+All proportional allocations use Sainte-Laguë/Schepers with standard rounding.
 
 ```text
-seats_i = roundHalfUp(v_i / d)
+seats_i = roundHalfUp(votes_i / divisor)
 ```
 
-Choose `d` so that the rounded seat counts sum to the required seat count. An equivalent highest-averages implementation may award successive seats using quotients `v_i / (2 * seats_i + 1)`.
+Choose the divisor so that rounded seats sum to the required seat count. An equivalent highest-averages implementation may use `votes_i / (2 * seats_i + 1)`.
 
-German law resolves an exact allocation tie by lot. The application must be deterministic, so an exact quotient tie is resolved by ascending stable party slug, then ascending state slug or district id where needed. Emit warning `LEGAL_LOT_REPLACED_BY_STABLE_ORDER` whenever this fallback is used.
+German law resolves exact allocation ties by lot. The application must be deterministic, so an exact quotient tie is resolved by ascending stable party slug, then ascending state slug or district id where needed. Emit `LEGAL_LOT_REPLACED_BY_STABLE_ORDER` whenever this fallback is used.
 
 An allocation with a positive seat count and no positive votes is invalid. It must not invent recipients by stable ordering.
 
-## 7. `de-2021-bwahlg`
+## 8. `de-2021-bwahlg`
 
-### 7.1 Size and mandate rules
+### 8.1 Size and mandate rules
 
 - Nominal size: 598 seats.
 - District map: 299 fixed districts.
 - Every modeled district winner receives a direct seat.
 - An empty district produces no direct seat.
-- Empty districts do not reduce the 598-seat nominal size.
+- Empty districts and inactive states do not reduce the nominal size.
 - Overhang and compensation can increase the final size.
-- Up to three overhang seats may remain uncompensated in total.
-
-The final chamber therefore remains:
+- Up to three overhang seats may remain uncompensated.
 
 ```text
 totalSeats >= 598
-```
-
-even when fewer than 299 districts produce winners.
-
-### 7.2 Population basis
-
-The initial state contingents always use the frozen German state population as of 31 May 2021.
-
-Filters never recalculate these population values. In particular, demographic exclusions and inactive states do not reduce a state's population basis. This prevents the ordinary vote-filter feature from becoming a population or district-map simulation.
-
-### 7.3 Allocation formula
-
-Let `L` be a state, `P` a party, `D[P,L]` its direct wins in that state, and `Z[P,L]` its state second votes.
-
-1. **Reserved direct seats.** Let `R` be the number of direct wins by parties that are not eligible for proportional allocation. Reserve those seats and exclude those parties' second votes from all following proportional steps.
-2. **State contingents.** Allocate `598 - R` preliminary seats among the 16 states by frozen German population using Sainte-Laguë/Schepers.
-3. **First state allocation.**
-   - If a state has positive valid second votes, allocate its contingent among eligible state lists by `Z[P,L]` using Sainte-Laguë/Schepers. Call this `A[P,L]`.
-   - If a state has zero valid second votes, set `A[P,L] = 0` for all parties. Do not invent a recipient for its population-based contingent.
-4. **State minimum.** For every eligible party/list calculate:
-
-   ```text
-   stateMinimum[P,L] = max(
-     D[P,L],
-     floor((D[P,L] + A[P,L]) / 2 + 0.5)
-   )
-   ```
-
-   A completely inactive state has `D[P,L] = 0` and `A[P,L] = 0`, so it creates no minimum. If a state exceptionally has first votes but no second votes, its real modeled direct wins still create direct-seat minima; zero second votes alone do not erase a winner.
-5. **National minimum.** Calculate:
-
-   ```text
-   partyMinimum[P] = max(
-     sum_L(stateMinimum[P,L]),
-     sum_L(A[P,L])
-   )
-   ```
-6. **Upper allocation and chamber expansion.** Starting at final chamber size `T = 598`, find the smallest `T` for which there is an integer residual-overhang count `u` from 0 through 3 such that:
-   - `T - R - u` seats can be allocated nationally among eligible parties by second votes using Sainte-Laguë/Schepers;
-   - the sum of positive deficits between that allocation and `partyMinimum[P]` is exactly `u`; and
-   - adding each party's deficit satisfies every `partyMinimum[P]`.
-
-   The reserved seats and deficits are then added to the proportional allocation. For the unfiltered 2021 reference, `R = 0`: 733 seats are distributed proportionally and three residual CSU overhang seats produce 736 seats in total.
-7. **Final state allocation.** Allocate each eligible party's national total among its state lists by state second votes using Sainte-Laguë/Schepers, subject to each `stateMinimum[P,L]` as a lower bound. A state list with zero second votes receives no list seat unless a positive direct-seat lower bound requires the party's direct seats there.
-8. **Party breakdown.** For an eligible party, `directSeats = directWins` and `listSeats = totalSeats - directSeats`. For a non-eligible party with reserved wins, `totalSeats = directSeats = directWins` and `listSeats = 0`.
-
-The zero-second-vote state treatment is an explicit simulation convention for a situation not expected in a real federal election. Emit warning `ZERO_SECOND_VOTE_STATE_SIMULATION` with the affected state slugs.
-
-The calculator requires state-level German population as of 31 May 2021. Resident population and adult-citizen population are not legal substitutes.
-
-### 7.4 Majority threshold
-
-```text
 majorityThreshold = floor(totalSeats / 2) + 1
 ```
 
-It is computed from the actual expanded chamber size and is never hard-coded to 300 or 369.
+### 8.2 Initial state allocation
 
-## 8. `de-2023-fixed-630`
+The calculator consumes `HistoricalStateSeatContingentFixture` and never calculates state contingents from population.
 
-### 8.1 Size and mandate rules
+Let:
+
+- `C[L]` be the configured initial seat contingent of state `L`;
+- `D[P,L]` be direct wins of party `P` in `L`;
+- `Z[P,L]` be second votes of party `P` in `L`.
+
+Direct wins of parties excluded from proportional allocation are reserved. To preserve the fixed state-contingent fixture without a population recalculation, these reserved seats reduce the distributable contingent of the same state:
+
+```text
+reservedDirectSeats[L] =
+  sum direct wins in L by parties excluded from proportional allocation
+
+effectiveContingent[L] =
+  C[L] - reservedDirectSeats[L]
+```
+
+A negative effective contingent is invalid and returns `INVALID_STATE_SEAT_CONTINGENT_FIXTURE`.
+
+For each state:
+
+- active state: allocate `effectiveContingent[L]` among eligible state lists by state second votes;
+- inactive state: allocate zero preliminary party seats, regardless of its configured `C[L]`.
+
+Call the preliminary allocation `A[P,L]`.
+
+An inactive state therefore retains its configured historical contingent as institutional input but creates neither a preliminary party allocation nor a direct-seat minimum. The unallocated preliminary state contingent is not removed from the final national base size: the national upper allocation still begins from 598 actual seats.
+
+This inactive-state treatment is an explicit simulation convention. Emit `INACTIVE_STATE_SIMULATION` with the affected state slugs.
+
+### 8.3 State and national minima
+
+For every eligible party/list:
+
+```text
+stateMinimum[P,L] = max(
+  D[P,L],
+  floor((D[P,L] + A[P,L]) / 2 + 0.5)
+)
+
+partyMinimum[P] = max(
+  sum_L(stateMinimum[P,L]),
+  sum_L(A[P,L])
+)
+```
+
+For an inactive state, both `D[P,L]` and `A[P,L]` are zero.
+
+### 8.4 Upper and final allocation
+
+Starting at `T = 598`, find the smallest total size for which:
+
+- seats available to eligible parties can be allocated nationally by second votes;
+- every party minimum is satisfied;
+- at most three overhang seats remain uncompensated;
+- reserved direct seats are retained.
+
+For the unfiltered 2021 reference, the final result is 736 seats.
+
+Allocate each eligible party's national total among its active state lists by state second votes, subject to the state minima. Inactive state lists receive no list seats.
+
+For an eligible party:
+
+```text
+directSeats = directWins
+listSeats = totalSeats - directSeats
+```
+
+For a non-eligible party with one or two reserved wins:
+
+```text
+totalSeats = directSeats = directWins
+listSeats = 0
+```
+
+## 9. `de-2023-fixed-630`
+
+### 9.1 Size and mandate rules
 
 - Fixed size: 630 seats.
 - District map: 299 fixed districts.
 - No overhang or compensation seats.
 - A district plurality becomes a direct seat only when covered by the party's state-level second-vote allocation.
-- An empty district has no winner and therefore cannot be covered or uncovered.
+- An empty district has no winner and is neither covered nor uncovered.
 - Empty districts and inactive states do not reduce the chamber size.
 
 ```text
@@ -242,37 +312,30 @@ totalSeats = 630
 majorityThreshold = 316
 ```
 
-### 8.2 Allocation formula
+### 9.2 Allocation
 
-1. Allocate all 630 seats nationally among eligible parties by nationwide second votes using Sainte-Laguë/Schepers.
-2. For each party, allocate its national seats among its state lists by state second votes using Sainte-Laguë/Schepers. State lists with zero second votes receive zero seats.
-3. In each party/state combination, rank district winners by descending first-vote share:
+1. Allocate all 630 seats nationally among eligible parties by nationwide second votes.
+2. Allocate each party's seats among its active state lists by state second votes. Inactive states receive zero state-list seats.
+3. In each party/state combination, rank direct winners by descending first-vote share:
 
    ```text
    firstVoteShare = partyFirstVotes / validFirstVotesInDistrict
    ```
 
-   Only non-empty districts enter this ranking.
-4. The first `stateSeats[P,L]` winners in that ranking receive direct seats. Remaining state seats go to the state list. Excess district winners are uncovered. A direct win by a non-eligible party is also uncovered.
-5. Return aggregate counts only:
+4. Cover the first winners up to the party's state-seat count. Remaining direct wins are uncovered.
+5. Return aggregate counts:
 
    ```text
-   directSeats = covered district wins
+   directSeats = covered direct wins
    uncoveredDistrictWins = directWins - directSeats
    listSeats = totalSeats - directSeats
    ```
 
-No candidate names or list positions are required for these aggregate counts.
+An inactive state produces neither direct winners nor state-list seats. All 630 seats are nevertheless allocated from the remaining nationwide second votes; no seat remains vacant.
 
-An inactive state produces no district winners and no state-list seats. The 630 seats are nevertheless fully allocated from the remaining nationwide second votes; no seat remains vacant.
+## 10. `union-parallel`
 
-The supported variant includes the Federal Constitutional Court's transitional three-constituency rule. It intentionally does not model the June 2023 statute as if the later court order had never occurred.
-
-## 9. `union-parallel`
-
-“Grabenwahl” is not one unique formula. This project selects the Union's parallel 299+299 proposal and exposes its configuration together with an explicit simulation rule for empty districts.
-
-Default configuration:
+The project models two independent tiers.
 
 ```ts
 interface ParallelSystemConfig {
@@ -284,54 +347,45 @@ interface ParallelSystemConfig {
 
 Allocation:
 
-1. Resolve a winner in each non-empty configured district. Every such winner receives a direct-tier seat.
-2. An empty district awards no direct seat. The seat is not transferred, reassigned, or converted into a list seat.
-3. Independently allocate exactly `fixedListSeatCount` seats among eligible parties by nationwide second votes using Sainte-Laguë/Schepers.
-4. Allocate each party's list seats among its state lists by state second votes. A state list with zero second votes receives no list seat.
-5. Do not offset the tiers:
+1. Resolve a winner in each non-empty district. Every winner receives a direct-tier seat.
+2. An empty district awards no direct seat. It is not transferred, reassigned, or converted into a list seat.
+3. Independently allocate exactly 299 list seats among eligible parties by nationwide second votes.
+4. Allocate each party's list seats among active state lists by state second votes.
+5. Do not offset the tiers.
 
-   ```text
-   allocatedDirectSeatCount = count(district where validFirstVotes > 0)
-   unallocatedDirectSeatCount =
-     maximumDirectSeatCount - allocatedDirectSeatCount
+```text
+allocatedDirectSeatCount = count(district where validFirstVotes > 0)
+unallocatedDirectSeatCount = 299 - allocatedDirectSeatCount
 
-   totalSeats[P] = directSeats[P] + listSeats[P]
-   totalChamberSize = allocatedDirectSeatCount + fixedListSeatCount
-   majorityThreshold = floor(totalChamberSize / 2) + 1
-   ```
+totalSeats[P] = directSeats[P] + listSeats[P]
+totalSeats = allocatedDirectSeatCount + 299
+majorityThreshold = floor(totalSeats / 2) + 1
+```
 
-6. There are no overhang or compensation seats.
+The 299 direct seats are maximum institutional capacity, not an always-filled block. Unallocated direct seats are explanatory metadata and are not included in `totalSeats`.
 
-`maximumDirectSeatCount` is institutional capacity, not an always-filled block. The actual direct tier can be smaller. Unallocated direct seats are explanatory metadata and are not included in `totalChamberSize`.
+Example: six empty districts produce 293 direct seats plus 299 list seats, totaling 592 seats. The majority threshold is 297.
 
-With the current dataset, `maximumDirectSeatCount` must equal the number of districts, 299. A different value requires a matching district-boundary and first-vote dataset; reject inconsistent configuration.
+An inactive state leaves all of its district seats unallocated and receives no list seats.
 
-Example: if six districts are empty, the result contains 293 direct seats and 299 list seats, for 592 actual seats and a majority threshold of 297.
+## 11. Data audit
 
-An inactive state leaves all of its district seats unallocated and receives no list seats. This is a project simulation convention for a proposal that does not define this filtered-data edge case.
+| Required input | Source/status | Decision |
+| --- | --- | --- |
+| District second votes by party | `public/data/second_votes.json` | Aggregate by state and nation; retain valid-vote totals for the threshold denominator |
+| District first votes by party | `public/data/first_votes.json` | Sufficient for winners and first-vote-share ranking; preserve empty districts |
+| District-to-state mapping | derivable from vote records | Do not add a duplicate mapping |
+| Historical state seat contingents | new small JSON fixture | Store explicit integer seat counts for all states and supported election years; do not store population as calculator input |
+| National-minority status | calculator configuration | Mark SSW as exempt |
+| Candidate/list positions | absent, intentionally out of scope | Aggregate counts remain calculable |
+| Independent candidates | unsupported | Return a typed error if introduced |
+| Golden outputs | typed fixtures/tests to add | Use section 12 |
 
-## 10. Data audit
+No additional population statistics are needed for gender, age, voting method, state inclusion, or any other ordinary filter.
 
-| Required input | Current repository source | Status | Decision/limitation |
-| --- | --- | --- | --- |
-| District second votes by party | `public/data/second_votes.json` | available | Aggregate by state and nation; retain `validVotes` for the 5% denominator |
-| District first votes by party | `public/data/first_votes.json` | available | Sufficient for winners and first-vote-share ranking; preserve zero-vote districts |
-| District-to-state mapping | first/second-vote records | available | No separate mapping file required |
-| State second votes by party | derived from district second votes | derivable | Do not add a duplicate dataset |
-| Direct totals by party/state | derived from non-empty district winners | derivable | Do not add a duplicate direct-mandate file |
-| German population by state on 31 May 2021 | not represented by the current population contract | missing | Add one small frozen dataset; do not add demographic-filter-specific population fixtures |
-| National-minority party flag | no legal metadata in vote files | missing | Add calculator configuration; mark SSW as exempt |
-| Candidate/list positions | absent | intentionally out of scope | Aggregate direct/list counts remain calculable |
-| Independent candidates | absent | unsupported | Return a typed error if introduced |
-| Golden reference outputs | not yet a typed fixture | missing | Add fixtures/tests in #38 and system stories using section 11 |
+### Direct-win audit target
 
-The current `populations.json` contains district residents and citizens aged 18 or older. Neither matches the 2021 law's state-level German-population input.
-
-No additional population statistics are needed for gender, age, voting method, state inclusion, or any other ordinary filter. Filters affect votes only.
-
-### Direct-mandate audit target
-
-The archived final result of the main election on 26 September 2021 contains exactly 299 district wins:
+The unfiltered archived 2021 data must produce:
 
 | Party | Direct wins |
 | --- | ---: |
@@ -345,24 +399,17 @@ The archived final result of the main election on 26 September 2021 contains exa
 | SSW | 0 |
 | **Total** | **299** |
 
-The data-generation scripts already validate 299 district records. The engine's first real-data regression test must additionally assert the party totals above for an unfiltered scenario. A mismatch is a data/model defect, not an electoral-system difference.
-
-Filtered scenarios must instead assert:
+Filtered scenarios assert:
 
 ```text
-sum_P directWins[P] =
-  count(district where validFirstVotes > 0)
+sum_P directWins[P] = count(district where validFirstVotes > 0)
 ```
 
-## 11. Deterministic reference scenarios
+## 12. Deterministic reference scenarios
 
-### R1 — archived unfiltered 2021 main election
+### R1 — archived unfiltered 2021 election
 
-Use the repository's original 26 September 2021 result, not the 2024 partial repeat election in Berlin. Disable every filter.
-
-Eligible parties are SPD, CDU, GRÜNE, FDP, AfD, CSU, DIE LINKE through three direct wins, and SSW through the national-minority exemption.
-
-| Party | `de-2021-bwahlg` | `de-2023-fixed-630` | `union-parallel` total | Parallel direct | Parallel list |
+| Party | `de-2021-bwahlg` | `de-2023-fixed-630` | `union-parallel` total | Direct | List |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | SPD | 206 | 177 | 205 | 121 | 84 |
 | CDU | 152 | 130 | 160 | 98 | 62 |
@@ -374,72 +421,61 @@ Eligible parties are SPD, CDU, GRÜNE, FDP, AfD, CSU, DIE LINKE through three di
 | SSW | 1 | 1 | 0 | 0 | 0 |
 | **Total** | **736** | **630** | **598** | **299** | **299** |
 
-The 630-seat column matches `scripts/tests/reference_2021.py`. The 299-list-seat column is a deterministic Sainte-Laguë/Schepers recalculation from the archived nationwide second-vote totals. SSW participates in both but does not reach one seat in the smaller 299-seat list tier.
+The 630-seat column matches `scripts/tests/reference_2021.py`.
 
-For unfiltered `de-2023-fixed-630`, later tests must also assert:
-
-```text
-sum(directSeats) + sum(listSeats) = 630
-sum(uncoveredDistrictWins) + sum(directSeats) = 299
-```
-
-The exact covered/uncovered party breakdown is frozen by #39 after state allocation and first-vote-share ranking are implemented against repository data.
-
-### R2 — first-vote winner changes under a filter
+### R2 — winner changes under a filter
 
 ```text
-unfiltered first votes: A=600, B=400, valid=1,000
-scenario multipliers:   A=0.5, B=2.0
+unfiltered first votes: A=600, B=400
 modeled first votes:    A=300, B=800
 ```
 
-Expected winner is B in all three strategies. The 2021 and parallel strategies count one B direct seat. The 2023 strategy counts one B direct win and covers it only if B has a state seat.
+B wins in all three strategies. State activity, state seat contingents, district membership, and institutional capacities remain unchanged.
 
-Population fixtures, state membership, district membership, and institutional seat capacities remain unchanged.
+### R3 — minority exemption is not a guarantee
 
-### R3 — minority exemption is eligibility, not a guarantee
-
-A configured national-minority party below 5% with no direct wins is included in Sainte-Laguë input. Its result may still be zero when the tier is too small. This protects SSW from both accidental exclusion and an artificial seat guarantee.
+A configured national-minority party below 5% is admitted to list apportionment but may still receive zero seats in a small tier.
 
 ### R4 — one or two wins below the threshold
 
-A non-minority party below 5% with two district wins receives two seats under `de-2021-bwahlg`, zero seats and two uncovered wins under `de-2023-fixed-630`, and two direct-tier seats under `union-parallel`. It receives no proportional/list seats in any variant.
+A non-minority party below 5% with two direct wins receives:
 
-### R5 — deterministic positive tie handling
+- two direct seats and no proportional seats under `de-2021-bwahlg`;
+- zero seats and two uncovered wins under `de-2023-fixed-630`;
+- two direct-tier seats and no list seats under `union-parallel`.
 
-An exact positive district tie resolves by stable party slug and emits `DISTRICT_TIE_REPLACED_BY_STABLE_ORDER`. An exact Sainte-Laguë quotient tie resolves by stable key order and emits `LEGAL_LOT_REPLACED_BY_STABLE_ORDER`. Repeated calculations with identical input must be byte-for-byte equal.
+### R5 — deterministic positive ties
+
+Positive district ties use stable party order and emit `DISTRICT_TIE_REPLACED_BY_STABLE_ORDER`. Sainte-Laguë quotient ties use stable keys and emit `LEGAL_LOT_REPLACED_BY_STABLE_ORDER`.
 
 ### R6 — empty district
 
-```text
-first votes in district: all parties = 0
-valid first votes: 0
-```
+A district with zero first votes has no winner in any system.
 
-Expected behavior:
-
-- no winner and no direct win in any system;
-- `de-2021-bwahlg` still starts from 598 seats;
-- `de-2023-fixed-630` still returns 630 seats;
-- `union-parallel` allocates one fewer direct seat and therefore has one fewer actual seat;
-- the stable tie-break is not invoked.
+- historical system remains at least 598 seats;
+- fixed system remains at 630 seats;
+- parallel system has one fewer actual direct and total seat;
+- no tie-break is invoked.
 
 ### R7 — inactive state
 
-For a state with zero modeled first and second votes:
+An excluded state has zero first and second votes while remaining present with its districts and historical contingent.
 
-- population and districts remain present in the normalized scenario;
-- `de-2021-bwahlg` retains the frozen population basis, assigns no preliminary party seats in that state, creates no direct minimum there, and still allocates a final chamber of at least 598 seats nationally;
-- `de-2023-fixed-630` assigns no direct or list seats to that state and still allocates all 630 seats;
-- `union-parallel` leaves that state's district seats unallocated, keeps all 299 list seats, and reduces actual chamber size by the number of its empty districts.
+- historical system assigns no preliminary party seats or direct minima in that state and remains at least 598 seats nationally;
+- fixed system assigns no direct or list seats to that state and still fills all 630 seats;
+- parallel system leaves the state's district seats unallocated, keeps 299 list seats, and reduces actual chamber size accordingly.
 
-### R8 — all second votes removed
+### R8 — inconsistent state activity
 
-A scenario with `validSecondVotes = 0` returns `NO_VALID_SECOND_VOTES` for all three systems. No calculator invents a proportional allocation by stable ordering.
+A normalized state with first votes but no second votes, or vice versa, returns `INCONSISTENT_STATE_ACTIVITY`. Calculators do not contain a fallback for an unsupported vote-type-only scenario.
 
-## 12. Shared aggregate contract
+### R9 — all votes removed
 
-A calculation returns either `ElectoralSystemResult` or a typed `ElectoralSystemError`. Domain results contain stable keys and structured values only; localized messages belong to the presentation layer.
+A scenario with zero valid second votes returns `NO_VALID_SECOND_VOTES`. No calculator invents a proportional allocation.
+
+## 13. Shared aggregate contract
+
+Domain results contain stable keys and structured values only. Localized messages belong to the presentation layer.
 
 ```ts
 type ElectoralSystemId =
@@ -450,7 +486,9 @@ type ElectoralSystemId =
 type ElectoralSystemError = {
   code:
     | 'UNSUPPORTED_INDEPENDENT_WINNER'
-    | 'MISSING_STATE_POPULATION'
+    | 'MISSING_STATE_SEAT_CONTINGENT'
+    | 'INVALID_STATE_SEAT_CONTINGENT_FIXTURE'
+    | 'INCONSISTENT_STATE_ACTIVITY'
     | 'INCONSISTENT_DIRECT_TIER_SIZE'
     | 'NO_VALID_SECOND_VOTES'
   details?: Record<string, string | number | string[]>
@@ -461,7 +499,7 @@ type ElectoralSystemWarning = {
     | 'FILTERED_FIRST_VOTE_MODEL'
     | 'LEGAL_LOT_REPLACED_BY_STABLE_ORDER'
     | 'DISTRICT_TIE_REPLACED_BY_STABLE_ORDER'
-    | 'ZERO_SECOND_VOTE_STATE_SIMULATION'
+    | 'INACTIVE_STATE_SIMULATION'
   details?: Record<string, string | number | string[]>
 }
 
@@ -496,12 +534,13 @@ interface ElectoralSystemResult {
     reservedDirectSeats: number
     uncompensatedOverhangSeats: number
     inactiveStates: StateSlug[]
+    stateSeatContingentYear?: number
     referenceScenario?: 'btw-2021-main-election'
   }
 }
 ```
 
-Invariants:
+Common invariants:
 
 ```text
 majorityThreshold = floor(totalSeats / 2) + 1
@@ -509,8 +548,7 @@ totalSeats = sum(parties.totalSeats)
 party.totalSeats = party.directSeats + party.listSeats
 party.directWins = party.directSeats + party.uncoveredDistrictWins
 sum(parties.directWins) = metadata.allocatedDirectSeatCount
-metadata.emptyDistrictCount =
-  299 - metadata.allocatedDirectSeatCount
+metadata.emptyDistrictCount = 299 - metadata.allocatedDirectSeatCount
 ```
 
 System-specific invariants:
@@ -519,6 +557,7 @@ System-specific invariants:
 de-2021-bwahlg:
   totalSeats >= 598
   uncoveredDistrictWins = 0
+  stateSeatContingentYear is present
 
 de-2023-fixed-630:
   totalSeats = 630
@@ -527,8 +566,7 @@ de-2023-fixed-630:
 
 union-parallel:
   fixedListSeatCount = 299
-  totalSeats =
-    allocatedDirectSeatCount + fixedListSeatCount
+  totalSeats = allocatedDirectSeatCount + fixedListSeatCount
   unallocatedDirectSeatCount =
     maximumDirectSeatCount - allocatedDirectSeatCount
   uncoveredDistrictWins = 0
@@ -536,20 +574,21 @@ union-parallel:
 
 Party arrays are sorted by `totalSeats` descending, then stable party slug.
 
-The UI consumes `totalSeats` and `majorityThreshold` from the result. It must not assume 598, 630, 736, 300, 316, or any other fixed majority threshold.
+The UI consumes `totalSeats` and `majorityThreshold` from the result. It must not infer them from nominal or maximum seat counts.
 
-## 13. Consequences for later stories
+## 14. Consequences for later stories
 
-- #38 creates an `ElectoralSystemCalculator` strategy interface, registry, normalized scenario adapter, eligibility helper, Sainte-Laguë primitive, and shared district-winner resolver that returns no winner for zero-vote districts.
-- #39 implements the 630-seat upper/lower allocation, aggregate direct-seat coverage, inactive-state behavior, and scenario-dependent direct-win totals.
-- #40 implements independent tiers with a maximum of 299 direct seats, exactly 299 list seats, unallocated-direct-seat metadata, and a variable actual chamber size.
-- #41 adds the frozen 31 May 2021 German state-population fixture, the four-stage legacy allocation, and the zero-second-vote state simulation convention. It must not add demographic-filter-specific population datasets.
-- #42 consumes only `ElectoralSystemResult`; it must not know formulas, infer seat capacity, or recalculate the majority threshold. It localizes error and warning codes through the i18n catalogs.
-- Tests for every implementation story must cover R6–R8 in addition to the unfiltered reference fixtures.
+- #38 creates the calculator interface, registry, normalized scenario adapter, state-activity validation, eligibility helper, Sainte-Laguë primitive, and shared district-winner resolver.
+- #39 implements fixed-630 allocation, direct-seat coverage, inactive-state behavior, and scenario-dependent direct-win totals.
+- #40 implements independent tiers with a maximum of 299 direct seats, exactly 299 list seats, unallocated-direct-seat metadata, and variable actual chamber size.
+- #41 adds and validates the explicit historical state-seat-contingent JSON fixture and implements the legacy allocation. It must not add population or demographic-filter-specific population datasets.
+- #42 consumes only `ElectoralSystemResult`, localizes error and warning codes, and never recalculates majority thresholds.
+- Tests must cover R6–R9 in addition to the unfiltered reference fixtures.
 
-## 14. Primary references
+## 15. Primary references
 
 - Federal Returning Officer, final main-election result 2021: https://www.bundeswahlleiterin.de/info/presse/mitteilungen/bundestagswahl-2021/52_21_endgueltiges-ergebnis.html
+- Federal Returning Officer, 2021 state seat contingents: https://www.bundeswahlleiterin.de/mitteilungen/bundestagswahlen/2021/20210909_btw21-sitzkontingente.html
 - Federal Returning Officer, explanation of the 2021 seat-allocation procedure: https://www.bundeswahlleiterin.de/dam/jcr/e9eb08cc-e19e-4caa-b9f7-c69247872344/btw21_erl_sitzzuteilung.pdf
 - Federal Returning Officer, model calculation for the 2023 law and 2024 court order: https://www.bundeswahlleiterin.de/dam/jcr/05f98632-634d-4582-8507-ab3267d66c01/bwg2025_sitzberechnung_erg2021.pdf
 - Federal Constitutional Court, judgment of 30 July 2024 on the 2023 reform: https://www.bundesverfassungsgericht.de/SharedDocs/Pressemitteilungen/EN/2024/bvg24-064.html
