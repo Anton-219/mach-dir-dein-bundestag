@@ -23,4 +23,4 @@ The epic introduces interchangeable electoral-system calculators that consume on
 - Legal variants and modeling assumptions are versioned explicitly rather than hidden behind a generic “German system” label.
 - Deterministic reference scenarios are the acceptance boundary for each calculator.
 
-The detailed specification is added by story #37 and becomes the normative basis for the later implementation stories.
+The [supported-variants specification](./specification.md) from story #37 is the normative basis for the later implementation stories.
