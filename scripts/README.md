@@ -1,73 +1,79 @@
-# Election data preparation methodology
+# Election data preparation
 
-This directory contains the data-preparation scripts used to turn published 2021 Bundestag election tables into the JSON records consumed by the application.
+The election JSON files are created through the notebooks in `scripts/notebooks/`. The notebooks are the main entry point: they show every source table, transformation, assumption, intermediate result, and validation step in execution order.
 
-The current scripts produce a usable exploratory dataset. They do **not** reconstruct an observed individual-level or fully cross-tabulated election dataset. Some combinations required by the application are not published in the source tables and are therefore estimated from separate aggregate tables.
+The Python modules in `scripts/election_data/` contain the reusable operations called by those notebook cells. They are deliberately kept out of the foreground so that the preparation process remains readable in the notebooks rather than becoming one opaque pipeline call.
 
-This document records the current methodology, its assumptions, known limitations, and the questions that should be resolved before the import is treated as a stable or reusable data pipeline.
+## Bundestag election 2021
 
-## Current status
-
-The scripts are a working prototype for the 2021 election data. Their main purpose is to support interactive filtering by:
-
-- federal state,
-- gender,
-- age group,
-- postal or in-person voting,
-- party,
-- first or second vote.
-
-The published source data does not expose every one of these dimensions together. In particular, the scripts do not receive a source table with the complete joint distribution:
+The current preparation notebooks are:
 
 ```text
-federal state × election method × gender × age group × party × vote type
+scripts/notebooks/btw2021/
+├── 01_prepare_btw2021_vote_entries.ipynb
+└── 02_validate_btw2021_vote_entries.ipynb
 ```
 
-The scripts construct that finer-grained representation by combining two differently aggregated source tables.
-
-## Main script and helpers
-
-- `collect_vote_results_2021.ipynb` downloads or reads the source CSV files, cleans them, combines their dimensions, adds explicitly handled records, and writes JSON files.
-- `util/csv.py` contains the data classes, category mappings, party aggregation, and the proportional allocation function.
-- `util/web.py` contains the download helper.
-- `util/tsetrec.py` is unrelated to the election-data import. It enumerates value combinations that reach a target and appears to be an older coalition-related helper.
-
-## Source tables used by the notebook
-
-The notebook currently references two CSV publications from the Federal Returning Officer.
-
-### Results by federal state and election method
-
-This table supplies exact aggregate vote totals by:
+The first notebook creates:
 
 ```text
-federal state × vote type × election method × party
+scripts/data/generated/first_votes.json
+scripts/data/generated/second_votes.json
 ```
 
-The notebook distinguishes:
+The second notebook reads those finished files and checks their structure, coverage, duplicate rows, value ranges, file size, constituency examples, and nationwide percentage results.
 
-- first votes (`E`),
-- second votes (`Z`),
-- in-person votes (`Urne`),
-- postal votes (`Brief`).
+## Required local source files
 
-National summary rows and rows combining both election methods are removed.
+The notebooks only read local CSV files. They do not download data.
 
-### Results by federal state, gender, and age group
+The preparation notebook expects two required inputs and one optional input:
 
-This table supplies aggregate vote totals by:
+1. The official polling-district result table for the 2021 Bundestag election. It contains the constituency number, state code, district type, and separate `E_` and `Z_` columns for first and second votes by party.
+2. The representative election statistics by state, vote type, published gender category, birth-year group, and party.
+3. Optionally, the federal table crossing party, gender, age group, and postal/in-person voting. This improves the starting pattern for the postal/in-person estimate but is not required to preserve the known totals.
 
-```text
-federal state × vote type × gender × age group × party
+Set the actual local paths near the beginning of the preparation notebook:
+
+```python
+DISTRICT_RESULTS_CSV = ROOT / "scripts/data/btw21_wbz_ergebnisse.csv"
+STATE_DEMOGRAPHICS_CSV = ROOT / "scripts/data/btw21_rws_stimmabgabe_laender.csv"
+FEDERAL_METHOD_DEMOGRAPHICS_CSV = None  # or a local Path
+OUTPUT_DIRECTORY = ROOT / "scripts/data/generated"
 ```
 
-It does not provide the postal/in-person dimension together with gender and age. It also exposes only the parties represented by its published columns; smaller parties are already grouped into `Sonstige` in this source.
+The file names are local suggestions, not mandatory official names.
 
-The exact scope, definitions, and suppression or aggregation rules of both source files should be verified against their accompanying documentation in a future source review.
+## Creating the JSON files
 
-## Output data models
+Open `01_prepare_btw2021_vote_entries.ipynb` and run it from top to bottom.
 
-The notebook currently creates records equivalent to the following conceptual data classes.
+The notebook intentionally exposes the process step by step:
+
+1. Read the polling-district CSV without changing it.
+2. Inspect all constituency-number values before converting them to integers.
+3. Display empty or invalid source rows before deciding whether they can be removed.
+4. Normalize constituency, state, and election-method values.
+5. identify the first- and second-vote party columns.
+6. Reshape the wide party columns into individual vote rows.
+7. Aggregate polling districts to constituencies.
+8. Read the representative state statistics and display their summary rows.
+9. Normalize gender, age, state, and vote-type dimensions.
+10. Reshape the published party statistics into individual demographic rows.
+11. Convert the rounded statistical counts into relative demographic profiles.
+12. Optionally prepare the federal postal/in-person demographic pattern.
+13. Fit the demographic and election-method margins.
+14. Apply the fitted state profiles to every constituency.
+15. Validate the preserved totals.
+16. Write `first_votes.json` and `second_votes.json`.
+
+Do not skip the displayed diagnostic tables. They are part of the preparation process and make changed source formats or unexplained rows visible before data is discarded or converted.
+
+After creating the files, run `02_validate_btw2021_vote_entries.ipynb`. Its final tables show nationwide first- and second-vote percentages overall, by age group, by gender, and by the combination of age group and gender. These summaries provide a quick visual comparison with the published election and representative-statistics results.
+
+## Output model
+
+Both JSON files contain the same record shape:
 
 ```python
 from dataclasses import dataclass
@@ -81,6 +87,7 @@ ElectionMethod = Literal["postal", "in-person"]
 
 @dataclass(frozen=True)
 class VoteEntry:
+    districtId: int
     state: str
     gender: Gender
     ageGroup: AgeGroup
@@ -88,305 +95,143 @@ class VoteEntry:
     voteType: VoteType
     electionMethod: ElectionMethod
     votes: float
-
-
-@dataclass(frozen=True)
-class StatVoteEntry:
-    gender: Gender
-    ageGroup: AgeGroup
-    party: str
-    votes: float
 ```
 
-A `VoteEntry` is an estimated number of votes for one combination of state, demographic group, party, vote type, and election method.
+`districtId` is the constituency number for the corresponding election. Polling districts are used as an input source but are not stored in the application JSON.
 
-A `StatVoteEntry` is the corresponding second-vote total aggregated across states and election methods for one gender, age group, and party.
+`first_votes.json` contains only `voteType == "1"`; `second_votes.json` contains only `voteType == "2"`.
 
-The generated files are:
+## Methodology
 
-- `first_votes.json`,
-- `second_votes.json`,
-- `stat_votes.json`.
+### What is observed and what is estimated
 
-The current React application primarily uses `second_votes.json`. Whether `first_votes.json` and `stat_votes.json` remain necessary should be confirmed separately from the methodology documented here.
-
-## Processing workflow
-
-The current notebook performs the following steps.
-
-1. Read the state/election-method CSV, skipping its introductory rows.
-2. Remove national totals, combined election-method rows, and unused administrative columns.
-3. Map `Urne` to `in-person` and `Brief` to `postal`.
-4. Keep a selected set of parties as separate columns and combine all other party columns into `Other`.
-5. Split the table into first-vote and second-vote data.
-6. Read the gender/age CSV, skipping its introductory rows.
-7. Remove total rows and source-specific detail columns that are not used by the application.
-8. Convert published birth-year ranges into the six application age groups.
-9. Split the demographic table into first-vote and second-vote data.
-10. Proportionally distribute each demographic party total between postal and in-person voting using the state-level election-method totals.
-11. Add separately handled SSW records because the demographic source does not expose SSW as its own party column.
-12. Serialize first- and second-vote entries to JSON.
-13. Aggregate second-vote entries by gender, age group, and party to create `stat_votes.json`.
-
-## Proportional estimation
-
-For a given federal state, party, vote type, gender, and age group, the demographic source provides a party total but not its split between postal and in-person voting.
-
-The current script estimates that split as follows:
+The source data does not publish the complete joint distribution required by the application:
 
 ```text
-estimated votes for a demographic group and election method
+constituency × party × vote type × gender × age group × postal/in-person
+```
+
+The generated detail rows are therefore a modelled combination of several published aggregate tables. They are not observed individual ballots and should not be described as a directly published fine-grained dataset.
+
+The exact constituency totals come from the official polling-district result table. The demographic and postal/in-person subdivisions inside those totals are estimated.
+
+### Polling districts and constituencies
+
+The official result input is read at polling-district level. District type `5` is treated as postal voting. The documented types `0`, `6`, and `8` are grouped as `in-person` so that every reported vote remains represented in the two-value application model.
+
+The polling-district rows are then aggregated by:
+
+```text
+constituency × state × party × vote type × election method
+```
+
+These constituency totals are the fixed basis of the final JSON. The model must not change them.
+
+### Representative demographic statistics
+
+The representative statistics provide party results by state, vote type, gender category, and age group. Their published absolute values can differ slightly from the official result because of rounding and statistical methodology.
+
+For that reason, the notebook uses them as proportions rather than competing official totals:
+
+```text
+demographic share
 =
-party votes for that demographic group
-×
-party votes for that election method in the state
+statistical votes in the demographic cell
 ÷
-total demographic party votes in the state
+statistical party total in the state
 ```
 
-For example, the script may know:
+The resulting shares are later scaled to the exact official totals from the polling-district source.
 
-- all SPD postal votes in Hesse, and
-- all SPD votes cast by women aged 25–34 in Hesse,
+The source publishes the categories `m` and `w`. According to the source header, the results shown under the male category also include people recorded as diverse and people without a gender entry in the birth register. The generated value `gender="m"` preserves that source definition and must not be interpreted as an exclusively male category.
 
-but it does not directly know the SPD postal votes cast by women aged 25–34 in Hesse. The missing value is estimated by applying the party's overall postal/in-person ratio in Hesse to that demographic group.
+### Parties without their own demographic column
 
-### Statistical assumption
+All party and aggregate columns present in the official result source are retained.
 
-This calculation assumes that, within a federal state, party, and vote type, the demographic distribution is independent of the election method:
+The demographic profile is chosen in this order:
+
+1. Use the party's own profile when the representative statistics publish it separately.
+2. Otherwise use the state's `Sonstige` profile for the same vote type.
+3. If that is also unavailable, use an equal distribution across the twelve gender/age cells.
+
+This rule applies to small parties, aggregate candidate categories, and the SSW. The SSW remains a separate party in the result data, while its missing detailed demographic distribution is explicitly imputed. Electoral-law exemptions and seat allocation are separate from this data-preparation step.
+
+### Postal and in-person voting
+
+For every state, vote type, and party, the model builds a table with:
 
 ```text
-gender and age group ⟂ election method
-conditioned on federal state, party, and vote type
+rows:    2 published gender categories × 6 age groups
+columns: in-person × postal
 ```
 
-In practical terms, every demographic group of a party is assigned the same postal/in-person ratio within a state.
+The known row margins are the normalized demographic shares scaled to the official party total. The known column margins are the exact in-person and postal totals from the official result source.
 
-This assumption is necessary for the current dataset because the full cross-tabulation is unavailable. It is not established by the source data and should be described wherever the generated data is presented as methodology rather than as an observed result.
+Iterative proportional fitting repeatedly rescales rows and columns until both sets of margins agree within a strict numerical tolerance.
 
-## Party coverage and `Sonstige`
+When the optional federal method-demographic CSV is available, its party-specific pattern is used as the starting table. If a party has no separate federal pattern, `Sonstige` is used. Without either pattern, the method starts from the assumption that the demographic and election-method distributions are independent. The fitted result still preserves the same known state margins.
 
-The current notebook keeps these parties separate before creating the synthetic records:
+### Applying the profile to constituencies
 
-- CDU,
-- SPD,
-- AfD,
-- FDP,
-- DIE LINKE,
-- GRÜNE,
-- CSU,
-- SSW.
-
-All remaining party columns in the state/election-method table are summed into `Other`, which is later emitted as `Sonstige`.
-
-This is partly forced by the demographic source, which already groups smaller parties into `Sonstige`. Once parties have been grouped in that source, their demographic distributions cannot be recovered from that file.
-
-Consequences include:
-
-- smaller parties cannot be analysed separately across gender and age using the current source combination;
-- a smaller party cannot later be recovered from the generated `Sonstige` records;
-- selecting the list of separately retained parties is a methodological decision, not only a formatting choice;
-- adding another party requires a source that exposes enough information to model it separately, or an explicitly documented imputation method.
-
-The retained-party list should eventually become election-specific configuration instead of remaining embedded in the notebook.
-
-## SSW handling
-
-SSW requires separate treatment for two different reasons.
-
-### Preservation as a party
-
-SSW must remain separate from `Sonstige` because its minority-party status means the ordinary national vote-share threshold is not applied in the same way as for other parties.
-
-The data import should preserve SSW as a distinct party. It should not decide the final parliamentary representation itself.
-
-The intended downstream behaviour is:
-
-1. do not exclude SSW through the ordinary national vote-share threshold;
-2. include its votes in the normal seat allocation;
-3. show SSW as represented only when that allocation produces at least one seat.
-
-A fixed number such as 40,000 votes can be a rough implementation approximation for one dataset, but it is not a stable import rule. The number of votes required for a seat depends on the complete vote distribution and seat-allocation procedure.
-
-### Missing demographic breakdown
-
-The demographic source does not expose an SSW column. The current notebook therefore adds SSW second-vote records manually.
-
-For each election method in Schleswig-Holstein, the exact SSW total from the state/election-method source is divided equally across:
+Every constituency in a state currently receives the same fitted profile for a given party, vote type, and election method:
 
 ```text
-2 genders × 6 age groups = 12 demographic groups
+estimated_votes
+=
+official constituency/method total
+×
+fitted state profile share
 ```
 
-This produces a usable set of filter records while preserving the total SSW vote count for each election method before later rounding.
+The actual constituency totals therefore remain different and exact. Only their internal demographic distribution is assumed to follow the same state profile.
 
-The equal distribution is a placeholder assumption. It implies identical SSW support for every gender/age group within an election method and is not supported by an observed SSW demographic table.
+A future source may provide constituency- or polling-district-specific demographic profiles. Such a profile can replace the current state profile without changing the final `VoteEntry` schema or the basic multiplication step. Polling-district estimates could then be aggregated back to constituencies before export.
 
-Possible future alternatives include:
+### Fractional votes and conservation
 
-- use a separate source with an SSW demographic breakdown;
-- distribute SSW according to the overall Schleswig-Holstein voter profile;
-- distribute SSW according to the demographic profile of `Sonstige` in Schleswig-Holstein;
-- exclude demographic SSW analysis and explain that the required breakdown is unavailable.
+The detailed values are fractional vote weights because they represent an estimated distribution, not individual ballot records.
 
-A future source review should choose one approach explicitly and document why it is preferable to equal distribution.
+The preparation avoids rounding every detail cell to a whole number. A small residual correction after decimal rounding ensures that every exported constituency/party/vote-type/election-method group sums back to its official source total within the validation tolerance.
 
-## Other methodological decisions
-
-### Age-group mapping
-
-The source birth-year ranges are mapped to:
+The validation checks both:
 
 ```text
-18-24, 25-34, 35-44, 45-54, 55-64, 65+
+sum of demographic cells
+=
+official constituency and election-method total
 ```
 
-These mappings are specific to the 2021 election and the ranges published in that source. They must not be reused for another election without checking the corresponding birth years and election date.
-
-### Federal-state mapping
-
-The demographic source uses state abbreviations, which are mapped to full state names. Special Berlin subdivisions such as `BE-O` and `BE-W` are currently skipped because they are not part of the 16-state mapping.
-
-The likely intention is to use the separate full-Berlin rows and avoid double counting. This should be turned into an explicit source rule and validation instead of treating every unknown region as skippable.
-
-### Fractional votes
-
-The proportional split naturally produces floating-point values. These values are synthetic weights representing estimated votes, not observed ballot records.
-
-The pipeline should preserve totals as far as possible. Rounding each fine-grained record before aggregation can change totals and should be avoided. If integer output is required, a total-preserving rounding method should be selected and documented.
-
-### Missing and zero values
-
-The current calculation returns zero when a demographic party total is zero. A future implementation should distinguish between:
-
-- a genuine observed zero,
-- a missing value,
-- a suppressed value,
-- an inconsistent pair of source tables.
-
-Missing or inconsistent source data should not silently become zero without a documented rule.
-
-## Known implementation issues in the current notebook
-
-These issues do not invalidate the purpose of the current working dataset, but they should be corrected when the import pipeline is revised.
-
-### Incorrect SSW `voteType`
-
-The manually appended SSW second-vote records currently assign the election method to both `voteType` and `electionMethod`.
-
-The intended values are:
-
-```python
-voteType="2"
-electionMethod=election_method
-```
-
-The application loader currently repairs this narrowly identified legacy defect at its data boundary.
-
-### Incorrect demographic-source download call
-
-When the demographic CSV is missing locally, the notebook calls the download helper with the wrong source and destination arguments. The intended call is conceptually:
-
-```python
-download(url_by_age_and_gender, csv_file_data_by_gender_and_age)
-```
-
-### Inconsistent import paths
-
-The notebook imports helpers both as `util.csv` and `scripts.util.csv`. This makes execution dependent on the Jupyter working directory and Python path.
-
-### Rounding before aggregation
-
-`stat_votes.json` is currently created by rounding individual synthetic entries before summing them. This can make statistical totals differ from the source and generated vote totals.
-
-### Limited validation
-
-The notebook prints skipped state codes but does not enforce a complete set of input and output invariants. It can therefore produce files despite silent data loss, schema mistakes, or changed source columns.
-
-## Recommended validation rules
-
-A revised pipeline should fail clearly when its assumptions are violated and should verify at least the following invariants.
-
-### Schema checks
-
-- every `VoteEntry.voteType` is `"1"` or `"2"`;
-- every election method is `postal` or `in-person`;
-- every gender and age group belongs to the configured literal set;
-- every vote value is finite and non-negative;
-- all expected federal states are represented;
-- only explicitly documented source regions are excluded.
-
-### Conservation checks
-
-For every federal state, vote type, election method, and separately represented party:
+and:
 
 ```text
-sum across gender and age group
-≈ exact source total for that state/election-method group
+sum across constituencies and methods
+=
+fitted state demographic margin
 ```
 
-The accepted tolerance should be explicit and should account only for floating-point arithmetic or a documented rounding algorithm.
+### Known limitations
 
-The separately generated SSW entries must sum exactly, or within the same documented tolerance, to the source SSW totals.
+The current model assumes that all constituencies of a state share the same party-specific demographic and election-method profile.
 
-### Coverage checks
+Parties without a separate representative-statistics column inherit `Sonstige` or, as a final fallback, a uniform profile. This allows every recorded vote to react to application filters, but it does not claim that the imputed profile is observed.
 
-- every configured separately represented party exists in the relevant source or has a documented imputation rule;
-- all non-retained party columns are accounted for in `Sonstige`;
-- changes to source column names or category labels fail loudly;
-- the generated JSON conforms to the application-facing data contract.
+The polling-district source can contain aggregate columns such as `UNABHÄNGIGE` or `Übrige`. The preparation preserves distinctions available in the source but cannot reconstruct individual candidates or parties that the source has already combined.
 
-### Reproducibility checks
+The generated dataset should therefore be presented as a transparent statistical interpolation constrained by official totals, not as an exact demographic census of every constituency.
 
-The pipeline should record or pin:
+## Automated checks
 
-- election year,
-- source URLs,
-- source file checksums,
-- retrieval date,
-- configured party list,
-- age mapping,
-- region handling,
-- imputation rules,
-- output schema version.
+The notebooks are the primary way to create and inspect the data. Small automated tests remain useful because they verify individual operations even when the full local CSV files are unavailable or a notebook stops before writing output.
 
-## Recommended separation of responsibilities
+Run them from the repository root with:
 
-The current notebook mixes three concerns that should eventually be separated.
+```bash
+python -m scripts.run_tests
+```
 
-### 1. Source import
+The tests cover constituency-row diagnostics, use of rounded statistics as shares, iterative proportional fitting, preservation of known margins, and the separate seat-allocation reference calculations.
 
-Responsible for downloading, parsing, normalising labels, and preserving the information actually present in the source files.
+## Related Python modules
 
-### 2. Statistical estimation
-
-Responsible for constructing unavailable cross-dimensions, including the postal/in-person proportional split and any SSW demographic imputation. Every estimation rule should be configurable and documented.
-
-### 3. Election-law and seat calculation
-
-Responsible for party qualification, threshold exemptions, direct mandates, seat allocation, and parliamentary representation.
-
-The import layer should preserve parties and votes but should not encode a fixed vote count as proof that a party receives a seat.
-
-## Open questions for the next source review
-
-The following questions should be answered from the official source documentation or additional publications before the methodology is finalised.
-
-1. What exact population and vote categories does each CSV cover?
-2. Are values based on the complete result or representative election statistics?
-3. Which dimensions are genuinely observed together in each file?
-4. Which rows or values are totals, subsets, estimates, suppressed values, or overlapping regional subdivisions?
-5. Which smaller parties are combined before publication, and is a more detailed source available elsewhere?
-6. Is any separate demographic information available for SSW or other currently grouped parties?
-7. Can postal/in-person behaviour be obtained by demographic group from another source?
-8. Are gender categories limited to `m` and `w` by the source methodology, and how should that limitation be described?
-9. How should rounding and statistical weighting be represented in the output?
-10. Which generated files are still required by the current application?
-
-Until these questions are resolved, the generated dataset should be described as an exploratory, modelled combination of published aggregate election results rather than a direct reproduction of a published fine-grained table.
-
-## Scope of this documentation
-
-This README records the behaviour and interpretation of the current scripts. It does not claim that the current assumptions are final, and it does not replace a future review of the official source methodology.
-
-The present scripts remain useful because they produce a coherent dataset for application development. Future changes should preserve that practical capability while making each source limitation, estimation rule, and election-specific decision explicit and testable.
+The notebook cells use small helpers from `scripts/election_data/` for source normalization, reshaping, profile fitting, distribution, validation, and JSON writing. Seat-allocation experiments live separately in `scripts/election/`; they do not determine how the vote-entry JSON files are prepared.
