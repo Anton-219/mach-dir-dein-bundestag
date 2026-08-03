@@ -19,7 +19,7 @@ def iterative_proportional_fit(
     row_targets: np.ndarray,
     column_targets: np.ndarray,
     *,
-    tolerance: float = 1e-10,
+    tolerance: float = 1e-9,
     max_iterations: int = 10_000,
 ) -> np.ndarray:
     """Fit a non-negative matrix to exact row and column margins.
