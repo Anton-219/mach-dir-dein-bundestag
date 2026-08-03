@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Iterable
 
 import pandas as pd
 
@@ -57,21 +56,6 @@ APP_AGE_GROUPS: tuple[AgeGroup, ...] = (
 APP_GENDERS: tuple[Gender, ...] = ("m", "w")
 APP_METHODS: tuple[ElectionMethod, ...] = ("in-person", "postal")
 
-_METADATA_COLUMNS = {
-    "Land",
-    "Erst-/Zweitstimme",
-    "Geschlecht",
-    "Geburtsjahresgruppe",
-    "Summe",
-    "Ungültig",
-    "ungueltig",
-    "gültig",
-    "Gueltig",
-    "Bezirksart",
-    "Art der Stimmabgabe",
-    "Wahlart",
-}
-
 _PARTY_ALIASES = {
     "BÜNDNIS 90/DIE GRÜNEN": "GRÜNE",
     "BÜNDNIS90/DIE GRÜNEN": "GRÜNE",
@@ -100,7 +84,7 @@ def normalize_state(value: object) -> str | None:
         return None
     if state in STATE_CODE_TO_NAME:
         return STATE_CODE_TO_NAME[state]
-    if state.zfill(2) in STATE_CODE_TO_NAME and state.isdigit():
+    if state.isdigit() and state.zfill(2) in STATE_CODE_TO_NAME:
         return STATE_CODE_TO_NAME[state.zfill(2)]
     if state in STATE_ABBREVIATION_TO_NAME:
         return STATE_ABBREVIATION_TO_NAME[state]
@@ -192,212 +176,3 @@ def read_local_csv(path: str | Path, *, comment: str | None = None) -> pd.DataFr
         keep_default_na=False,
         low_memory=False,
     )
-
-
-def _numeric(series: pd.Series) -> pd.Series:
-    cleaned = series.astype(str).str.strip().replace({"": "0", "-": "0"})
-    result = pd.to_numeric(cleaned, errors="coerce")
-    if result.isna().any():
-        examples = cleaned[result.isna()].head(5).tolist()
-        raise ValueError(f"Non-numeric vote values encountered: {examples}")
-    return result.astype(float)
-
-
-def load_district_method_totals(path: str | Path) -> pd.DataFrame:
-    """Read the official 2021 polling-district CSV and aggregate it to constituencies.
-
-    The source remains at polling-district granularity only during import. The returned
-    frame contains one row per constituency, party, vote type and election method.
-    District type 5 is postal; all other documented district types (0, 6 and 8) are
-    grouped as in-person so that no reported vote is discarded.
-    """
-
-    frame = read_local_csv(path)
-    required = {"Wahlkreis", "Land", "Bezirksart"}
-    missing = required - set(frame.columns)
-    if missing:
-        raise ValueError(f"District CSV is missing required columns: {sorted(missing)}")
-
-    base = frame.loc[:, ["Wahlkreis", "Land", "Bezirksart"]].copy()
-    base["districtId"] = pd.to_numeric(base["Wahlkreis"], errors="raise").astype(int)
-    base["state"] = base["Land"].map(normalize_state)
-    base["electionMethod"] = base["Bezirksart"].map(normalize_method)
-
-    chunks: list[pd.DataFrame] = []
-    for prefix, vote_type in (("E_", "1"), ("Z_", "2")):
-        excluded = {f"{prefix}Ungültige", f"{prefix}Gültige"}
-        party_columns = [
-            column
-            for column in frame.columns
-            if column.startswith(prefix) and column not in excluded
-        ]
-        if not party_columns:
-            raise ValueError(f"District CSV contains no {prefix} party columns")
-
-        votes = frame.loc[:, party_columns].copy()
-        for column in party_columns:
-            votes[column] = _numeric(votes[column])
-        votes.columns = [canonical_party_name(column[len(prefix):]) for column in party_columns]
-        votes = votes.T.groupby(level=0).sum().T
-
-        combined = pd.concat(
-            [base.loc[:, ["districtId", "state", "electionMethod"]], votes], axis=1
-        )
-        long = combined.melt(
-            id_vars=["districtId", "state", "electionMethod"],
-            var_name="party",
-            value_name="votes",
-        )
-        long["voteType"] = vote_type
-        chunks.append(long)
-
-    result = pd.concat(chunks, ignore_index=True)
-    result = (
-        result.groupby(
-            ["districtId", "state", "party", "voteType", "electionMethod"],
-            as_index=False,
-            sort=True,
-        )["votes"]
-        .sum()
-    )
-    result = result[result["votes"] > 0].reset_index(drop=True)
-    return result.loc[
-        :, ["districtId", "state", "party", "voteType", "electionMethod", "votes"]
-    ]
-
-
-def _party_columns(frame: pd.DataFrame, extra_metadata: Iterable[str] = ()) -> list[str]:
-    excluded = _METADATA_COLUMNS | set(extra_metadata)
-    return [column for column in frame.columns if column not in excluded]
-
-
-def load_state_demographic_profiles(path: str | Path) -> pd.DataFrame:
-    """Read state-level representative statistics and return demographic shares."""
-
-    frame = read_local_csv(path, comment="#")
-    required = {"Land", "Erst-/Zweitstimme", "Geschlecht", "Geburtsjahresgruppe"}
-    missing = required - set(frame.columns)
-    if missing:
-        raise ValueError(
-            f"State demographic CSV is missing required columns: {sorted(missing)}"
-        )
-
-    frame = frame.copy()
-    frame["state"] = frame["Land"].map(normalize_state)
-    frame["voteType"] = frame["Erst-/Zweitstimme"].map(normalize_vote_type)
-    frame["gender"] = frame["Geschlecht"].map(normalize_gender)
-    frame["ageGroup"] = frame["Geburtsjahresgruppe"].map(normalize_age_group)
-    frame = frame[
-        frame["state"].notna()
-        & frame["voteType"].notna()
-        & frame["gender"].notna()
-        & frame["ageGroup"].notna()
-    ].copy()
-
-    party_columns = _party_columns(
-        frame,
-        extra_metadata={"state", "voteType", "gender", "ageGroup"},
-    )
-    values = frame.loc[:, party_columns].copy()
-    for column in party_columns:
-        values[column] = _numeric(values[column])
-    values.columns = [canonical_party_name(column) for column in party_columns]
-    values = values.T.groupby(level=0).sum().T
-
-    long = pd.concat(
-        [frame.loc[:, ["state", "voteType", "gender", "ageGroup"]], values], axis=1
-    ).melt(
-        id_vars=["state", "voteType", "gender", "ageGroup"],
-        var_name="party",
-        value_name="statisticVotes",
-    )
-    long = (
-        long.groupby(
-            ["state", "voteType", "party", "gender", "ageGroup"],
-            as_index=False,
-            sort=True,
-        )["statisticVotes"]
-        .sum()
-    )
-    totals = long.groupby(["state", "voteType", "party"])["statisticVotes"].transform("sum")
-    long = long[totals > 0].copy()
-    long["share"] = long["statisticVotes"] / totals[totals > 0]
-    return long.loc[
-        :, ["state", "voteType", "party", "gender", "ageGroup", "share"]
-    ].reset_index(drop=True)
-
-
-def load_federal_method_seed(path: str | Path) -> pd.DataFrame:
-    """Read an optional federal method-by-demographic CSV used as the IPF seed.
-
-    The file must contain the same party columns as the representative statistics and
-    one election-method column named ``Bezirksart``, ``Art der Stimmabgabe`` or
-    ``Wahlart``. It is never downloaded by this package.
-    """
-
-    frame = read_local_csv(path, comment="#")
-    method_column = next(
-        (
-            candidate
-            for candidate in ("Bezirksart", "Art der Stimmabgabe", "Wahlart")
-            if candidate in frame.columns
-        ),
-        None,
-    )
-    if method_column is None:
-        raise ValueError(
-            "Federal method CSV needs one of: Bezirksart, Art der Stimmabgabe, Wahlart"
-        )
-    required = {"Erst-/Zweitstimme", "Geschlecht", "Geburtsjahresgruppe"}
-    missing = required - set(frame.columns)
-    if missing:
-        raise ValueError(
-            f"Federal method CSV is missing required columns: {sorted(missing)}"
-        )
-
-    frame = frame.copy()
-    frame["voteType"] = frame["Erst-/Zweitstimme"].map(normalize_vote_type)
-    frame["gender"] = frame["Geschlecht"].map(normalize_gender)
-    frame["ageGroup"] = frame["Geburtsjahresgruppe"].map(normalize_age_group)
-    frame["electionMethod"] = frame[method_column].map(normalize_method)
-    frame = frame[
-        frame["voteType"].notna()
-        & frame["gender"].notna()
-        & frame["ageGroup"].notna()
-    ].copy()
-
-    party_columns = _party_columns(
-        frame,
-        extra_metadata={"state", "voteType", "gender", "ageGroup", "electionMethod"},
-    )
-    values = frame.loc[:, party_columns].copy()
-    for column in party_columns:
-        values[column] = _numeric(values[column])
-    values.columns = [canonical_party_name(column) for column in party_columns]
-    values = values.T.groupby(level=0).sum().T
-
-    long = pd.concat(
-        [
-            frame.loc[:, ["voteType", "gender", "ageGroup", "electionMethod"]],
-            values,
-        ],
-        axis=1,
-    ).melt(
-        id_vars=["voteType", "gender", "ageGroup", "electionMethod"],
-        var_name="party",
-        value_name="seedVotes",
-    )
-    long = (
-        long.groupby(
-            ["voteType", "party", "gender", "ageGroup", "electionMethod"],
-            as_index=False,
-            sort=True,
-        )["seedVotes"]
-        .sum()
-    )
-    totals = long.groupby(["voteType", "party"])["seedVotes"].transform("sum")
-    long = long[totals > 0].copy()
-    long["weight"] = long["seedVotes"] / totals[totals > 0]
-    return long.loc[
-        :, ["voteType", "party", "gender", "ageGroup", "electionMethod", "weight"]
-    ].reset_index(drop=True)
