@@ -1,5 +1,8 @@
 # AGENTS.md
 
+- Never look up a full json file. They are huge in general. When checking a file, only get the first characters. 
+  - It can happen, that a full json is inside a single line. So, getting the first lines is dangerous as well. 
+
 ## User-facing text
 
 The application has a dedicated bilingual presentation layer. All text that a user can read or that assistive technology can announce must be defined in `src/i18n/messages.ts`.
