@@ -23,6 +23,7 @@ const parties: Party[] = [
 
 const entries: VoteEntry[] = [
   {
+    districtId: 1,
     state: 'Berlin',
     gender: 'm',
     ageGroup: '18-24',
@@ -32,6 +33,7 @@ const entries: VoteEntry[] = [
     votes: 100,
   },
   {
+    districtId: 1,
     state: 'Berlin',
     gender: 'w',
     ageGroup: '18-24',
@@ -41,6 +43,7 @@ const entries: VoteEntry[] = [
     votes: 50,
   },
   {
+    districtId: 18,
     state: 'Hamburg',
     gender: 'm',
     ageGroup: '25-34',
@@ -50,6 +53,7 @@ const entries: VoteEntry[] = [
     votes: 25,
   },
   {
+    districtId: 18,
     state: 'Hamburg',
     gender: 'm',
     ageGroup: '25-34',
@@ -118,8 +122,8 @@ test('applies threshold, direct-mandate, minority-party, and aggregate-bucket ru
     },
     {
       partyAbbreviation: 'SSW',
-      votes: 40_000,
-      percentage: 0.04,
+      votes: 1,
+      percentage: 0.000001,
       seatPosition: 4,
     },
     {
