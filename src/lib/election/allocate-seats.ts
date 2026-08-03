@@ -2,10 +2,12 @@ import type {
   ElectionResult,
   SeatResult,
 } from '../../models/calculation-results.ts'
-import type { DirectMandateWinner } from '../../models/normalized-inputs.ts'
 import { DEFAULT_PARLIAMENT_SEATS } from './constants.ts'
 import { filterEligibleParties } from './qualify-parties.ts'
-import type { SeatAllocationOptions } from './types.ts'
+import type {
+  DirectMandateCount,
+  SeatAllocationOptions,
+} from './types.ts'
 
 interface Quotient {
   partyAbbreviation: string
@@ -16,7 +18,7 @@ interface Quotient {
 
 export function allocateSeats(
   electionResults: readonly ElectionResult[],
-  directMandates: readonly DirectMandateWinner[],
+  directMandates: readonly DirectMandateCount[],
   options: SeatAllocationOptions = {},
 ): SeatResult[] {
   const totalSeats = options.totalSeats ?? DEFAULT_PARLIAMENT_SEATS

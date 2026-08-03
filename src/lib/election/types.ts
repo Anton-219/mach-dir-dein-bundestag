@@ -5,10 +5,25 @@ export interface VoteEntryFilter {
   matches: (entry: VoteEntry) => boolean
 }
 
+export interface DirectMandateCount {
+  party: string
+  districtsWon: number
+}
+
+export interface DistrictPartyVoteTotal {
+  districtId: number
+  party: string
+  votes: number
+}
+
+export type DistrictWinnerResolver = (
+  results: readonly DistrictPartyVoteTotal[],
+) => string | undefined
+
 export interface PartyQualificationRules {
   voteShareThreshold: number
   minimumDirectMandates: number
-  minimumVotesByExemptParty: Readonly<Record<string, number>>
+  thresholdExemptParties: readonly string[]
   excludedParties: readonly string[]
 }
 
