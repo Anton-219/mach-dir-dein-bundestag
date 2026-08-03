@@ -6,8 +6,6 @@ export const UNKNOWN_SEAT_POSITION = 999
 export const DEFAULT_PARTY_QUALIFICATION_RULES = {
   voteShareThreshold: 0.05,
   minimumDirectMandates: 3,
-  minimumVotesByExemptParty: {
-    SSW: 40_000,
-  },
+  thresholdExemptParties: ['SSW'],
   excludedParties: ['Sonstige'],
 } as const satisfies PartyQualificationRules
