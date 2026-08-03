@@ -12,6 +12,7 @@ const parties: Party[] = [
 
 const entries: VoteEntry[] = [
   {
+    districtId: 1,
     state: 'Berlin',
     gender: 'm',
     ageGroup: '18-24',
@@ -21,6 +22,7 @@ const entries: VoteEntry[] = [
     votes: 60,
   },
   {
+    districtId: 1,
     state: 'Berlin',
     gender: 'm',
     ageGroup: '18-24',
@@ -30,6 +32,7 @@ const entries: VoteEntry[] = [
     votes: 40,
   },
   {
+    districtId: 1,
     state: 'Berlin',
     gender: 'w',
     ageGroup: '25-34',
@@ -39,6 +42,7 @@ const entries: VoteEntry[] = [
     votes: 100,
   },
   {
+    districtId: 18,
     state: 'Hamburg',
     gender: 'm',
     ageGroup: '18-24',
