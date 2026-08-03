@@ -7,12 +7,23 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .btw2021 import (
-    load_district_method_totals,
-    load_federal_method_seed,
-    load_state_demographic_profiles,
-)
+from .btw2021 import read_local_csv
 from .models import PreparationResult, ValidationReport, VoteEntry
+from .notebook_steps import (
+    aggregate_to_constituencies,
+    calculate_demographic_profiles,
+    calculate_federal_method_weights,
+    inspect_district_rows,
+    normalize_district_rows,
+    normalize_federal_method_rows,
+    normalize_state_statistic_rows,
+    reshape_federal_method_votes,
+    reshape_polling_district_votes,
+    reshape_state_statistic_votes,
+    select_federal_method_detail_rows,
+    select_state_statistic_detail_rows,
+    select_usable_district_rows,
+)
 from .profiles import build_state_method_profiles
 from .validation import validate_vote_entries
 
@@ -86,27 +97,48 @@ def prepare_btw2021_vote_entries(
     output_directory: str | Path | None = None,
     federal_method_demographics_csv: str | Path | None = None,
 ) -> PreparationResult:
-    """Run the complete local-file preparation pipeline for Bundestag 2021."""
+    """Convenience wrapper for automated callers.
 
-    district_totals = load_district_method_totals(district_results_csv)
-    demographic_profiles = load_state_demographic_profiles(state_demographics_csv)
-    federal_seed = (
-        load_federal_method_seed(federal_method_demographics_csv)
-        if federal_method_demographics_csv is not None
-        else None
+    The preparation notebook intentionally does not call this wrapper. It executes the
+    same smaller functions one after another and displays every intermediate table.
+    """
+
+    raw_districts = read_local_csv(district_results_csv)
+    district_diagnostics = inspect_district_rows(raw_districts)
+    usable_districts = select_usable_district_rows(raw_districts, district_diagnostics)
+    normalized_districts = normalize_district_rows(usable_districts)
+    first_polling = reshape_polling_district_votes(
+        normalized_districts, prefix="E_", vote_type="1"
     )
+    second_polling = reshape_polling_district_votes(
+        normalized_districts, prefix="Z_", vote_type="2"
+    )
+    district_totals = aggregate_to_constituencies(
+        pd.concat([first_polling, second_polling], ignore_index=True)
+    )
+
+    raw_statistics = read_local_csv(state_demographics_csv, comment="#")
+    normalized_statistics = normalize_state_statistic_rows(raw_statistics)
+    statistic_details = select_state_statistic_detail_rows(normalized_statistics)
+    statistic_votes = reshape_state_statistic_votes(statistic_details)
+    demographic_profiles = calculate_demographic_profiles(statistic_votes)
+
+    federal_seed = None
+    if federal_method_demographics_csv is not None:
+        raw_federal = read_local_csv(federal_method_demographics_csv, comment="#")
+        normalized_federal = normalize_federal_method_rows(raw_federal)
+        federal_details = select_federal_method_detail_rows(normalized_federal)
+        federal_votes = reshape_federal_method_votes(federal_details)
+        federal_seed = calculate_federal_method_weights(federal_votes)
+
     profiles = build_state_method_profiles(
         district_totals,
         demographic_profiles,
         federal_seed,
     )
     all_entries = distribute_district_votes(district_totals, profiles)
+    validation = validate_vote_entries(all_entries, district_totals, profiles)
 
-    validation = validate_vote_entries(
-        all_entries,
-        district_totals,
-        profiles,
-    )
     first_votes = [entry for entry in all_entries if entry.voteType == "1"]
     second_votes = [entry for entry in all_entries if entry.voteType == "2"]
 
