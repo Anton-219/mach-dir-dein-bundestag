@@ -100,45 +100,81 @@ A future simulation of changed state borders, population bases, district maps, o
 
 `de-2021-bwahlg` does not receive population figures. It receives the already calculated number of initial seats assigned to each state for the supported election year.
 
-The fixture is normative input to the calculator:
+The committed fixture for the 2021 reference election is:
+
+```text
+public/data/state_seat_contingents_2021.json
+```
+
+Its schema is:
 
 ```ts
 interface HistoricalStateSeatContingentFixture {
-  electionYear: number
-  legalVersion: string
+  schemaVersion: 1
+  systemId: 'de-2021-bwahlg'
+  electionYear: 2021
   baseSeatCount: 598
-  seatsByState: Record<StateSlug, number>
+  stateSeatContingents: Array<{
+    state: StateSlug
+    seats: number
+  }>
 }
 ```
 
-Recommended JSON shape:
+The committed JSON uses a list of state objects:
 
 ```json
 {
+  "schemaVersion": 1,
+  "systemId": "de-2021-bwahlg",
   "electionYear": 2021,
-  "legalVersion": "de-2021-bwahlg",
   "baseSeatCount": 598,
-  "seatsByState": {
-    "Schleswig-Holstein": 0
-  }
+  "stateSeatContingents": [
+    {
+      "state": "Schleswig-Holstein",
+      "seats": 22
+    },
+    {
+      "state": "Mecklenburg-Vorpommern",
+      "seats": 13
+    }
+  ]
 }
 ```
 
-The example value is only structural; the committed fixture must contain the authoritative values for all 16 states.
+The shortened example shows the structure only. The committed fixture contains all 16 states.
+
+Field meanings:
+
+| Field | Meaning |
+| --- | --- |
+| `schemaVersion` | Version of this JSON contract. It is independent of the election year and electoral law. Unsupported schema versions must be rejected. |
+| `systemId` | Calculator that consumes the fixture. This fixture is valid only for `de-2021-bwahlg`. |
+| `electionYear` | Reference election year for which the state contingents were determined. |
+| `baseSeatCount` | Total number of initial seats represented by the state contingents before overhang and compensation. For the 2021 model this is 598. |
+| `stateSeatContingents` | Complete list of state-level initial seat contingents. |
+| `state` | Canonical state name used by the vote and geographic datasets. |
+| `seats` | Initial number of seats assigned to that state. This value is fixed for the fixture and is not recalculated by filters. |
 
 Validation rules:
 
 ```text
-all 16 states occur exactly once
-all values are non-negative integers
-sum(seatsByState) = baseSeatCount = 598
+schemaVersion = 1
+systemId = 'de-2021-bwahlg'
+electionYear = 2021
+baseSeatCount = 598
+stateSeatContingents contains exactly 16 entries
+every canonical state occurs exactly once
+no unknown state occurs
+all seats values are non-negative integers
+sum(stateSeatContingents[*].seats) = baseSeatCount = 598
 ```
 
-The fixture is loaded and validated by the scenario/configuration adapter, not by the calculator itself. It remains identical for filtered and unfiltered scenarios.
+The fixture is loaded and validated by the scenario/configuration adapter, not by the calculator itself. The adapter may normalize the list into a `Record<StateSlug, number>` for efficient lookup before constructing the calculator input.
 
-This deliberately replaces population data as a runtime dependency. The application does not recalculate state contingents and therefore needs no population statistics by gender, age, voting method, or active filter selection.
+The fixture remains identical for filtered and unfiltered scenarios. This deliberately replaces population data as a runtime dependency. The application does not recalculate state contingents and therefore needs no population statistics by gender, age, voting method, or active filter selection.
 
-The parallel model does not need this fixture. Its direct capacity per state is derived from the number of configured districts in that state; its list tier is allocated from second votes.
+Neither `de-2023-fixed-630` nor `union-parallel` consumes this fixture. The parallel model derives direct seats from actual district winners, while its list tier always contains 299 seats.
 
 ## 5. District-winner resolution
 
@@ -220,7 +256,7 @@ majorityThreshold = floor(totalSeats / 2) + 1
 
 ### 8.2 Initial state allocation
 
-The calculator consumes `HistoricalStateSeatContingentFixture` and never calculates state contingents from population.
+The calculator consumes a validated `HistoricalStateSeatContingentFixture` and never calculates state contingents from population.
 
 Let:
 
@@ -375,7 +411,7 @@ An inactive state leaves all of its district seats unallocated and receives no l
 | District second votes by party | `public/data/second_votes.json` | Aggregate by state and nation; retain valid-vote totals for the threshold denominator |
 | District first votes by party | `public/data/first_votes.json` | Sufficient for winners and first-vote-share ranking; preserve empty districts |
 | District-to-state mapping | derivable from vote records | Do not add a duplicate mapping |
-| Historical state seat contingents | new small JSON fixture | Store explicit integer seat counts for all states and supported election years; do not store population as calculator input |
+| Historical state seat contingents | `public/data/state_seat_contingents_2021.json`, available | Load and validate the committed list-based schema described in section 4; do not store population as calculator input |
 | National-minority status | calculator configuration | Mark SSW as exempt |
 | Candidate/list positions | absent, intentionally out of scope | Aggregate counts remain calculable |
 | Independent candidates | unsupported | Return a typed error if introduced |
@@ -581,7 +617,7 @@ The UI consumes `totalSeats` and `majorityThreshold` from the result. It must no
 - #38 creates the calculator interface, registry, normalized scenario adapter, state-activity validation, eligibility helper, Sainte-Laguë primitive, and shared district-winner resolver.
 - #39 implements fixed-630 allocation, direct-seat coverage, inactive-state behavior, and scenario-dependent direct-win totals.
 - #40 implements independent tiers with a maximum of 299 direct seats, exactly 299 list seats, unallocated-direct-seat metadata, and variable actual chamber size.
-- #41 adds and validates the explicit historical state-seat-contingent JSON fixture and implements the legacy allocation. It must not add population or demographic-filter-specific population datasets.
+- #41 loads and validates `public/data/state_seat_contingents_2021.json` according to section 4 and implements the legacy allocation. It must not add population or demographic-filter-specific population datasets.
 - #42 consumes only `ElectoralSystemResult`, localizes error and warning codes, and never recalculates majority thresholds.
 - Tests must cover R6–R9 in addition to the unfiltered reference fixtures.
 
