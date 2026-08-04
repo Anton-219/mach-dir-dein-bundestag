@@ -4,12 +4,17 @@ import type {
   DistrictWinnerResolver,
 } from './types.ts'
 
+function compareStableKeys(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0
+}
+
 export const resolveDistrictWinner: DistrictWinnerResolver = (results) => {
   let winner: string | undefined
-  let highestVotes = -1
-  let hasTie = false
+  let highestVotes = 0
 
-  for (const result of results) {
+  for (const result of [...results].sort((left, right) =>
+    compareStableKeys(left.party, right.party),
+  )) {
     if (!Number.isFinite(result.votes) || result.votes < 0) {
       throw new RangeError(
         `Votes for ${result.party} in district ${result.districtId} must be finite and non-negative.`,
@@ -19,13 +24,10 @@ export const resolveDistrictWinner: DistrictWinnerResolver = (results) => {
     if (result.votes > highestVotes) {
       winner = result.party
       highestVotes = result.votes
-      hasTie = false
-    } else if (result.votes === highestVotes) {
-      hasTie = true
     }
   }
 
-  return hasTie ? undefined : winner
+  return winner
 }
 
 export function calculateDirectMandates(
