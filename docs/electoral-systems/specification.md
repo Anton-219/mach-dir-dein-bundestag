@@ -12,6 +12,16 @@ This document defines the supported variants, modeling assumptions, required dat
 | `de-2023-fixed-630` | Fixed-size law introduced in 2023 | Bundeswahlgesetz as amended on 8 June 2023, including the Federal Constitutional Court's transitional three-constituency rule of 30 July 2024 |
 | `union-parallel` | Parallel/Grabenwahl model | Independent direct and list tiers, configured by the project as 299 + 299 |
 
+### 1.1 UI short descriptions
+
+The following copy is the approved short description for later German and English UI catalogs. The domain layer exposes only `systemId`; the presentation layer maps that identifier to localized text.
+
+| `systemId` | Deutsch | English |
+| --- | --- | --- |
+| `de-2021-bwahlg` | Sitzverteilung nach dem bei der Bundestagswahl 2021 geltenden Wahlrecht mit Überhang- und Ausgleichsmandaten. Die Größe des Bundestags kann über 598 Sitze steigen. | Seat allocation under the electoral law used for the 2021 Bundestag election, including overhang and compensatory seats. Parliament can grow beyond 598 seats. |
+| `de-2023-fixed-630` | Sitzverteilung nach dem 2023 reformierten Wahlrecht mit einer festen Größe von 630 Sitzen. Ein Wahlkreissieg führt nur bei ausreichender Zweitstimmendeckung zu einem Direktmandat. | Seat allocation under the electoral law reformed in 2023, with a fixed size of 630 seats. A constituency win becomes a direct seat only when covered by the party's second-vote allocation. |
+| `union-parallel` | Grabenwahl mit zwei unabhängigen Blöcken: bis zu 299 Direktmandate aus den Wahlkreisen und genau 299 Listenmandate nach Zweitstimmen. | Parallel voting with two independent tiers: up to 299 direct seats from constituencies and exactly 299 list seats allocated by second votes. |
+
 A **direct win** is the modeled first-vote plurality in a district containing at least one modeled valid first vote. A **direct seat** is a direct win that actually receives a Bundestag seat.
 
 An **empty district** has zero modeled valid first votes. It has no winner and no direct win.
@@ -213,7 +223,7 @@ A party participates in proportional or list-seat allocation when at least one c
 
 The denominator is all valid second votes, including votes for parties that later fail the threshold.
 
-Minority status is explicit legal metadata. For the 2021 data, `SSW` has `isNationalMinorityParty: true`. The exemption admits SSW to apportionment but does not guarantee a seat.
+Minority status is explicit legal metadata. For the 2021 data, `SSW` has `isNationalMinorityParty: true`. The exemption admits SSW to apportionment but does not guarantee a seat. Related data issue #18 corrected the generated SSW second-vote records and records the same architectural decision: minority-party representation is determined by the regular divisor allocation, never by an unconditional seat or a fixed vote-count shortcut.
 
 A party below 5% with only one or two direct wins is handled differently:
 
@@ -412,7 +422,7 @@ An inactive state leaves all of its district seats unallocated and receives no l
 | District first votes by party | `public/data/first_votes.json` | Sufficient for winners and first-vote-share ranking; preserve empty districts |
 | District-to-state mapping | derivable from vote records | Do not add a duplicate mapping |
 | Historical state seat contingents | `public/data/state_seat_contingents_2021.json`, available | Load and validate the committed list-based schema described in section 4; do not store population as calculator input |
-| National-minority status | calculator configuration | Mark SSW as exempt |
+| National-minority status | calculator configuration; related data correction completed in #18 | Mark SSW as exempt and allocate seats through the normal divisor method rather than a fixed threshold or guaranteed seat |
 | Candidate/list positions | absent, intentionally out of scope | Aggregate counts remain calculable |
 | Independent candidates | unsupported | Return a typed error if introduced |
 | Golden outputs | typed fixtures/tests to add | Use section 12 |
@@ -618,11 +628,12 @@ The UI consumes `totalSeats` and `majorityThreshold` from the result. It must no
 - #39 implements fixed-630 allocation, direct-seat coverage, inactive-state behavior, and scenario-dependent direct-win totals.
 - #40 implements independent tiers with a maximum of 299 direct seats, exactly 299 list seats, unallocated-direct-seat metadata, and variable actual chamber size.
 - #41 loads and validates `public/data/state_seat_contingents_2021.json` according to section 4 and implements the legacy allocation. It must not add population or demographic-filter-specific population datasets.
-- #42 consumes only `ElectoralSystemResult`, localizes error and warning codes, and never recalculates majority thresholds.
+- #42 consumes only `ElectoralSystemResult`, localizes the German and English descriptions from section 1.1 together with error and warning codes, and never recalculates majority thresholds.
 - Tests must cover R6–R9 in addition to the unfiltered reference fixtures.
 
 ## 15. Primary references
 
+- Repository issue #18, SSW vote-data correction and minority-party allocation decision: https://github.com/Anton-219/mach-dir-dein-bundestag/issues/18
 - Federal Returning Officer, final main-election result 2021: https://www.bundeswahlleiterin.de/info/presse/mitteilungen/bundestagswahl-2021/52_21_endgueltiges-ergebnis.html
 - Federal Returning Officer, 2021 state seat contingents: https://www.bundeswahlleiterin.de/mitteilungen/bundestagswahlen/2021/20210909_btw21-sitzkontingente.html
 - Federal Returning Officer, explanation of the 2021 seat-allocation procedure: https://www.bundeswahlleiterin.de/dam/jcr/e9eb08cc-e19e-4caa-b9f7-c69247872344/btw21_erl_sitzzuteilung.pdf
