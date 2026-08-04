@@ -16,7 +16,12 @@ const dataFiles = {
   secondVotes: 'second_votes.json',
   statVotes: 'stat_votes.json',
   germanyStates: 'germany_states_map.geo.json',
+  stateSeatContingents: 'state_seat_contingents_2021.json',
 } as const
+
+const HISTORICAL_STATE_SEAT_CONTINGENT_SCHEMA_VERSION = 1
+const HISTORICAL_STATE_SEAT_CONTINGENT_YEAR = 2021
+const HISTORICAL_STATE_SEAT_COUNT = 598
 
 const genders = ['m', 'w'] as const satisfies readonly Gender[]
 const ageGroups = [
@@ -33,7 +38,6 @@ const electionMethods = [
 ] as const satisfies readonly ElectionMethod[]
 
 type JsonFetcher = typeof fetch
-
 type JsonRecord = Record<string, unknown>
 
 export interface ElectionData {
@@ -42,6 +46,8 @@ export interface ElectionData {
   secondVotes: VoteEntry[]
   statVotes: StatVotes[]
   germanyStates: GermanyStatesGeoJson
+  stateSeatContingents: Readonly<Record<string, number>>
+  stateSeatContingentYear: number
 }
 
 export class ElectionDataLoadError extends Error {
@@ -292,6 +298,70 @@ function verifyStateCoverage(
   )
 }
 
+function parseStateSeatContingents(
+  value: unknown,
+  germanyStates: GermanyStatesGeoJson,
+): {
+  stateSeatContingents: Readonly<Record<string, number>>
+  stateSeatContingentYear: number
+} {
+  if (
+    !isRecord(value) ||
+    value.schemaVersion !== HISTORICAL_STATE_SEAT_CONTINGENT_SCHEMA_VERSION ||
+    value.systemId !== 'de-2021-bwahlg' ||
+    value.electionYear !== HISTORICAL_STATE_SEAT_CONTINGENT_YEAR ||
+    value.baseSeatCount !== HISTORICAL_STATE_SEAT_COUNT ||
+    !Array.isArray(value.stateSeatContingents)
+  ) {
+    throw new ElectionDataLoadError(
+      `${dataFiles.stateSeatContingents} has invalid fixture metadata.`,
+    )
+  }
+
+  const expectedStates = new Set(
+    germanyStates.features.map((feature) => feature.properties.name),
+  )
+  if (value.stateSeatContingents.length !== expectedStates.size) {
+    throw new ElectionDataLoadError(
+      `${dataFiles.stateSeatContingents} must contain every federal state exactly once.`,
+    )
+  }
+
+  const stateSeatContingents: Record<string, number> = {}
+  let totalSeats = 0
+  for (const entry of value.stateSeatContingents) {
+    if (
+      !isRecord(entry) ||
+      typeof entry.state !== 'string' ||
+      !expectedStates.has(entry.state) ||
+      typeof entry.seats !== 'number' ||
+      !Number.isInteger(entry.seats) ||
+      entry.seats < 0 ||
+      stateSeatContingents[entry.state] !== undefined
+    ) {
+      throw new ElectionDataLoadError(
+        `${dataFiles.stateSeatContingents} contains an invalid or duplicate state entry.`,
+      )
+    }
+    stateSeatContingents[entry.state] = entry.seats
+    totalSeats += entry.seats
+  }
+
+  const missingStates = [...expectedStates].filter(
+    (state) => stateSeatContingents[state] === undefined,
+  )
+  if (missingStates.length > 0 || totalSeats !== HISTORICAL_STATE_SEAT_COUNT) {
+    throw new ElectionDataLoadError(
+      `${dataFiles.stateSeatContingents} must contain all 16 states and add up to 598 seats.`,
+    )
+  }
+
+  return {
+    stateSeatContingents,
+    stateSeatContingentYear: HISTORICAL_STATE_SEAT_CONTINGENT_YEAR,
+  }
+}
+
 export async function loadElectionData(
   fetcher: JsonFetcher = fetch,
 ): Promise<ElectionData> {
@@ -301,12 +371,14 @@ export async function loadElectionData(
     secondVotesJson,
     statVotesJson,
     germanyStatesJson,
+    stateSeatContingentsJson,
   ] = await Promise.all([
     fetchJson(dataFiles.parties, fetcher),
     fetchJson(dataFiles.firstVotes, fetcher),
     fetchJson(dataFiles.secondVotes, fetcher),
     fetchJson(dataFiles.statVotes, fetcher),
     fetchJson(dataFiles.germanyStates, fetcher),
+    fetchJson(dataFiles.stateSeatContingents, fetcher),
   ])
 
   const firstVotes = parseVoteEntries(
@@ -328,6 +400,10 @@ export async function loadElectionData(
 
   verifyDistrictCoverage(firstVotes, secondVotes)
   verifyStateCoverage(firstVotes, secondVotes, germanyStatesJson)
+  const historicalStateSeatContingents = parseStateSeatContingents(
+    stateSeatContingentsJson,
+    germanyStatesJson,
+  )
 
   return {
     parties: parseArray(partiesJson, dataFiles.parties, (item) =>
@@ -339,5 +415,6 @@ export async function loadElectionData(
       isStatVotes(item) ? item : undefined,
     ),
     germanyStates: germanyStatesJson,
+    ...historicalStateSeatContingents,
   }
 }
