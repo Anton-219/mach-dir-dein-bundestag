@@ -18,9 +18,12 @@ The epic introduces interchangeable electoral-system calculators that consume on
 ## Architecture principles
 
 - A filtered or unfiltered vote scenario is calculated once and passed unchanged to every electoral-system calculator.
+- Ordinary filters model non-participation: they change first and second votes together, but never state membership, district boundaries, historical state seat contingents, or institutional seat capacity.
+- The historical calculator consumes explicit year-specific state seat contingents rather than population figures.
+- A state is either active for both vote types or inactive for both; first-vote-only and second-vote-only scenarios are unsupported.
 - Legal eligibility, seat allocation, and system-specific warnings live behind an electoral-system strategy boundary.
 - All strategies return the same party-level result shape; candidate-level claims are outside the epic.
 - Legal variants and modeling assumptions are versioned explicitly rather than hidden behind a generic “German system” label.
 - Deterministic reference scenarios are the acceptance boundary for each calculator.
 
-The detailed specification is added by story #37 and becomes the normative basis for the later implementation stories.
+The [supported-variants specification](./specification.md) from story #37 is the normative basis for the later implementation stories.
