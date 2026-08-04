@@ -1,5 +1,6 @@
 import type { ElectionResult } from '../../models/calculation-results.ts'
 import { DEFAULT_PARTY_QUALIFICATION_RULES } from './constants.ts'
+import type { ElectoralScenario } from './electoral-system-types.ts'
 import type {
   DirectMandateCount,
   PartyQualificationRules,
@@ -23,7 +24,7 @@ export function isPartyEligible(
   )?.districtsWon
 
   return (
-    electionResult.percentage > rules.voteShareThreshold ||
+    electionResult.percentage >= rules.voteShareThreshold ||
     (directMandateCount ?? 0) >= rules.minimumDirectMandates
   )
 }
@@ -35,5 +36,33 @@ export function filterEligibleParties(
 ): ElectionResult[] {
   return electionResults.filter((result) =>
     isPartyEligible(result, directMandates, rules),
+  )
+}
+
+export function isScenarioPartyEligible(
+  party: string,
+  scenario: ElectoralScenario,
+  directWins: number,
+  rules: PartyQualificationRules = DEFAULT_PARTY_QUALIFICATION_RULES,
+): boolean {
+  const result = scenario.parties[party]
+  if (
+    result === undefined ||
+    scenario.validSecondVotes <= 0 ||
+    rules.excludedParties.includes(party)
+  ) {
+    return false
+  }
+
+  if (
+    result.isNationalMinorityParty ||
+    rules.thresholdExemptParties.includes(party)
+  ) {
+    return true
+  }
+
+  return (
+    result.secondVotes / scenario.validSecondVotes >= rules.voteShareThreshold ||
+    directWins >= rules.minimumDirectMandates
   )
 }
