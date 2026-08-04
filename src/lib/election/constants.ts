@@ -1,6 +1,7 @@
 import type { PartyQualificationRules } from './types.ts'
 
-export const DEFAULT_PARLIAMENT_SEATS = 630
+export const FIXED_630_PARLIAMENT_SEATS = 630
+export const DEFAULT_PARLIAMENT_SEATS = FIXED_630_PARLIAMENT_SEATS
 export const UNKNOWN_SEAT_POSITION = 999
 
 export const DEFAULT_PARTY_QUALIFICATION_RULES = {
