@@ -1,15 +1,93 @@
 import { allocateSainteLague } from './allocate-sainte-lague.ts'
 import { FIXED_630_PARLIAMENT_SEATS } from './constants.ts'
 import type {
+  DistrictWinner,
+  ElectoralScenario,
   ElectoralSystemCalculator,
   ElectoralSystemPartyResult,
   ElectoralSystemWarning,
 } from './electoral-system-types.ts'
 import { isScenarioPartyEligible } from './qualify-parties.ts'
 
+const LEGAL_VERSION = 'de-2023-fixed-630-v1'
+
+function createDirectWinsByPartyAndState(
+  districtWinners: readonly DistrictWinner[],
+): ReadonlyMap<string, ReadonlyMap<string, number>> {
+  const counts = new Map<string, Map<string, number>>()
+  for (const winner of districtWinners) {
+    const byState = counts.get(winner.party) ?? new Map<string, number>()
+    byState.set(winner.state, (byState.get(winner.state) ?? 0) + 1)
+    counts.set(winner.party, byState)
+  }
+  return counts
+}
+
+function allocatePartySeatsByState(
+  scenario: ElectoralScenario,
+  seatsByParty: ReadonlyMap<string, number>,
+): {
+  seatsByPartyAndState: ReadonlyMap<string, ReadonlyMap<string, number>>
+  warnings: readonly ElectoralSystemWarning[]
+} {
+  const activeStates = scenario.states.filter((state) => state.isActive)
+  const seatsByPartyAndState = new Map<string, ReadonlyMap<string, number>>()
+  const warnings: ElectoralSystemWarning[] = []
+
+  for (const [party, seatCount] of seatsByParty) {
+    if (seatCount === 0) {
+      seatsByPartyAndState.set(party, new Map())
+      continue
+    }
+
+    const allocation = allocateSainteLague(
+      activeStates.map((state) => ({
+        key: state.state,
+        votes: state.secondVotesByParty[party] ?? 0,
+      })),
+      seatCount,
+    )
+    seatsByPartyAndState.set(
+      party,
+      new Map(
+        allocation.allocations.map((stateAllocation) => [
+          stateAllocation.key,
+          stateAllocation.seats,
+        ]),
+      ),
+    )
+    warnings.push(
+      ...allocation.warnings.map((warning) => ({
+        ...warning,
+        details: {
+          ...warning.details,
+          party,
+        },
+      })),
+    )
+  }
+
+  return { seatsByPartyAndState, warnings }
+}
+
+function countCoveredDirectSeats(
+  stateSeats: ReadonlyMap<string, number> | undefined,
+  directWinsByState: ReadonlyMap<string, number> | undefined,
+): number {
+  if (stateSeats === undefined || directWinsByState === undefined) {
+    return 0
+  }
+
+  let directSeats = 0
+  for (const [state, directWins] of directWinsByState) {
+    directSeats += Math.min(directWins, stateSeats.get(state) ?? 0)
+  }
+  return directSeats
+}
+
 export const fixed630Calculator: ElectoralSystemCalculator = {
   systemId: 'de-2023-fixed-630',
-  legalVersion: 'de-2023-fixed-630-transition-v1',
+  legalVersion: LEGAL_VERSION,
   calculate(input) {
     const eligibleParties = Object.keys(input.scenario.parties).filter((party) =>
       isScenarioPartyEligible(
@@ -18,7 +96,8 @@ export const fixed630Calculator: ElectoralSystemCalculator = {
         input.directWinsByParty[party] ?? 0,
       ),
     )
-    const allocation = allocateSainteLague(
+    const eligiblePartySet = new Set(eligibleParties)
+    const nationalAllocation = allocateSainteLague(
       eligibleParties.map((party) => ({
         key: party,
         votes: input.scenario.parties[party]?.secondVotes ?? 0,
@@ -26,22 +105,29 @@ export const fixed630Calculator: ElectoralSystemCalculator = {
       FIXED_630_PARLIAMENT_SEATS,
     )
     const seatsByParty = new Map(
-      allocation.allocations.map((result) => [result.key, result.seats]),
+      nationalAllocation.allocations.map((result) => [result.key, result.seats]),
+    )
+    const stateAllocation = allocatePartySeatsByState(
+      input.scenario,
+      seatsByParty,
+    )
+    const directWinsByPartyAndState = createDirectWinsByPartyAndState(
+      input.districtWinners,
     )
 
-    // Story #39 replaces this aggregate transition with state-level
-    // constituency-seat coverage. Until then, direct wins are covered only up
-    // to the party's national seat total so the shared result invariants hold.
     const parties: ElectoralSystemPartyResult[] = Object.keys(
       input.scenario.parties,
     ).map((party) => {
       const totalSeats = seatsByParty.get(party) ?? 0
       const directWins = input.directWinsByParty[party] ?? 0
-      const directSeats = Math.min(totalSeats, directWins)
+      const directSeats = countCoveredDirectSeats(
+        stateAllocation.seatsByPartyAndState.get(party),
+        directWinsByPartyAndState.get(party),
+      )
       return {
         party,
         secondVotes: input.scenario.parties[party]?.secondVotes ?? 0,
-        eligibleForListSeats: eligibleParties.includes(party),
+        eligibleForListSeats: eligiblePartySet.has(party),
         totalSeats,
         directWins,
         directSeats,
@@ -50,7 +136,10 @@ export const fixed630Calculator: ElectoralSystemCalculator = {
       }
     })
 
-    const warnings: ElectoralSystemWarning[] = [...allocation.warnings]
+    const warnings: ElectoralSystemWarning[] = [
+      ...nationalAllocation.warnings,
+      ...stateAllocation.warnings,
+    ]
     if (input.scenario.mode === 'filtered-model') {
       warnings.push({ code: 'FILTERED_FIRST_VOTE_MODEL' })
     }
@@ -66,7 +155,7 @@ export const fixed630Calculator: ElectoralSystemCalculator = {
 
     return {
       systemId: 'de-2023-fixed-630',
-      legalVersion: 'de-2023-fixed-630-transition-v1',
+      legalVersion: LEGAL_VERSION,
       scenarioMode: input.scenario.mode,
       totalSeats: FIXED_630_PARLIAMENT_SEATS,
       majorityThreshold: Math.floor(FIXED_630_PARLIAMENT_SEATS / 2) + 1,

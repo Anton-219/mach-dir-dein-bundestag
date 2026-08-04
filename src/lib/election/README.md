@@ -12,12 +12,16 @@ These modules keep vote-scenario preparation, party qualification, proportional 
 - `ElectoralSystemRegistry` selects calculators by the identifiers specified in `docs/electoral-systems/specification.md`. Unknown identifiers and supported-but-unregistered strategies fail separately and clearly.
 - Every calculator returns one normalized `ElectoralSystemResult`. The engine validates party totals, direct/list decomposition, direct-win coverage, parliament size, majority threshold, metadata, ordering, and warnings before the UI receives it.
 
-## Current transition
+## Fixed 630-seat strategy
 
-`de-2023-fixed-630` is the only registered strategy in issue #38. It preserves the existing national 630-seat allocation as an explicit calculator instead of an implicit `DEFAULT_PARLIAMENT_SEATS` path. It applies the five-percent threshold inclusively, the three-direct-win rule, the explicit SSW minority exemption, and exclusion of the aggregate `Sonstige` bucket.
+`de-2023-fixed-630` is the only registered strategy. It applies the inclusive five-percent threshold, the three-direct-win rule, the explicit national-minority exemption, and exclusion of the aggregate `Sonstige` bucket.
 
-The full state-level 2023 constituency-seat coverage belongs to issue #39. Until that strategy replaces the transition calculator, direct wins are represented in aggregate only and are covered up to each party's national seat total. The shared result and warning contract is already stable for the later strategies.
+The calculator allocates exactly 630 seats nationally among eligible parties and then allocates each party's seats among active state lists through the shared Sainte-Laguë helper. Inactive states receive no state seats, while the national chamber remains fixed at 630 seats.
 
-The pre-2023 and parallel systems are intentionally recognized by the identifier type but remain unregistered until their implementation issues add calculators. Candidate names, state-list order, and person-level mandate assignment are outside this module boundary.
+Direct-seat coverage is calculated only at the aggregate party/state boundary required by the product. For every party and state, covered direct seats are the smaller of the party's state-seat allocation and its modeled district wins there. Additional wins are returned as `uncoveredDistrictWins`; no candidate identity or list position is derived. This keeps the aggregate result legally meaningful without introducing person-level mandate assignment.
+
+Filtered scenarios use the district winners from the normalized filtered first-vote scenario and emit `FILTERED_FIRST_VOTE_MODEL`. Excluded states additionally emit `INACTIVE_STATE_SIMULATION`. The documented unfiltered 2021 vote fixture reproduces the expected 630-seat party totals.
+
+The pre-2023 and parallel systems are intentionally recognized by the identifier type but remain unregistered until their implementation issues add calculators. Candidate names, state-list order, and person-level mandate assignment remain outside this module boundary.
 
 Coalition calculation consumes the normalized party seat totals and the majority threshold returned by the selected calculator. It does not infer the chamber size or encode political compatibility.
