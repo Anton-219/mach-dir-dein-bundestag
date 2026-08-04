@@ -29,6 +29,9 @@ export interface BuildElectoralScenarioInput {
   nationalMinorityParties?: readonly string[]
 }
 
+const AGGREGATED_VOTE_ABSOLUTE_TOLERANCE = 1e-6
+const AGGREGATED_VOTE_RELATIVE_TOLERANCE = 1e-10
+
 function compareStableKeys(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0
 }
@@ -70,7 +73,11 @@ function validateEntries(entries: readonly VoteEntry[], voteType: '1' | '2'): vo
 
 function approximatelyEqual(left: number, right: number): boolean {
   const scale = Math.max(1, Math.abs(left), Math.abs(right))
-  return Math.abs(left - right) <= Number.EPSILON * scale * 16
+  const tolerance = Math.max(
+    AGGREGATED_VOTE_ABSOLUTE_TOLERANCE,
+    scale * AGGREGATED_VOTE_RELATIVE_TOLERANCE,
+  )
+  return Math.abs(left - right) <= tolerance
 }
 
 export function createElectoralScenarioReference(
