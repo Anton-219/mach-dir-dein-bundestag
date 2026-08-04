@@ -140,7 +140,7 @@ test('applies threshold, direct-mandate, minority-party, and aggregate-bucket ru
 
   assert.deepEqual(
     eligible.map((result) => result.partyAbbreviation),
-    ['ABOVE', 'DIRECT', 'SSW'],
+    ['ABOVE', 'EXACT', 'DIRECT', 'SSW'],
   )
 })
 

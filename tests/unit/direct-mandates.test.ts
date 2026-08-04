@@ -66,18 +66,35 @@ test('applies scenario filters before determining the district winner', () => {
   )
 })
 
-test('leaves an exactly tied district unassigned by default', () => {
+test('resolves an exactly tied positive district by stable party slug', () => {
   assert.equal(
     resolveDistrictWinner([
       { districtId: 1, party: 'SPD', votes: 50 },
       { districtId: 1, party: 'CDU', votes: 50 },
     ]),
-    undefined,
+    'CDU',
   )
   assert.deepEqual(
     calculateDirectMandates([
       firstVote(1, 'SPD', 50),
       firstVote(1, 'CDU', 50),
+    ]),
+    [{ party: 'CDU', districtsWon: 1 }],
+  )
+})
+
+test('leaves a zero-vote district without a winner', () => {
+  assert.equal(
+    resolveDistrictWinner([
+      { districtId: 1, party: 'SPD', votes: 0 },
+      { districtId: 1, party: 'CDU', votes: 0 },
+    ]),
+    undefined,
+  )
+  assert.deepEqual(
+    calculateDirectMandates([
+      firstVote(1, 'SPD', 0),
+      firstVote(1, 'CDU', 0),
     ]),
     [],
   )

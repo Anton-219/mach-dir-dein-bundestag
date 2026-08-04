@@ -4,8 +4,11 @@ import { useI18n, type ScenarioReason } from '../../i18n/index.ts'
 import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts'
 import {
   aggregateElectionResults,
-  allocateSeats,
-  calculateDirectMandates,
+  buildElectoralScenario,
+  calculateElectoralSystem,
+  createElectoralScenarioReference,
+  DEFAULT_ELECTORAL_SYSTEM_ID,
+  toSeatResults,
 } from '../../lib/election/index.ts'
 import {
   applyFilterState,
@@ -50,6 +53,10 @@ function createUnavailableScenario(
   }
 }
 
+function hasActiveFilters(filters: FilterState): boolean {
+  return Object.values(filters).some((excludedValues) => excludedValues.length > 0)
+}
+
 export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const { messages } = useI18n()
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
@@ -62,6 +69,22 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     }
 
     return [...new Set(dataState.data.secondVotes.map((entry) => entry.state))].sort()
+  }, [dataState])
+
+  const electoralScenarioReference = useMemo(() => {
+    if (dataState.status !== 'ready') {
+      return undefined
+    }
+
+    try {
+      return createElectoralScenarioReference({
+        firstVotes: dataState.data.firstVotes,
+        secondVotes: dataState.data.secondVotes,
+        parties: dataState.data.parties,
+      })
+    } catch {
+      return null
+    }
   }, [dataState])
 
   const scenario = useMemo<ScenarioResult | undefined>(() => {
@@ -106,17 +129,40 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         )
       }
 
+      if (electoralScenarioReference === null) {
+        return createUnavailableScenario(
+          'invalid',
+          'calculationFailed',
+          includedVotes,
+          totalVotes,
+        )
+      }
+      if (electoralScenarioReference === undefined) {
+        return undefined
+      }
+
       const electionResults = aggregateElectionResults(
         filteredSecondVotes,
         dataState.data.parties,
       )
-      const directMandates = calculateDirectMandates(filteredFirstVotes)
-      const seatResults = allocateSeats(electionResults, directMandates)
-      const totalSeats = seatResults.reduce(
-        (total, result) => total + result.seats,
-        0,
+      const electoralScenario = buildElectoralScenario({
+        mode: hasActiveFilters(filters)
+          ? 'filtered-model'
+          : 'unfiltered-reference',
+        firstVotes: filteredFirstVotes,
+        secondVotes: filteredSecondVotes,
+        reference: electoralScenarioReference,
+        inactiveStates: filters.states,
+      })
+      const electoralSystemResult = calculateElectoralSystem(
+        DEFAULT_ELECTORAL_SYSTEM_ID,
+        electoralScenario,
       )
-      const majorityThreshold = Math.floor(totalSeats / 2) + 1
+      const seatResults = toSeatResults(
+        electoralSystemResult,
+        dataState.data.parties,
+      )
+      const { totalSeats, majorityThreshold } = electoralSystemResult
 
       const hasInvalidElectionResult = electionResults.some(
         (result) =>
@@ -163,6 +209,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         includedShare: includedVotes / totalVotes,
         totalSeats,
         majorityThreshold,
+        electoralSystemResult,
       }
     } catch {
       return createUnavailableScenario(
@@ -172,7 +219,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         totalVotes,
       )
     }
-  }, [dataState, filters])
+  }, [dataState, electoralScenarioReference, filters])
 
   const statePartyLandscape = useMemo(() => {
     if (dataState.status !== 'ready' || highlightedState === null) {
