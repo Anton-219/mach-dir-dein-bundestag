@@ -112,20 +112,12 @@ export function ScenarioSummary({
   const i18n = useI18n()
   const { messages } = i18n
   const electoralSystemCopy = getElectoralSystemCatalog(i18n.locale)
-  const activeModel = getElectoralSystemModelCopy(
-    electoralSystemId,
-    i18n.locale,
-  )
   const voteScenario =
     scenario?.status === 'ready' || scenario?.status === 'empty'
       ? scenario
       : undefined
   const electoralSystemResult =
     scenario?.status === 'ready' ? scenario.electoralSystemResult : undefined
-  const presentation =
-    electoralSystemResult === undefined
-      ? undefined
-      : createElectoralSystemPresentation(electoralSystemResult)
   const notices =
     electoralSystemResult === undefined
       ? []
@@ -145,7 +137,7 @@ export function ScenarioSummary({
 
       <div className="scenario-summary-main">
         <dl className="scenario-facts">
-          <div>
+          <div className="scenario-fact-votes">
             <dt>{messages.scenario.includedVotes}</dt>
             <dd>
               {voteScenario
@@ -153,42 +145,20 @@ export function ScenarioSummary({
                 : '—'}
             </dd>
           </div>
+          <div className="scenario-fact-model">
+            <dt>{electoralSystemCopy.selector.activeLabel}</dt>
+            <dd>
+              <ElectoralSystemSelector
+                selectedSystemId={electoralSystemId}
+                onChange={onElectoralSystemChange}
+              />
+            </dd>
+          </div>
           <div className="scenario-fact-election">
             <dt>{messages.scenario.election}</dt>
             <dd>{messages.scenario.confirmedResult}</dd>
           </div>
-          <div>
-            <dt>{electoralSystemCopy.selector.activeLabel}</dt>
-            <dd>{activeModel.shortName}</dd>
-          </div>
-          {presentation ? (
-            <>
-              <div>
-                <dt>{electoralSystemCopy.seatBreakdown.directSeats}</dt>
-                <dd>{i18n.formatNumber(presentation.directSeats)}</dd>
-              </div>
-              <div>
-                <dt>{electoralSystemCopy.seatBreakdown.listSeats}</dt>
-                <dd>{i18n.formatNumber(presentation.listSeats)}</dd>
-              </div>
-              {presentation.uncoveredDistrictWins > 0 ? (
-                <div>
-                  <dt>
-                    {electoralSystemCopy.seatBreakdown.uncoveredDistrictWins}
-                  </dt>
-                  <dd>
-                    {i18n.formatNumber(presentation.uncoveredDistrictWins)}
-                  </dd>
-                </div>
-              ) : null}
-            </>
-          ) : null}
         </dl>
-
-        <ElectoralSystemSelector
-          selectedSystemId={electoralSystemId}
-          onChange={onElectoralSystemChange}
-        />
       </div>
 
       <DataStatus dataState={dataState} scenario={scenario} />
