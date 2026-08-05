@@ -116,35 +116,37 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
             </div>
           </div>
 
-          <p className="majority-axis">
-            {messages.parliament.majorityThreshold}{' '}
-            <strong>
-              {messages.common.seatCount(readyScenario.majorityThreshold)}
-            </strong>
-          </p>
+          <div className="parliament-majority-row">
+            <p className="majority-axis">
+              {messages.parliament.majorityThreshold}{' '}
+              <strong>
+                {messages.common.seatCount(readyScenario.majorityThreshold)}
+              </strong>
+            </p>
 
-          {seatBreakdown ? (
-            <dl className="parliament-seat-breakdown">
-              <div>
-                <dt>{electoralSystemCopy.seatBreakdown.directSeats}</dt>
-                <dd>{i18n.formatNumber(seatBreakdown.directSeats)}</dd>
-              </div>
-              <div>
-                <dt>{electoralSystemCopy.seatBreakdown.listSeats}</dt>
-                <dd>{i18n.formatNumber(seatBreakdown.listSeats)}</dd>
-              </div>
-              {seatBreakdown.uncoveredDistrictWins > 0 ? (
+            {seatBreakdown ? (
+              <dl className="parliament-seat-breakdown">
                 <div>
-                  <dt>
-                    {electoralSystemCopy.seatBreakdown.uncoveredDistrictWins}
-                  </dt>
-                  <dd>
-                    {i18n.formatNumber(seatBreakdown.uncoveredDistrictWins)}
-                  </dd>
+                  <dt>{electoralSystemCopy.seatBreakdown.directSeats}</dt>
+                  <dd>{i18n.formatNumber(seatBreakdown.directSeats)}</dd>
                 </div>
-              ) : null}
-            </dl>
-          ) : null}
+                <div>
+                  <dt>{electoralSystemCopy.seatBreakdown.listSeats}</dt>
+                  <dd>{i18n.formatNumber(seatBreakdown.listSeats)}</dd>
+                </div>
+                {seatBreakdown.uncoveredDistrictWins > 0 ? (
+                  <div>
+                    <dt>
+                      {electoralSystemCopy.seatBreakdown.uncoveredDistrictWins}
+                    </dt>
+                    <dd>
+                      {i18n.formatNumber(seatBreakdown.uncoveredDistrictWins)}
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+            ) : null}
+          </div>
 
           <ul
             className="parliament-legend"

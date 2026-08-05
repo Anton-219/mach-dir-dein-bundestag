@@ -1,7 +1,6 @@
 import {
   getElectoralSystemCatalog,
   getElectoralSystemModelCopy,
-  getElectoralSystemNoticeTexts,
   getScenarioReasonText,
   summarizeFilterState,
   useI18n,
@@ -116,12 +115,6 @@ export function ScenarioSummary({
     scenario?.status === 'ready' || scenario?.status === 'empty'
       ? scenario
       : undefined
-  const electoralSystemResult =
-    scenario?.status === 'ready' ? scenario.electoralSystemResult : undefined
-  const notices =
-    electoralSystemResult === undefined
-      ? []
-      : getElectoralSystemNoticeTexts(electoralSystemResult, i18n)
   const scenarioAnnouncement = describeScenarioForAssistiveTechnology(
     filters,
     scenario,
@@ -162,20 +155,6 @@ export function ScenarioSummary({
       </div>
 
       <DataStatus dataState={dataState} scenario={scenario} />
-
-      {notices.length > 0 ? (
-        <aside
-          className="electoral-system-notices"
-          aria-label={electoralSystemCopy.notices.title}
-        >
-          <strong>{electoralSystemCopy.notices.title}</strong>
-          <ul>
-            {notices.map((notice) => (
-              <li key={notice}>{notice}</li>
-            ))}
-          </ul>
-        </aside>
-      ) : null}
 
       {scenarioAnnouncement ? (
         <output

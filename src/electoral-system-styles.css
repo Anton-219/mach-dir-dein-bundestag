@@ -60,30 +60,23 @@
   outline-offset: 2px;
 }
 
-.electoral-system-notices {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 0.4rem;
-  align-items: start;
-  padding: 0.32rem 0.48rem;
-  border: 1px solid color-mix(in srgb, #9a6d1d 38%, var(--border));
-  border-radius: 0.5rem;
-  background: color-mix(in srgb, #f6e8c6 55%, var(--panel-background));
-  color: var(--text);
-  font-size: 0.57rem;
-  line-height: 1.35;
-}
-
-.electoral-system-notices strong {
-  white-space: nowrap;
-}
-
-.electoral-system-notices ul {
+.parliament-majority-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.18rem 1rem;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.28rem 0.9rem;
+  max-width: 100%;
+  margin: 0.45rem auto 0;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+}
+
+.parliament-majority-row .majority-axis {
+  width: auto;
   margin: 0;
-  padding-left: 1rem;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .parliament-seat-breakdown {
@@ -91,10 +84,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.28rem 0.9rem;
-  margin: 0.32rem auto 0;
-  padding: 0.3rem 0.58rem;
-  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+  margin: 0;
 }
 
 .parliament-seat-breakdown div {
@@ -195,14 +185,6 @@
   .methodology-content {
     grid-template-columns: minmax(0, 1fr);
   }
-
-  .electoral-system-notices {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .electoral-system-notices ul {
-    display: grid;
-  }
 }
 
 @media (max-width: 36rem) {
@@ -224,6 +206,7 @@
     width: 100%;
   }
 
+  .parliament-majority-row,
   .parliament-seat-breakdown {
     justify-content: flex-start;
   }
