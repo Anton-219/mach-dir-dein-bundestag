@@ -11,9 +11,9 @@
 .scenario-summary-main .scenario-facts {
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(12rem, 1fr) minmax(10.5rem, auto) minmax(10rem, auto);
+  grid-template-columns: minmax(12rem, 1fr) minmax(9.25rem, auto) minmax(10rem, auto);
   gap: 0;
-  align-items: end;
+  align-items: center;
 }
 
 .scenario-summary-main .scenario-facts div,
@@ -31,12 +31,16 @@
   text-align: right;
 }
 
+.scenario-summary-main .scenario-facts .scenario-fact-model {
+  align-self: center;
+}
+
 .scenario-fact-model dd {
-  margin-top: 0.14rem;
+  margin-top: 0;
 }
 
 .electoral-system-select {
-  width: 12.5rem;
+  width: 10.25rem;
   max-width: 100%;
   min-height: 1.75rem;
   padding: 0.24rem 1.7rem 0.24rem 0.48rem;
@@ -166,7 +170,7 @@
 
 @media (max-width: 54rem) {
   .scenario-summary-main .scenario-facts {
-    grid-template-columns: minmax(0, 1fr) minmax(10.5rem, auto);
+    grid-template-columns: minmax(0, 1fr) minmax(9.25rem, auto);
     row-gap: 0.38rem;
   }
 
@@ -211,3 +215,4 @@
     justify-content: flex-start;
   }
 }
+

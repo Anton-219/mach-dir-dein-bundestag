@@ -139,7 +139,9 @@ export function ScenarioSummary({
             </dd>
           </div>
           <div className="scenario-fact-model">
-            <dt>{electoralSystemCopy.selector.activeLabel}</dt>
+            <dt className="visually-hidden">
+              {electoralSystemCopy.selector.activeLabel}
+            </dt>
             <dd>
               <ElectoralSystemSelector
                 selectedSystemId={electoralSystemId}
