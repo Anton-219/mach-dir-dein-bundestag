@@ -22,9 +22,10 @@ function compareStableKeys(left: string, right: string): number {
   return left < right ? -1 : left > right ? 1 : 0
 }
 
-export function allocateSainteLague(
+function allocateSainteLagueInternal(
   inputs: readonly SainteLagueInput[],
   seatCount: number,
+  minimumSeatsByKey: Readonly<Record<string, number>>,
 ): SainteLagueResult {
   if (!Number.isInteger(seatCount) || seatCount < 0) {
     throw new RangeError('The seat count must be a non-negative integer.')
@@ -50,10 +51,37 @@ export function allocateSainteLague(
     totalVotes += input.votes
   }
 
-  const seatsByKey = new Map(sortedInputs.map((input) => [input.key, 0]))
-  if (seatCount === 0) {
+  for (const key of Object.keys(minimumSeatsByKey)) {
+    if (!seenKeys.has(key)) {
+      throw new RangeError(
+        `The minimum-seat allocation contains the unknown key ${key}.`,
+      )
+    }
+  }
+
+  const seatsByKey = new Map<string, number>()
+  let allocatedMinimumSeats = 0
+  for (const input of sortedInputs) {
+    const minimumSeats = minimumSeatsByKey[input.key] ?? 0
+    if (!Number.isInteger(minimumSeats) || minimumSeats < 0) {
+      throw new RangeError(
+        `Minimum seats for ${input.key} must be a non-negative integer.`,
+      )
+    }
+    seatsByKey.set(input.key, minimumSeats)
+    allocatedMinimumSeats += minimumSeats
+  }
+  if (allocatedMinimumSeats > seatCount) {
+    throw new RangeError('The minimum-seat allocation exceeds the seat pool.')
+  }
+
+  const remainingSeatCount = seatCount - allocatedMinimumSeats
+  if (remainingSeatCount === 0) {
     return {
-      allocations: sortedInputs.map((input) => ({ key: input.key, seats: 0 })),
+      allocations: sortedInputs.map((input) => ({
+        key: input.key,
+        seats: seatsByKey.get(input.key) ?? 0,
+      })),
       warnings: [],
     }
   }
@@ -65,7 +93,7 @@ export function allocateSainteLague(
   }
 
   const tiedKeys = new Set<string>()
-  for (let seat = 0; seat < seatCount; seat += 1) {
+  for (let seat = 0; seat < remainingSeatCount; seat += 1) {
     let highestQuotient = -1
     let candidates: string[] = []
 
@@ -110,4 +138,19 @@ export function allocateSainteLague(
     })),
     warnings,
   }
+}
+
+export function allocateSainteLague(
+  inputs: readonly SainteLagueInput[],
+  seatCount: number,
+): SainteLagueResult {
+  return allocateSainteLagueInternal(inputs, seatCount, {})
+}
+
+export function allocateSainteLagueWithMinimums(
+  inputs: readonly SainteLagueInput[],
+  seatCount: number,
+  minimumSeatsByKey: Readonly<Record<string, number>>,
+): SainteLagueResult {
+  return allocateSainteLagueInternal(inputs, seatCount, minimumSeatsByKey)
 }
