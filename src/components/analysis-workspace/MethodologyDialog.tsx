@@ -99,6 +99,7 @@ export function MethodologyDialog({
             <div className="methodology-models">
               {models.map((model) => {
                 const isActive = model.systemId === systemId
+                const isHistoricalModel = model.systemId === 'de-2021-bwahlg'
 
                 return (
                   <article
@@ -127,6 +128,17 @@ export function MethodologyDialog({
                         <dd>{model.limitations}</dd>
                       </div>
                     </dl>
+
+                    {isHistoricalModel ? (
+                      <aside className="methodology-seat-growth-note">
+                        <h5>{copy.notices.title}</h5>
+                        <p>{copy.notices.filteredFirstVotes}</p>
+                        <p>{copy.notices.fixedHistoricalContingents}</p>
+                        <p>{model.description}</p>
+                        <p>{copy.methodology.dataPreparationItems[1]}</p>
+                        <p>{copy.methodology.dataPreparationItems[3]}</p>
+                      </aside>
+                    ) : null}
                   </article>
                 )
               })}
