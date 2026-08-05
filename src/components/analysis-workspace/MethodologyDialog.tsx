@@ -52,11 +52,6 @@ export function MethodologyDialog({
       aria-labelledby="methodology-dialog-title"
       aria-describedby="methodology-dialog-introduction"
       onClose={onClose}
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
-          event.currentTarget.close()
-        }
-      }}
     >
       <div className="methodology-dialog-surface">
         <header className="methodology-dialog-header">
