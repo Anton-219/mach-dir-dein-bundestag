@@ -174,7 +174,14 @@ function createPreliminaryAllocation(
       0,
     )
     if (allocatableVotes <= 0) {
-      continue
+      throw new ElectoralSystemCalculationError(
+        'NO_VALID_SECOND_VOTES',
+        `Active state ${state.state} has no second votes for parties eligible for list allocation.`,
+        {
+          state: state.state,
+          effectiveContingent,
+        },
+      )
     }
 
     const allocation = allocateSainteLague(
