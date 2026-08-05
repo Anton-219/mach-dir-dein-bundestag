@@ -1,0 +1,218 @@
+.scenario-summary {
+  align-content: center;
+  gap: 0.35rem;
+}
+
+.scenario-summary-main {
+  min-width: 0;
+  width: 100%;
+}
+
+.scenario-summary-main .scenario-facts {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(12rem, 1fr) minmax(9.25rem, auto) minmax(10rem, auto);
+  gap: 0;
+  align-items: center;
+}
+
+.scenario-summary-main .scenario-facts div,
+.scenario-summary-main .scenario-facts .scenario-fact-election {
+  min-width: 0;
+  margin-left: 0;
+  padding: 0;
+  border-left: 0;
+}
+
+.scenario-summary-main .scenario-facts .scenario-fact-model,
+.scenario-summary-main .scenario-facts .scenario-fact-election {
+  justify-self: end;
+  padding-left: 1rem;
+  text-align: right;
+}
+
+.scenario-summary-main .scenario-facts .scenario-fact-model {
+  align-self: center;
+}
+
+.scenario-fact-model dd {
+  margin-top: 0;
+}
+
+.electoral-system-select {
+  width: 10.25rem;
+  max-width: 100%;
+  min-height: 1.75rem;
+  padding: 0.24rem 1.7rem 0.24rem 0.48rem;
+  border: 1px solid var(--border);
+  border-radius: 0.42rem;
+  background: rgb(255 255 255 / 62%);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 650;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.electoral-system-select:hover {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
+}
+
+.electoral-system-select:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  outline-offset: 2px;
+}
+
+.parliament-majority-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.28rem 0.9rem;
+  max-width: 100%;
+  margin: 0.45rem auto 0;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+}
+
+.parliament-majority-row .majority-axis {
+  width: auto;
+  margin: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.parliament-seat-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.28rem 0.9rem;
+  margin: 0;
+}
+
+.parliament-seat-breakdown div {
+  display: inline-flex;
+  gap: 0.28rem;
+  align-items: baseline;
+}
+
+.parliament-seat-breakdown dt,
+.parliament-seat-breakdown dd {
+  margin: 0;
+  font-size: 0.58rem;
+  line-height: 1.25;
+}
+
+.parliament-seat-breakdown dt {
+  color: var(--muted);
+}
+
+.parliament-seat-breakdown dd {
+  color: var(--ink);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.methodology-footer {
+  min-width: 0;
+  padding-block: 0.32rem;
+}
+
+.methodology-details {
+  width: 100%;
+}
+
+.methodology-details summary {
+  cursor: pointer;
+  font-size: 0.66rem;
+}
+
+.methodology-details summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  outline-offset: 3px;
+}
+
+.methodology-content {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem 1rem;
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+}
+
+.methodology-introduction {
+  grid-column: 1 / -1;
+}
+
+.methodology-content section,
+.methodology-content p,
+.methodology-content ul {
+  margin-block: 0;
+}
+
+.methodology-content h3 {
+  margin: 0 0 0.18rem;
+  font-size: 0.66rem;
+}
+
+.methodology-content p,
+.methodology-content li {
+  color: var(--muted);
+  font-size: 0.6rem;
+  line-height: 1.42;
+}
+
+.methodology-content ul {
+  padding-left: 1rem;
+}
+
+@media (max-width: 54rem) {
+  .scenario-summary-main .scenario-facts {
+    grid-template-columns: minmax(0, 1fr) minmax(9.25rem, auto);
+    row-gap: 0.38rem;
+  }
+
+  .scenario-summary-main .scenario-facts .scenario-fact-election {
+    grid-column: 1 / -1;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.36rem 0 0;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+}
+
+@media (max-width: 48rem) {
+  .methodology-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 36rem) {
+  .scenario-summary-main .scenario-facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .scenario-summary-main .scenario-facts .scenario-fact-model,
+  .scenario-summary-main .scenario-facts .scenario-fact-election {
+    grid-column: 1;
+    width: 100%;
+    justify-self: stretch;
+    padding: 0.36rem 0 0;
+    border-top: 1px solid var(--border);
+    text-align: left;
+  }
+
+  .electoral-system-select {
+    width: 100%;
+  }
+
+  .parliament-majority-row,
+  .parliament-seat-breakdown {
+    justify-content: flex-start;
+  }
+}
+

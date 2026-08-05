@@ -9,6 +9,7 @@ import {
   createElectoralScenarioReference,
   DEFAULT_ELECTORAL_SYSTEM_ID,
   toSeatResults,
+  type ElectoralSystemId,
 } from '../../lib/election/index.ts'
 import {
   applyFilterState,
@@ -23,6 +24,7 @@ import { CoalitionPanel } from './CoalitionPanel.tsx'
 import { DemographicPanel } from './DemographicPanel.tsx'
 import { FilterPanel } from './FilterPanel.tsx'
 import { GermanyMapPanel } from './GermanyMapPanel.tsx'
+import { MethodologyFooter } from './MethodologyFooter.tsx'
 import { ParliamentPanel } from './ParliamentPanel.tsx'
 import { PartySummaryPanel } from './PartySummaryPanel.tsx'
 import { ScenarioSummary } from './ScenarioSummary.tsx'
@@ -60,6 +62,8 @@ function hasActiveFilters(filters: FilterState): boolean {
 export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const { messages } = useI18n()
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
+  const [electoralSystemId, setElectoralSystemId] =
+    useState<ElectoralSystemId>(DEFAULT_ELECTORAL_SYSTEM_ID)
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
   const [highlightedState, setHighlightedState] = useState<string | null>(null)
 
@@ -155,8 +159,12 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         inactiveStates: filters.states,
       })
       const electoralSystemResult = calculateElectoralSystem(
-        DEFAULT_ELECTORAL_SYSTEM_ID,
+        electoralSystemId,
         electoralScenario,
+        {
+          stateSeatContingents: dataState.data.stateSeatContingents,
+          stateSeatContingentYear: dataState.data.stateSeatContingentYear,
+        },
       )
       const seatResults = toSeatResults(
         electoralSystemResult,
@@ -219,7 +227,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         totalVotes,
       )
     }
-  }, [dataState, electoralScenarioReference, filters])
+  }, [dataState, electoralScenarioReference, electoralSystemId, filters])
 
   const statePartyLandscape = useMemo(() => {
     if (dataState.status !== 'ready' || highlightedState === null) {
@@ -279,7 +287,13 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
           />
         </div>
 
-        <ScenarioSummary dataState={dataState} filters={filters} scenario={scenario} />
+        <ScenarioSummary
+          dataState={dataState}
+          filters={filters}
+          scenario={scenario}
+          electoralSystemId={electoralSystemId}
+          onElectoralSystemChange={setElectoralSystemId}
+        />
 
         <div className="analysis-workspace">
           <div className="workspace-column workspace-column-center">
@@ -308,18 +322,10 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         </div>
       </main>
 
-      <footer
-        className="application-footer"
-        id="methodology"
-        aria-labelledby="methodology-title"
-      >
-        <h2 className="visually-hidden" id="methodology-title">
-          {messages.footer.title}
-        </h2>
-        <p>
-          <strong>{messages.footer.label}</strong> {messages.footer.text}
-        </p>
-      </footer>
+      <MethodologyFooter
+        systemId={electoralSystemId}
+        scenario={scenario}
+      />
     </div>
   )
 }
