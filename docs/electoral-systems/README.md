@@ -13,7 +13,7 @@ The epic introduces interchangeable electoral-system calculators that consume on
 | [#39](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/39) | Fixed-size electoral law introduced in 2023 |
 | [#40](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/40) | Configurable parallel/Grabenwahl model |
 | [#41](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/41) | Electoral law used for the 2021 Bundestag election |
-| [#42](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/42) | Side-by-side comparison UI |
+| [#42](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/42) | In-workspace model selector, aggregate comparison context, and methodology presentation |
 
 ## Architecture principles
 
@@ -25,5 +25,9 @@ The epic introduces interchangeable electoral-system calculators that consume on
 - All strategies return the same party-level result shape; candidate-level claims are outside the epic.
 - Legal variants and modeling assumptions are versioned explicitly rather than hidden behind a generic “German system” label.
 - Deterministic reference scenarios are the acceptance boundary for each calculator.
+- The analysis workspace owns only the selected `systemId`; it passes the same normalized scenario and the required supporting data to the registry and never implements legal rules inside React components.
+- Electoral-system selection is independent from electorate exclusions. Resetting filters does not reset the selected model.
+- Aggregate totals, majority thresholds, direct/list components, warnings, and assistive announcements are derived from the selected strategy result rather than from nominal seat constants.
+- Domain warnings remain language-neutral. The presentation layer maps warning codes and model identifiers to the German and English copy catalog and methodology surface.
 
 The [supported-variants specification](./specification.md) from story #37 is the normative basis for the later implementation stories.
