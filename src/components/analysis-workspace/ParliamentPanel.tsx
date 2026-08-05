@@ -1,4 +1,9 @@
-import { getScenarioReasonText, useI18n } from '../../i18n/index.ts'
+import {
+  getElectoralSystemCatalog,
+  getScenarioReasonText,
+  useI18n,
+} from '../../i18n/index.ts'
+import { createElectoralSystemPresentation } from '../../lib/results/electoral-system-presentation.ts'
 import {
   buildParliamentSegments,
   buildPresentedPartyResults,
@@ -16,7 +21,11 @@ const parliamentArc = 'M 12 92 A 80 80 0 0 1 172 92'
 export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
   const i18n = useI18n()
   const { messages } = i18n
+  const electoralSystemCopy = getElectoralSystemCatalog(i18n.locale)
   const readyScenario = scenario?.status === 'ready' ? scenario : undefined
+  const seatBreakdown = readyScenario?.electoralSystemResult
+    ? createElectoralSystemPresentation(readyScenario.electoralSystemResult)
+    : undefined
   const partyResults = readyScenario
     ? buildPresentedPartyResults(
         parties,
@@ -113,6 +122,29 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
               {messages.common.seatCount(readyScenario.majorityThreshold)}
             </strong>
           </p>
+
+          {seatBreakdown ? (
+            <dl className="parliament-seat-breakdown">
+              <div>
+                <dt>{electoralSystemCopy.seatBreakdown.directSeats}</dt>
+                <dd>{i18n.formatNumber(seatBreakdown.directSeats)}</dd>
+              </div>
+              <div>
+                <dt>{electoralSystemCopy.seatBreakdown.listSeats}</dt>
+                <dd>{i18n.formatNumber(seatBreakdown.listSeats)}</dd>
+              </div>
+              {seatBreakdown.uncoveredDistrictWins > 0 ? (
+                <div>
+                  <dt>
+                    {electoralSystemCopy.seatBreakdown.uncoveredDistrictWins}
+                  </dt>
+                  <dd>
+                    {i18n.formatNumber(seatBreakdown.uncoveredDistrictWins)}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
+          ) : null}
 
           <ul
             className="parliament-legend"
