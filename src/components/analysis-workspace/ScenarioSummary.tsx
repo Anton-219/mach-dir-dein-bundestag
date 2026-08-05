@@ -1,10 +1,16 @@
 import {
+  getElectoralSystemCatalog,
+  getElectoralSystemModelCopy,
+  getElectoralSystemNoticeTexts,
   getScenarioReasonText,
   summarizeFilterState,
   useI18n,
   type TranslationTools,
 } from '../../i18n/index.ts'
+import type { ElectoralSystemId } from '../../lib/election/index.ts'
 import type { FilterState } from '../../lib/filters/index.ts'
+import { createElectoralSystemPresentation } from '../../lib/results/electoral-system-presentation.ts'
+import { ElectoralSystemSelector } from './ElectoralSystemSelector.tsx'
 import type { DataState, ScenarioResult } from './types.ts'
 
 function DataStatus({
@@ -57,6 +63,7 @@ function DataStatus({
 function describeScenarioForAssistiveTechnology(
   filters: FilterState,
   scenario: ScenarioResult | undefined,
+  systemId: ElectoralSystemId,
   i18n: TranslationTools,
 ) {
   if (!scenario || scenario.status === 'invalid') {
@@ -64,40 +71,69 @@ function describeScenarioForAssistiveTechnology(
   }
 
   const scenarioName = summarizeFilterState(filters, i18n)
+  const copy = getElectoralSystemCatalog(i18n.locale)
+  const model = getElectoralSystemModelCopy(systemId, i18n.locale)
+  const activeModelAnnouncement = copy.announcement.activeModel(model.name)
 
   if (scenario.status === 'empty') {
-    return i18n.messages.scenario.emptyAnnouncement(scenarioName)
+    return `${i18n.messages.scenario.emptyAnnouncement(scenarioName)} ${activeModelAnnouncement}`
   }
 
-  return i18n.messages.scenario.readyAnnouncement(
+  const resultAnnouncement = i18n.messages.scenario.readyAnnouncement(
     scenarioName,
     i18n.formatNumber(scenario.includedVotes),
     i18n.formatPercent(scenario.includedShare),
     scenario.totalSeats,
     scenario.majorityThreshold,
   )
+  const result = scenario.electoralSystemResult
+  if (result === undefined) {
+    return `${resultAnnouncement} ${activeModelAnnouncement}`
+  }
+  const presentation = createElectoralSystemPresentation(result)
+  return `${resultAnnouncement} ${activeModelAnnouncement} ${copy.announcement.resultComponents(presentation.directSeats, presentation.listSeats)}`
 }
 
 interface ScenarioSummaryProps {
   dataState: DataState
   filters: FilterState
   scenario?: ScenarioResult
+  electoralSystemId: ElectoralSystemId
+  onElectoralSystemChange: (systemId: ElectoralSystemId) => void
 }
 
 export function ScenarioSummary({
   dataState,
   filters,
   scenario,
+  electoralSystemId,
+  onElectoralSystemChange,
 }: ScenarioSummaryProps) {
   const i18n = useI18n()
   const { messages } = i18n
+  const electoralSystemCopy = getElectoralSystemCatalog(i18n.locale)
+  const activeModel = getElectoralSystemModelCopy(
+    electoralSystemId,
+    i18n.locale,
+  )
   const voteScenario =
     scenario?.status === 'ready' || scenario?.status === 'empty'
       ? scenario
       : undefined
+  const electoralSystemResult =
+    scenario?.status === 'ready' ? scenario.electoralSystemResult : undefined
+  const presentation =
+    electoralSystemResult === undefined
+      ? undefined
+      : createElectoralSystemPresentation(electoralSystemResult)
+  const notices =
+    electoralSystemResult === undefined
+      ? []
+      : getElectoralSystemNoticeTexts(electoralSystemResult, i18n)
   const scenarioAnnouncement = describeScenarioForAssistiveTechnology(
     filters,
     scenario,
+    electoralSystemId,
     i18n,
   )
 
@@ -107,22 +143,69 @@ export function ScenarioSummary({
         {messages.scenario.overviewTitle}
       </h2>
 
-      <dl className="scenario-facts">
-        <div>
-          <dt>{messages.scenario.includedVotes}</dt>
-          <dd>
-            {voteScenario
-              ? `${i18n.formatNumber(voteScenario.includedVotes)} · ${i18n.formatPercent(voteScenario.includedShare)}`
-              : '—'}
-          </dd>
-        </div>
-        <div className="scenario-fact-election">
-          <dt>{messages.scenario.election}</dt>
-          <dd>{messages.scenario.confirmedResult}</dd>
-        </div>
-      </dl>
+      <div className="scenario-summary-main">
+        <dl className="scenario-facts">
+          <div>
+            <dt>{messages.scenario.includedVotes}</dt>
+            <dd>
+              {voteScenario
+                ? `${i18n.formatNumber(voteScenario.includedVotes)} · ${i18n.formatPercent(voteScenario.includedShare)}`
+                : '—'}
+            </dd>
+          </div>
+          <div className="scenario-fact-election">
+            <dt>{messages.scenario.election}</dt>
+            <dd>{messages.scenario.confirmedResult}</dd>
+          </div>
+          <div>
+            <dt>{electoralSystemCopy.selector.activeLabel}</dt>
+            <dd>{activeModel.shortName}</dd>
+          </div>
+          {presentation ? (
+            <>
+              <div>
+                <dt>{electoralSystemCopy.seatBreakdown.directSeats}</dt>
+                <dd>{i18n.formatNumber(presentation.directSeats)}</dd>
+              </div>
+              <div>
+                <dt>{electoralSystemCopy.seatBreakdown.listSeats}</dt>
+                <dd>{i18n.formatNumber(presentation.listSeats)}</dd>
+              </div>
+              {presentation.uncoveredDistrictWins > 0 ? (
+                <div>
+                  <dt>
+                    {electoralSystemCopy.seatBreakdown.uncoveredDistrictWins}
+                  </dt>
+                  <dd>
+                    {i18n.formatNumber(presentation.uncoveredDistrictWins)}
+                  </dd>
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </dl>
+
+        <ElectoralSystemSelector
+          selectedSystemId={electoralSystemId}
+          onChange={onElectoralSystemChange}
+        />
+      </div>
 
       <DataStatus dataState={dataState} scenario={scenario} />
+
+      {notices.length > 0 ? (
+        <aside
+          className="electoral-system-notices"
+          aria-label={electoralSystemCopy.notices.title}
+        >
+          <strong>{electoralSystemCopy.notices.title}</strong>
+          <ul>
+            {notices.map((notice) => (
+              <li key={notice}>{notice}</li>
+            ))}
+          </ul>
+        </aside>
+      ) : null}
 
       {scenarioAnnouncement ? (
         <output
