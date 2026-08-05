@@ -26,11 +26,7 @@ export function ElectoralSystemSelector({
   return (
     <fieldset className="electoral-system-selector">
       <legend>{copy.selector.legend}</legend>
-      <div
-        className="electoral-system-options"
-        role="group"
-        aria-label={copy.selector.optionsLabel}
-      >
+      <div className="electoral-system-options">
         {options.map((option) => (
           <button
             className="electoral-system-option"
