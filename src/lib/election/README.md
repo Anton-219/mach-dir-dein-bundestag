@@ -30,6 +30,16 @@ The calculator allocates exactly 630 seats nationally among eligible parties and
 
 Direct-seat coverage is calculated only at the aggregate party/state boundary required by the product. For every party and state, covered direct seats are the smaller of the party's state-seat allocation and its modeled district wins there. Additional wins are returned as `uncoveredDistrictWins`; no candidate identity or list position is derived.
 
-The parallel system remains recognized by the identifier type but unregistered until its implementation issue adds the calculator. Candidate names, state-list order, and person-level mandate assignment remain outside this module boundary.
+## Union parallel strategy
+
+`union-parallel` implements the configured 299 + 299 Grabenwahl model as two independent tiers.
+
+The shared district-winner resolver supplies up to 299 direct seats. Every winner in a non-empty district receives a direct seat, including winners of parties that do not qualify for list allocation. Empty districts stay unallocated and reduce the actual chamber size instead of being reassigned or converted into list seats.
+
+Independently, the calculator allocates exactly 299 list seats among eligible parties through the shared Sainte-Laguë helper and validates their distribution among active state lists. The five-percent threshold, three-direct-win rule, national-minority exemption, and `Sonstige` exclusion apply only to this list tier. Direct and list seats are never offset against each other.
+
+The result exposes the 598-seat institutional capacity, actual allocated and unallocated direct seats, the fixed 299-seat list tier, direct/list totals by party, the resulting variable parliament size, and its majority threshold. Filters continue to affect both vote types and therefore may change district winners; inactive states leave their district seats vacant and receive no list allocation. Both cases remain visible through structured warnings.
+
+Candidate names, state-list order, and person-level mandate assignment remain outside this module boundary.
 
 Coalition calculation consumes the normalized party seat totals and the majority threshold returned by the selected calculator. It does not infer the chamber size or encode political compatibility.
