@@ -1,0 +1,223 @@
+.scenario-summary {
+  align-content: start;
+  gap: 0.35rem;
+}
+
+.scenario-summary-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.95fr) minmax(24rem, 1.35fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.scenario-summary-main .scenario-facts {
+  align-content: center;
+  justify-content: flex-start;
+  row-gap: 0.38rem;
+}
+
+.scenario-summary-main .scenario-facts div,
+.scenario-summary-main .scenario-facts .scenario-fact-election {
+  margin-left: 0;
+  padding: 0 0.58rem;
+  border-left: 1px solid var(--border);
+  text-align: left;
+}
+
+.scenario-summary-main .scenario-facts div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.electoral-system-selector {
+  min-width: 0;
+  margin: 0;
+  padding: 0.42rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.62rem;
+  background: rgb(255 255 255 / 72%);
+}
+
+.electoral-system-selector legend {
+  padding: 0 0.22rem;
+  color: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.electoral-system-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.24rem;
+}
+
+.electoral-system-option {
+  min-width: 0;
+  min-height: 1.9rem;
+  padding: 0.3rem 0.38rem;
+  border: 1px solid var(--border);
+  border-radius: 0.46rem;
+  background: var(--panel-background);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.15;
+  cursor: pointer;
+}
+
+.electoral-system-option:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.electoral-system-option[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.electoral-system-option:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  outline-offset: 2px;
+}
+
+.electoral-system-active-model {
+  min-width: 0;
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  margin: 0.3rem 0 0;
+  font-size: 0.61rem;
+}
+
+.electoral-system-active-model strong {
+  flex: none;
+  color: var(--muted);
+}
+
+.electoral-system-active-model span {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.electoral-system-description,
+.electoral-system-help {
+  margin: 0.16rem 0 0;
+  color: var(--muted);
+  font-size: 0.56rem;
+  line-height: 1.3;
+}
+
+.electoral-system-help {
+  opacity: 0.88;
+}
+
+.electoral-system-notices {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: start;
+  padding: 0.32rem 0.48rem;
+  border: 1px solid color-mix(in srgb, #9a6d1d 38%, var(--border));
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, #f6e8c6 55%, var(--panel-background));
+  color: var(--text);
+  font-size: 0.57rem;
+  line-height: 1.35;
+}
+
+.electoral-system-notices strong {
+  white-space: nowrap;
+}
+
+.electoral-system-notices ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.18rem 1rem;
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.methodology-footer {
+  min-width: 0;
+  padding-block: 0.32rem;
+}
+
+.methodology-details {
+  width: 100%;
+}
+
+.methodology-details summary {
+  cursor: pointer;
+  font-size: 0.66rem;
+}
+
+.methodology-details summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  outline-offset: 3px;
+}
+
+.methodology-content {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem 1rem;
+  margin-top: 0.45rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+}
+
+.methodology-introduction {
+  grid-column: 1 / -1;
+}
+
+.methodology-content section,
+.methodology-content p,
+.methodology-content ul {
+  margin-block: 0;
+}
+
+.methodology-content h3 {
+  margin: 0 0 0.18rem;
+  font-size: 0.66rem;
+}
+
+.methodology-content p,
+.methodology-content li {
+  color: var(--muted);
+  font-size: 0.6rem;
+  line-height: 1.42;
+}
+
+.methodology-content ul {
+  padding-left: 1rem;
+}
+
+@media (max-width: 78rem) {
+  .scenario-summary-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .electoral-system-selector {
+    width: 100%;
+  }
+}
+
+@media (max-width: 48rem) {
+  .electoral-system-options,
+  .methodology-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .electoral-system-notices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .electoral-system-notices ul {
+    display: grid;
+  }
+}
