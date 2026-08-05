@@ -24,10 +24,10 @@ export const englishMessages = {
     ariaLabel: 'Election results workspace',
   },
   footer: {
-    title: 'Methodology and data',
-    label: 'Methodology:',
+    title: 'Calculation transparency',
+    label: 'Transparency:',
     text:
-      'confirmed 2021 election data and published statistical voting groups. Filtered scenarios are exploratory comparisons, not forecasts or voting recommendations.',
+      'All calculations run entirely in your browser. Despite automated tests, errors in formulas or implementation may distort the results. The results are simulations, not official calculations.',
   },
   common: {
     reset: 'Reset',
@@ -257,6 +257,15 @@ export const englishMessages = {
       majorityTitle: 'Majorities',
       majorityText:
         'The absolute majority is always calculated from the parliament that was actually produced: floor(total seats ÷ 2) + 1. It is not stored as a fixed number.',
+      calculationTitle: 'Calculation and possible errors',
+      calculationText:
+        'All filtering and seat calculations take place entirely in your browser; the scenarios you create are not sent to a server. The formulas and their technical implementation are covered by automated tests. Even so, calculation errors, incorrectly implemented rules, or overlooked special cases may remain and could distort the results. Treat the output as a transparent simulation, not as an official or legally binding calculation.',
+      historicalSeatGrowthTitle: 'Why the 2021 parliament can grow so dramatically',
+      historicalSeatGrowthParagraphs: [
+        'While experimenting, you may notice that the number of seats changes very sharply and can sometimes appear to explode. As far as I understand the electoral law used in 2021, this is mainly caused by overhang and compensatory seats.',
+        'At constituency level, the candidate with the most first votes wins — even by a very narrow margin. In practice, this creates a winner-takes-all effect. A party can therefore win many direct mandates although those victories are not covered by a similarly high share of second votes. Because the 2021 system preserves the direct mandates and then largely restores proportionality through compensatory seats, the Bundestag can become very large.',
+        'This effect is especially sensitive for small, heavily filtered groups. Constituency winners are recalculated from statistically modelled vote distributions, so small estimated differences can affect many direct mandates and, in turn, the size of parliament. A very large result is therefore not automatically a calculation error, but it should not be read as a realistic forecast.',
+      ],
       sourcesTitle: 'Sources',
       sourcesIntroduction:
         'The prepared application files are derived from the following official publications. The detailed transformation and validation steps are documented in the project notebooks and data-preparation documentation.',
@@ -397,10 +406,10 @@ export const germanMessages: MessageCatalog = {
     ariaLabel: 'Arbeitsfläche für Wahlergebnisse',
   },
   footer: {
-    title: 'Methodik und Daten',
-    label: 'Methodik:',
+    title: 'Transparenz der Berechnung',
+    label: 'Transparenz:',
     text:
-      'bestätigte Wahldaten von 2021 und veröffentlichte statistische Wählergruppen. Gefilterte Szenarien sind explorative Vergleiche, keine Prognosen oder Wahlempfehlungen.',
+      'Alle Berechnungen laufen vollständig in deinem Browser. Trotz automatisierter Tests können Fehler in Formeln oder Umsetzung die Ergebnisse verfälschen. Die Resultate sind Simulationen, keine amtlichen Berechnungen.',
   },
   common: {
     reset: 'Zurücksetzen',
@@ -630,6 +639,15 @@ export const germanMessages: MessageCatalog = {
       majorityTitle: 'Mehrheiten',
       majorityText:
         'Die absolute Mehrheit wird immer aus dem tatsächlich berechneten Parlament bestimmt: abgerundet(Gesamtsitze ÷ 2) + 1. Sie ist nicht als feste Zahl hinterlegt.',
+      calculationTitle: 'Berechnung und mögliche Fehler',
+      calculationText:
+        'Alle Filterungen und Sitzberechnungen finden vollständig in deinem Browser statt; die von dir zusammengestellten Szenarien werden nicht an einen Server übertragen. Die Formeln und ihre technische Umsetzung werden mit automatisierten Tests geprüft. Trotzdem können Rechenfehler, falsch umgesetzte Regeln oder übersehene Sonderfälle enthalten sein und Ergebnisse verfälschen. Verstehe die Resultate deshalb als transparente Simulation und nicht als amtliche oder rechtlich verbindliche Berechnung.',
+      historicalSeatGrowthTitle: 'Warum der Bundestag im Modell von 2021 so stark wachsen kann',
+      historicalSeatGrowthParagraphs: [
+        'Beim Experimentieren wirst du feststellen, dass sich die Zahl der Sitze teilweise sehr stark verändert und mitunter regelrecht explodiert. Nach meinem Verständnis des damals geltenden Wahlrechts liegt das vor allem an Überhang- und Ausgleichsmandaten.',
+        'Auf Wahlkreisebene gewinnt die Person mit den meisten Erststimmen — selbst bei einem sehr knappen Vorsprung. Praktisch entsteht dadurch ein Winner-takes-it-all-Effekt. Eine Partei kann viele Direktmandate gewinnen, obwohl diese Erfolge nicht durch einen ähnlich hohen Zweitstimmenanteil gedeckt sind. Da das Wahlrecht von 2021 die Direktmandate erhält und das Verhältnis anschließend weitgehend durch Ausgleichsmandate wiederherstellt, kann der Bundestag sehr groß werden.',
+        'Bei kleinen, stark gefilterten Gruppen ist dieser Effekt besonders empfindlich. Die Wahlkreissieger werden aus statistisch modellierten Stimmenverteilungen neu bestimmt. Schon kleine geschätzte Unterschiede können deshalb viele Direktmandate und damit die Parlamentsgröße beeinflussen. Ein sehr großes Ergebnis ist daher nicht automatisch ein Rechenfehler, aber auch keine realistische Prognose.',
+      ],
       sourcesTitle: 'Quellen',
       sourcesIntroduction:
         'Die aufbereiteten Anwendungsdateien beruhen auf den folgenden amtlichen Veröffentlichungen. Die einzelnen Umformungs- und Prüfschritte sind zusätzlich in den Notebooks und der Dokumentation zur Datenaufbereitung festgehalten.',
