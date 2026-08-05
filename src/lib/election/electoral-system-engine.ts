@@ -13,6 +13,7 @@ import {
   type ElectoralSystemWarning,
 } from './electoral-system-types.ts'
 import { fixed630Calculator } from './fixed-630-calculator.ts'
+import { parallelCalculator } from './parallel-calculator.ts'
 import { pre2023Calculator } from './pre-2023-calculator.ts'
 import { resolveDistrictWinners } from './resolve-district-winners.ts'
 
@@ -189,6 +190,7 @@ export function normalizeElectoralSystemResult(
 export const DEFAULT_ELECTORAL_SYSTEM_REGISTRY = new ElectoralSystemRegistry([
   pre2023Calculator,
   fixed630Calculator,
+  parallelCalculator,
 ])
 
 export function calculateElectoralSystem(
