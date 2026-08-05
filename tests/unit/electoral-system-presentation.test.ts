@@ -86,6 +86,35 @@ test('offers all selectable electoral systems from both central message catalogs
   )
 })
 
+test('provides complete bilingual methodology assumptions and official sources', () => {
+  for (const catalog of [englishMessages, germanMessages]) {
+    const methodology = catalog.electoralSystems.methodology
+
+    assert.ok(methodology.introduction.length > 0)
+    assert.ok(methodology.scenarioAssumptions.length >= 5)
+    assert.ok(methodology.dataPreparationItems.length >= 5)
+    assert.ok(methodology.majorityText.length > 0)
+    assert.ok(methodology.sources.length >= 6)
+    assert.ok(
+      methodology.sources.every(
+        (source) =>
+          source.label.length > 0 &&
+          source.description.length > 0 &&
+          source.href.startsWith('https://'),
+      ),
+    )
+  }
+
+  assert.deepEqual(
+    englishMessages.electoralSystems.methodology.sources.map(
+      (source) => source.href,
+    ),
+    germanMessages.electoralSystems.methodology.sources.map(
+      (source) => source.href,
+    ),
+  )
+})
+
 test('presents different parliament totals when the selected model changes', () => {
   const presentations = [
     createResult('de-2021-bwahlg', 735, 299, 436),
