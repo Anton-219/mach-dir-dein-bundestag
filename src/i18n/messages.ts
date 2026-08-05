@@ -79,7 +79,6 @@ export const englishMessages = {
       count === 0
         ? 'No exclusions are active.'
         : `${count} ${count === 1 ? 'exclusion is' : 'exclusions are'} active.`,
-    help: 'All values start included. Select a value to include or exclude it.',
     federalState: 'Federal state',
     ageGroup: 'Age group',
     gender: 'Gender',
@@ -161,8 +160,6 @@ export const englishMessages = {
     totalSeats: 'total seats',
     majorityThreshold: 'Majority threshold:',
     representedPartiesAriaLabel: 'Parties represented in parliament',
-    note:
-      'Parties follow their left-to-right seat positions. CDU and CSU remain separate here and are grouped only for coalition calculations.',
   },
   parties: {
     kicker: 'Current result',
@@ -171,8 +168,6 @@ export const englishMessages = {
     voteShare: 'Vote share:',
     seats: 'Seats:',
     seatsShort: 'seats',
-    note:
-      'Rows include every represented party and remain readable independently of color.',
   },
   coalitions: {
     kicker: 'Majority options',
@@ -310,7 +305,6 @@ export const germanMessages: MessageCatalog = {
       count === 0
         ? 'Keine Ausschlüsse aktiv.'
         : `${count} ${count === 1 ? 'Ausschluss ist' : 'Ausschlüsse sind'} aktiv.`,
-    help: 'Alle Werte sind anfangs einbezogen.',
     federalState: 'Bundesland',
     ageGroup: 'Altersgruppe',
     gender: 'Geschlecht',
@@ -392,8 +386,6 @@ export const germanMessages: MessageCatalog = {
     totalSeats: 'Sitze insgesamt',
     majorityThreshold: 'Mehrheitsschwelle:',
     representedPartiesAriaLabel: 'Im Parlament vertretene Parteien',
-    note:
-      'Die Parteien folgen ihrer Sitzposition. CDU und CSU bleiben hier getrennt.',
   },
   parties: {
     kicker: 'Aktuelles Ergebnis',
@@ -402,8 +394,6 @@ export const germanMessages: MessageCatalog = {
     voteShare: 'Stimmenanteil:',
     seats: 'Sitze:',
     seatsShort: 'Sitze',
-    note:
-      'Die Liste enthält alle vertretenen Parteien und bleibt unabhängig von Farben verständlich.',
   },
   coalitions: {
     kicker: 'Mehrheitsoptionen',

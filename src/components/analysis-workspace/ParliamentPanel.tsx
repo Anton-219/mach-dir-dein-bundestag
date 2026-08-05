@@ -177,8 +177,6 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
           {resultMessage}
         </p>
       )}
-
-      <p className="result-note parliament-note">{messages.parliament.note}</p>
     </section>
   )
 }

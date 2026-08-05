@@ -52,7 +52,6 @@ export function PartySummaryPanel({
           className="party-list"
           tabIndex={0}
           aria-labelledby="parties-title"
-          aria-describedby="party-result-note"
         >
           {partyRows.map((result) => {
             const percentage = Math.min(Math.max(result.percentage, 0), 1)
@@ -119,10 +118,6 @@ export function PartySummaryPanel({
           {resultMessage}
         </p>
       )}
-
-      <p className="result-note" id="party-result-note">
-        {messages.parties.note}
-      </p>
     </section>
   )
 }

@@ -347,7 +347,6 @@ export function FilterPanel({
     <section
       className="workspace-panel filter-panel"
       aria-labelledby="filters-title"
-      aria-describedby="filter-help"
     >
       <div className="panel-heading filter-panel-heading">
         <div>
@@ -445,10 +444,6 @@ export function FilterPanel({
           }
         />
       </div>
-
-      <p className="filter-help" id="filter-help">
-        {messages.filters.help}
-      </p>
     </section>
   )
 }
