@@ -207,7 +207,6 @@ test('applies qualification only to the list tier', () => {
 })
 
 test('reports filtered inactive-state simulations without filling their direct seats', () => {
-  const secondVotes = { A: 100 }
   const districtWinners = createDistrictWinners({ A: 293 }, 'Alpha')
   const scenario: ElectoralScenario = {
     mode: 'filtered-model',
