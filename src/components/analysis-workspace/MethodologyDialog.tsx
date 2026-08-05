@@ -46,137 +46,163 @@ export function MethodologyDialog({
   }, [open])
 
   return (
-    <dialog
-      className="methodology-dialog"
-      ref={dialogRef}
-      aria-labelledby="methodology-dialog-title"
-      aria-describedby="methodology-dialog-introduction"
-      onClose={onClose}
-    >
-      <div className="methodology-dialog-surface">
-        <header className="methodology-dialog-header">
-          <div>
-            <p className="workspace-eyebrow">{messages.header.methodology}</p>
-            <h2 id="methodology-dialog-title">{copy.methodology.title}</h2>
-          </div>
+    <>
+      <footer
+        className="application-footer"
+        aria-labelledby="calculation-transparency-title"
+      >
+        <h2 className="visually-hidden" id="calculation-transparency-title">
+          {messages.footer.title}
+        </h2>
+        <p>
+          <strong>{messages.footer.label}</strong> {messages.footer.text}{' '}
           <button
-            className="methodology-dialog-close"
+            className="methodology-link"
             type="button"
-            onClick={() => dialogRef.current?.close()}
+            onClick={() => dialogRef.current?.showModal()}
           >
-            {copy.methodology.close}
+            {messages.header.methodology}
           </button>
-        </header>
+        </p>
+      </footer>
 
-        <div className="methodology-dialog-content">
-          <p
-            className="methodology-dialog-introduction"
-            id="methodology-dialog-introduction"
-          >
-            {copy.methodology.introduction}
-          </p>
-
-          <section className="methodology-section">
-            <h3>{copy.methodology.scenarioTitle}</h3>
-            <ul>
-              {copy.methodology.scenarioAssumptions.map((assumption) => (
-                <li key={assumption}>{assumption}</li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="methodology-section">
-            <h3>{copy.methodology.dataPreparationTitle}</h3>
-            <ul>
-              {copy.methodology.dataPreparationItems.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </section>
-
-          <section className="methodology-section methodology-models-section">
-            <h3>{copy.methodology.systemsTitle}</h3>
-            <div className="methodology-models">
-              {models.map((model) => {
-                const isActive = model.systemId === systemId
-                const isHistoricalModel = model.systemId === 'de-2021-bwahlg'
-
-                return (
-                  <article
-                    className={`methodology-model${isActive ? ' methodology-model-active' : ''}`}
-                    aria-current={isActive ? 'true' : undefined}
-                    key={model.systemId}
-                  >
-                    <div className="methodology-model-heading">
-                      <h4>{model.name}</h4>
-                      {isActive ? (
-                        <span>{copy.methodology.activeModel}</span>
-                      ) : null}
-                    </div>
-                    <p>{model.description}</p>
-                    <dl>
-                      <div>
-                        <dt>{copy.methodology.rules}</dt>
-                        <dd>{model.rules}</dd>
-                      </div>
-                      <div>
-                        <dt>{copy.methodology.dataSources}</dt>
-                        <dd>{model.dataSources}</dd>
-                      </div>
-                      <div>
-                        <dt>{copy.methodology.limitations}</dt>
-                        <dd>{model.limitations}</dd>
-                      </div>
-                    </dl>
-
-                    {isHistoricalModel ? (
-                      <aside className="methodology-seat-growth-note">
-                        <h5>{copy.notices.title}</h5>
-                        <p>{copy.notices.filteredFirstVotes}</p>
-                        <p>{copy.notices.fixedHistoricalContingents}</p>
-                        <p>{model.description}</p>
-                        <p>{copy.methodology.dataPreparationItems[1]}</p>
-                        <p>{copy.methodology.dataPreparationItems[3]}</p>
-                      </aside>
-                    ) : null}
-                  </article>
-                )
-              })}
+      <dialog
+        className="methodology-dialog"
+        ref={dialogRef}
+        aria-labelledby="methodology-dialog-title"
+        aria-describedby="methodology-dialog-introduction"
+        onClose={onClose}
+      >
+        <div className="methodology-dialog-surface">
+          <header className="methodology-dialog-header">
+            <div>
+              <p className="workspace-eyebrow">{messages.header.methodology}</p>
+              <h2 id="methodology-dialog-title">{copy.methodology.title}</h2>
             </div>
-          </section>
+            <button
+              className="methodology-dialog-close"
+              type="button"
+              onClick={() => dialogRef.current?.close()}
+            >
+              {copy.methodology.close}
+            </button>
+          </header>
 
-          <section className="methodology-section">
-            <h3>{copy.methodology.majorityTitle}</h3>
-            <p>{copy.methodology.majorityText}</p>
-          </section>
+          <div className="methodology-dialog-content">
+            <p
+              className="methodology-dialog-introduction"
+              id="methodology-dialog-introduction"
+            >
+              {copy.methodology.introduction}
+            </p>
 
-          {notices.length > 0 ? (
             <section className="methodology-section methodology-notices">
-              <h3>{copy.methodology.modelNotes}</h3>
+              <h3>{copy.methodology.calculationTitle}</h3>
+              <p>{copy.methodology.calculationText}</p>
+            </section>
+
+            <section className="methodology-section">
+              <h3>{copy.methodology.scenarioTitle}</h3>
               <ul>
-                {notices.map((notice) => (
-                  <li key={notice}>{notice}</li>
+                {copy.methodology.scenarioAssumptions.map((assumption) => (
+                  <li key={assumption}>{assumption}</li>
                 ))}
               </ul>
             </section>
-          ) : null}
 
-          <section className="methodology-section methodology-sources">
-            <h3>{copy.methodology.sourcesTitle}</h3>
-            <p>{copy.methodology.sourcesIntroduction}</p>
-            <ul>
-              {copy.methodology.sources.map((source) => (
-                <li key={source.href}>
-                  <a href={source.href} target="_blank" rel="noreferrer">
-                    {source.label}
-                  </a>
-                  <p>{source.description}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
+            <section className="methodology-section">
+              <h3>{copy.methodology.dataPreparationTitle}</h3>
+              <ul>
+                {copy.methodology.dataPreparationItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="methodology-section methodology-models-section">
+              <h3>{copy.methodology.systemsTitle}</h3>
+              <div className="methodology-models">
+                {models.map((model) => {
+                  const isActive = model.systemId === systemId
+                  const isHistoricalModel = model.systemId === 'de-2021-bwahlg'
+
+                  return (
+                    <article
+                      className={`methodology-model${isActive ? ' methodology-model-active' : ''}`}
+                      aria-current={isActive ? 'true' : undefined}
+                      key={model.systemId}
+                    >
+                      <div className="methodology-model-heading">
+                        <h4>{model.name}</h4>
+                        {isActive ? (
+                          <span>{copy.methodology.activeModel}</span>
+                        ) : null}
+                      </div>
+                      <p>{model.description}</p>
+                      <dl>
+                        <div>
+                          <dt>{copy.methodology.rules}</dt>
+                          <dd>{model.rules}</dd>
+                        </div>
+                        <div>
+                          <dt>{copy.methodology.dataSources}</dt>
+                          <dd>{model.dataSources}</dd>
+                        </div>
+                        <div>
+                          <dt>{copy.methodology.limitations}</dt>
+                          <dd>{model.limitations}</dd>
+                        </div>
+                      </dl>
+
+                      {isHistoricalModel ? (
+                        <aside className="methodology-seat-growth-note">
+                          <h5>{copy.methodology.historicalSeatGrowthTitle}</h5>
+                          {copy.methodology.historicalSeatGrowthParagraphs.map(
+                            (paragraph) => (
+                              <p key={paragraph}>{paragraph}</p>
+                            ),
+                          )}
+                        </aside>
+                      ) : null}
+                    </article>
+                  )
+                })}
+              </div>
+            </section>
+
+            <section className="methodology-section">
+              <h3>{copy.methodology.majorityTitle}</h3>
+              <p>{copy.methodology.majorityText}</p>
+            </section>
+
+            {notices.length > 0 ? (
+              <section className="methodology-section methodology-notices">
+                <h3>{copy.methodology.modelNotes}</h3>
+                <ul>
+                  {notices.map((notice) => (
+                    <li key={notice}>{notice}</li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            <section className="methodology-section methodology-sources">
+              <h3>{copy.methodology.sourcesTitle}</h3>
+              <p>{copy.methodology.sourcesIntroduction}</p>
+              <ul>
+                {copy.methodology.sources.map((source) => (
+                  <li key={source.href}>
+                    <a href={source.href} target="_blank" rel="noreferrer">
+                      {source.label}
+                    </a>
+                    <p>{source.description}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
         </div>
-      </div>
-    </dialog>
+      </dialog>
+    </>
   )
 }
