@@ -24,7 +24,7 @@ import { CoalitionPanel } from './CoalitionPanel.tsx'
 import { DemographicPanel } from './DemographicPanel.tsx'
 import { FilterPanel } from './FilterPanel.tsx'
 import { GermanyMapPanel } from './GermanyMapPanel.tsx'
-import { MethodologyFooter } from './MethodologyFooter.tsx'
+import { MethodologyDialog } from './MethodologyDialog.tsx'
 import { ParliamentPanel } from './ParliamentPanel.tsx'
 import { PartySummaryPanel } from './PartySummaryPanel.tsx'
 import { ScenarioSummary } from './ScenarioSummary.tsx'
@@ -64,6 +64,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [electoralSystemId, setElectoralSystemId] =
     useState<ElectoralSystemId>(DEFAULT_ELECTORAL_SYSTEM_ID)
+  const [methodologyOpen, setMethodologyOpen] = useState(false)
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
   const [highlightedState, setHighlightedState] = useState<string | null>(null)
 
@@ -262,7 +263,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
 
   return (
     <div className="application-shell">
-      <WorkspaceHeader />
+      <WorkspaceHeader onOpenMethodology={() => setMethodologyOpen(true)} />
 
       <main
         className="analysis-shell"
@@ -322,9 +323,11 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         </div>
       </main>
 
-      <MethodologyFooter
+      <MethodologyDialog
+        open={methodologyOpen}
         systemId={electoralSystemId}
         scenario={scenario}
+        onClose={() => setMethodologyOpen(false)}
       />
     </div>
   )
