@@ -9,6 +9,7 @@ import './accessibility-styles.css'
 import './desktop-refinement.css'
 import './desktop-refinement-iteration.css'
 import './i18n-styles.css'
+import './electoral-system-styles.css'
 
 const rootElement = document.getElementById('root')
 
