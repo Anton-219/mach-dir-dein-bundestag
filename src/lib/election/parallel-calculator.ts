@@ -1,7 +1,6 @@
 import { allocateSainteLague } from './allocate-sainte-lague.ts'
 import {
   ElectoralSystemCalculationError,
-  type DistrictWinner,
   type ElectoralScenario,
   type ElectoralSystemCalculationInput,
   type ElectoralSystemCalculator,
@@ -94,7 +93,11 @@ function validateDirectTier(input: ElectoralSystemCalculationInput): void {
     ) {
       throwInconsistentDirectTier(
         'The parallel direct-win totals do not match the resolved winners.',
-        { party, expectedDirectWins: resolvedWins, actualDirectWins: reportedWins },
+        {
+          party,
+          expectedDirectWins: resolvedWins,
+          actualDirectWins: reportedWins,
+        },
       )
     }
   }
