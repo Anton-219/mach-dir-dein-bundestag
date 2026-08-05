@@ -18,6 +18,7 @@
     "src/lib/**/*.ts",
     "src/models/calculation-results.ts",
     "src/models/json-contracts.ts",
-    "tests/unit/**/*.ts"
+    "tests/unit/**/*.ts",
+    "tests/integration/**/*.ts"
   ]
 }
