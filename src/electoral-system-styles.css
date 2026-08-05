@@ -294,6 +294,30 @@
   color: var(--muted);
 }
 
+.methodology-seat-growth-note {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.8rem;
+  padding: 0.7rem 0.75rem;
+  border-left: 0.22rem solid var(--accent);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--accent-soft) 48%, white);
+}
+
+.methodology-seat-growth-note h5 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.methodology-seat-growth-note p {
+  margin: 0;
+  color: #46525b;
+  font-size: 0.7rem;
+  line-height: 1.48;
+}
+
 .methodology-notices {
   padding: 0.75rem 0.85rem;
   border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
