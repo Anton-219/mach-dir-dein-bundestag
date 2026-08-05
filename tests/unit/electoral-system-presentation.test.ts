@@ -4,6 +4,10 @@ import test from 'node:test'
 import {
   getElectoralSystemOptions,
 } from '../../src/i18n/electoral-system-messages.ts'
+import {
+  englishMessages,
+  germanMessages,
+} from '../../src/i18n/messages.ts'
 import type {
   ElectoralSystemId,
   ElectoralSystemResult,
@@ -47,17 +51,38 @@ function createResult(
   }
 }
 
-test('offers all selectable electoral systems in both copy catalogs', () => {
+test('offers all selectable electoral systems from both central message catalogs', () => {
   const englishOptions = getElectoralSystemOptions('en')
   const germanOptions = getElectoralSystemOptions('de')
+  const expectedSystemIds = [
+    'de-2021-bwahlg',
+    'de-2023-fixed-630',
+    'union-parallel',
+  ]
 
   assert.deepEqual(
+    Object.keys(englishMessages.electoralSystems.models),
+    expectedSystemIds,
+  )
+  assert.deepEqual(
+    Object.keys(germanMessages.electoralSystems.models),
+    expectedSystemIds,
+  )
+  assert.deepEqual(
     englishOptions.map((option) => option.systemId),
-    ['de-2021-bwahlg', 'de-2023-fixed-630', 'union-parallel'],
+    expectedSystemIds,
   )
   assert.deepEqual(
     germanOptions.map((option) => option.systemId),
-    englishOptions.map((option) => option.systemId),
+    expectedSystemIds,
+  )
+  assert.equal(
+    englishOptions[0]?.name,
+    englishMessages.electoralSystems.models['de-2021-bwahlg'].name,
+  )
+  assert.equal(
+    germanOptions[0]?.name,
+    germanMessages.electoralSystems.models['de-2021-bwahlg'].name,
   )
 })
 
