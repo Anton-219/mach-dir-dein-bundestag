@@ -114,58 +114,224 @@
   font-variant-numeric: tabular-nums;
 }
 
-.methodology-footer {
-  min-width: 0;
-  padding-block: 0.32rem;
-}
-
-.methodology-details {
-  width: 100%;
-}
-
-.methodology-details summary {
+.methodology-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
   cursor: pointer;
-  font-size: 0.66rem;
 }
 
-.methodology-details summary:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent) 48%, transparent);
-  outline-offset: 3px;
+.methodology-dialog {
+  width: min(72rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: min(90dvh, 54rem);
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  background: var(--panel-background);
+  box-shadow: 0 1.5rem 5rem rgb(23 33 43 / 28%);
+  color: var(--ink);
+  overflow: hidden;
 }
 
-.methodology-content {
+.methodology-dialog::backdrop {
+  background: rgb(23 33 43 / 48%);
+  backdrop-filter: blur(3px);
+}
+
+.methodology-dialog-surface {
+  max-height: min(90dvh, 54rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.methodology-dialog-header {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  background: rgb(255 255 255 / 96%);
+}
+
+.methodology-dialog-header h2 {
+  margin-bottom: 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+.methodology-dialog-close {
+  min-height: 2.1rem;
+  flex: none;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.55rem;
+  background: var(--panel-muted);
+  color: var(--ink);
+  font-size: 0.7rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.methodology-dialog-content {
+  min-height: 0;
+  overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.55rem 1rem;
-  margin-top: 0.45rem;
-  padding-top: 0.45rem;
-  border-top: 1px solid var(--border);
+  gap: 1.15rem;
+  padding: 1.05rem 1.15rem 1.25rem;
+  overscroll-behavior: contain;
 }
 
-.methodology-introduction {
-  grid-column: 1 / -1;
+.methodology-dialog-introduction {
+  max-width: 70rem;
+  margin-bottom: 0;
+  color: #3f4c55;
+  font-size: 0.88rem;
+  line-height: 1.55;
 }
 
-.methodology-content section,
-.methodology-content p,
-.methodology-content ul {
+.methodology-section {
+  min-width: 0;
+}
+
+.methodology-section h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.methodology-section p,
+.methodology-section li,
+.methodology-section dt,
+.methodology-section dd {
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.methodology-section > p,
+.methodology-section ul,
+.methodology-section dl {
   margin-block: 0;
 }
 
-.methodology-content h3 {
-  margin: 0 0 0.18rem;
-  font-size: 0.66rem;
+.methodology-section > ul {
+  display: grid;
+  gap: 0.35rem;
+  padding-left: 1.15rem;
+  color: #46525b;
 }
 
-.methodology-content p,
-.methodology-content li {
+.methodology-models {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.methodology-model {
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--panel-muted);
+}
+
+.methodology-model-active {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent-soft) 58%, white);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.methodology-model-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.methodology-model-heading h4 {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+.methodology-model-heading span {
+  flex: none;
+  padding: 0.2rem 0.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.methodology-model > p {
+  margin: 0.45rem 0 0.7rem;
+  color: #46525b;
+}
+
+.methodology-model dl {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.methodology-model dl div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.methodology-model dt {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.methodology-model dd {
+  margin: 0;
   color: var(--muted);
-  font-size: 0.6rem;
-  line-height: 1.42;
 }
 
-.methodology-content ul {
-  padding-left: 1rem;
+.methodology-notices {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--border));
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--accent-soft) 34%, white);
+}
+
+.methodology-sources > p {
+  margin: 0 0 0.65rem;
+  color: #46525b;
+}
+
+.methodology-sources ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  padding: 0;
+  list-style: none;
+}
+
+.methodology-sources li {
+  min-width: 0;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: #fff;
+}
+
+.methodology-sources a {
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-underline-offset: 0.16rem;
+}
+
+.methodology-sources li p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
 }
 
 @media (max-width: 54rem) {
@@ -183,10 +349,23 @@
     border-top: 1px solid var(--border);
     text-align: left;
   }
+
+  .methodology-models {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 48rem) {
-  .methodology-content {
+  .methodology-dialog {
+    width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .methodology-dialog-surface {
+    max-height: calc(100dvh - 1rem);
+  }
+
+  .methodology-sources ul {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -214,5 +393,14 @@
   .parliament-seat-breakdown {
     justify-content: flex-start;
   }
-}
 
+  .methodology-dialog-header,
+  .methodology-dialog-content {
+    padding-inline: 0.8rem;
+  }
+
+  .methodology-dialog-close {
+    max-width: 8rem;
+    white-space: normal;
+  }
+}
