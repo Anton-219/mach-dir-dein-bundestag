@@ -37,14 +37,22 @@ interface RegressionData {
   stateSeatContingentYear: number
 }
 
+interface PartyRegressionSummary {
+  totalSeats: number
+  directWins: number
+  listSeats: number
+}
+
 interface RegressionSummary {
   totalSeats: number
   majorityThreshold: number
-  parties: Readonly<Record<string, {
-    totalSeats: number
-    directWins: number
-    listSeats: number
-  }>>
+  parties: Readonly<Record<string, PartyRegressionSummary>>
+}
+
+interface RegressionCase {
+  name: string
+  filters: FilterState
+  expectedHistoricalResult: RegressionSummary
 }
 
 const ALL_AGE_GROUPS: readonly AgeGroup[] = [
@@ -97,7 +105,9 @@ function summarize(result: ElectoralSystemResult): RegressionSummary {
     parties: Object.fromEntries(
       result.parties
         .filter((party) => party.totalSeats > 0)
-        .sort((left, right) => left.party.localeCompare(right.party))
+        .sort((left, right) =>
+          left.party < right.party ? -1 : left.party > right.party ? 1 : 0,
+        )
         .map((party) => [
           party.party,
           {
@@ -134,6 +144,18 @@ function calculateScenario(
   })
 }
 
+function assertSeatAccounting(result: ElectoralSystemResult): void {
+  assert.ok(
+    result.parties.every(
+      (party) => party.totalSeats === party.directSeats + party.listSeats,
+    ),
+  )
+  assert.equal(
+    result.majorityThreshold,
+    Math.floor(result.totalSeats / 2) + 1,
+  )
+}
+
 const data = await loadRegressionData()
 const reference = createElectoralScenarioReference({
   firstVotes: data.firstVotes,
@@ -141,103 +163,137 @@ const reference = createElectoralScenarioReference({
   parties: data.parties,
 })
 
-test('reproduces the complete 2021 result from the prepared vote files', () => {
-  const result = calculateScenario(
-    data,
-    reference,
-    'de-2021-bwahlg',
-    createEmptyFilterState(),
-  )
-
-  assert.deepEqual(summarize(result), {
-    totalSeats: 736,
-    majorityThreshold: 369,
-    parties: {
-      AfD: { totalSeats: 83, directWins: 16, listSeats: 67 },
-      CDU: { totalSeats: 152, directWins: 98, listSeats: 54 },
-      CSU: { totalSeats: 45, directWins: 45, listSeats: 0 },
-      FDP: { totalSeats: 92, directWins: 0, listSeats: 92 },
-      GRÜNE: { totalSeats: 118, directWins: 16, listSeats: 102 },
-      'DIE LINKE': { totalSeats: 39, directWins: 3, listSeats: 36 },
-      SPD: { totalSeats: 206, directWins: 121, listSeats: 85 },
-      SSW: { totalSeats: 1, directWins: 0, listSeats: 1 },
+const regressionCases: readonly RegressionCase[] = [
+  {
+    name: 'unfiltered prepared election data',
+    filters: createEmptyFilterState(),
+    expectedHistoricalResult: {
+      // The committed files contain the result after the partial Berlin repeat
+      // election, which reduced the FDP and total parliament size by one seat.
+      totalSeats: 735,
+      majorityThreshold: 368,
+      parties: {
+        AfD: { totalSeats: 83, directWins: 16, listSeats: 67 },
+        CDU: { totalSeats: 152, directWins: 98, listSeats: 54 },
+        CSU: { totalSeats: 45, directWins: 45, listSeats: 0 },
+        'DIE LINKE': { totalSeats: 39, directWins: 3, listSeats: 36 },
+        FDP: { totalSeats: 91, directWins: 0, listSeats: 91 },
+        GRÜNE: { totalSeats: 118, directWins: 16, listSeats: 102 },
+        SPD: { totalSeats: 206, directWins: 121, listSeats: 85 },
+        SSW: { totalSeats: 1, directWins: 0, listSeats: 1 },
+      },
     },
-  })
-})
-
-test('keeps the extreme young male in-person scenario stable', () => {
-  const filters: FilterState = {
-    states: [],
-    ageGroups: ALL_AGE_GROUPS.filter((ageGroup) => ageGroup !== '18-24'),
-    genders: ['w'],
-    electionMethods: ['postal'],
-  }
-  const historicalResult = calculateScenario(
-    data,
-    reference,
-    'de-2021-bwahlg',
-    filters,
-  )
-  const fixedResult = calculateScenario(
-    data,
-    reference,
-    'de-2023-fixed-630',
-    filters,
-  )
-
-  assert.equal(historicalResult.totalSeats, 1_445)
-  assert.equal(historicalResult.majorityThreshold, 723)
-  assert.equal(fixedResult.totalSeats, 630)
-  assert.equal(fixedResult.majorityThreshold, 316)
-  assert.ok(
-    historicalResult.parties.every(
-      (party) => party.totalSeats === party.directSeats + party.listSeats,
-    ),
-  )
-  console.log(
-    `REGRESSION young-male-in-person ${JSON.stringify(summarize(historicalResult))}`,
-  )
-})
-
-test('calculates previously fragile filters from the prepared vote files', () => {
-  const scenarios: Readonly<Record<string, FilterState>> = {
-    'without-age-45-54': {
+  },
+  {
+    name: 'only young male in-person voters',
+    filters: {
+      states: [],
+      ageGroups: ALL_AGE_GROUPS.filter((ageGroup) => ageGroup !== '18-24'),
+      genders: ['w'],
+      electionMethods: ['postal'],
+    },
+    expectedHistoricalResult: {
+      totalSeats: 1_445,
+      majorityThreshold: 723,
+      parties: {
+        AfD: { totalSeats: 170, directWins: 31, listSeats: 139 },
+        CDU: { totalSeats: 139, directWins: 11, listSeats: 128 },
+        CSU: { totalSeats: 34, directWins: 34, listSeats: 0 },
+        'DIE LINKE': { totalSeats: 121, directWins: 4, listSeats: 117 },
+        FDP: { totalSeats: 438, directWins: 95, listSeats: 343 },
+        GRÜNE: { totalSeats: 296, directWins: 52, listSeats: 244 },
+        SPD: { totalSeats: 243, directWins: 72, listSeats: 171 },
+        SSW: { totalSeats: 4, directWins: 0, listSeats: 4 },
+      },
+    },
+  },
+  {
+    name: 'age group 45-54 excluded',
+    filters: {
       ...createEmptyFilterState(),
       ageGroups: ['45-54'],
     },
-    'postal-only': {
+    expectedHistoricalResult: {
+      totalSeats: 721,
+      majorityThreshold: 361,
+      parties: {
+        AfD: { totalSeats: 74, directWins: 11, listSeats: 63 },
+        CDU: { totalSeats: 151, directWins: 99, listSeats: 52 },
+        CSU: { totalSeats: 45, directWins: 45, listSeats: 0 },
+        'DIE LINKE': { totalSeats: 41, directWins: 3, listSeats: 38 },
+        FDP: { totalSeats: 90, directWins: 0, listSeats: 90 },
+        GRÜNE: { totalSeats: 116, directWins: 16, listSeats: 100 },
+        SPD: { totalSeats: 203, directWins: 125, listSeats: 78 },
+        SSW: { totalSeats: 1, directWins: 0, listSeats: 1 },
+      },
+    },
+  },
+  {
+    name: 'postal voting only',
+    filters: {
       ...createEmptyFilterState(),
       electionMethods: ['in-person'],
     },
-    'without-hessen': {
+    expectedHistoricalResult: {
+      totalSeats: 664,
+      majorityThreshold: 333,
+      parties: {
+        AfD: { totalSeats: 49, directWins: 0, listSeats: 49 },
+        CDU: { totalSeats: 137, directWins: 116, listSeats: 21 },
+        CSU: { totalSeats: 51, directWins: 45, listSeats: 6 },
+        'DIE LINKE': { totalSeats: 33, directWins: 3, listSeats: 30 },
+        FDP: { totalSeats: 84, directWins: 0, listSeats: 84 },
+        GRÜNE: { totalSeats: 121, directWins: 21, listSeats: 100 },
+        SPD: { totalSeats: 188, directWins: 114, listSeats: 74 },
+        SSW: { totalSeats: 1, directWins: 0, listSeats: 1 },
+      },
+    },
+  },
+  {
+    name: 'Hessen excluded',
+    filters: {
       ...createEmptyFilterState(),
       states: ['Hessen'],
     },
-  }
+    expectedHistoricalResult: {
+      totalSeats: 682,
+      majorityThreshold: 342,
+      parties: {
+        AfD: { totalSeats: 78, directWins: 16, listSeats: 62 },
+        CDU: { totalSeats: 139, directWins: 91, listSeats: 48 },
+        CSU: { totalSeats: 45, directWins: 45, listSeats: 0 },
+        'DIE LINKE': { totalSeats: 36, directWins: 3, listSeats: 33 },
+        FDP: { totalSeats: 84, directWins: 0, listSeats: 84 },
+        GRÜNE: { totalSeats: 109, directWins: 15, listSeats: 94 },
+        SPD: { totalSeats: 190, directWins: 107, listSeats: 83 },
+        SSW: { totalSeats: 1, directWins: 0, listSeats: 1 },
+      },
+    },
+  },
+]
 
-  for (const [name, filters] of Object.entries(scenarios)) {
+for (const regressionCase of regressionCases) {
+  test(`keeps ${regressionCase.name} stable`, () => {
     const historicalResult = calculateScenario(
       data,
       reference,
       'de-2021-bwahlg',
-      filters,
+      regressionCase.filters,
     )
     const fixedResult = calculateScenario(
       data,
       reference,
       'de-2023-fixed-630',
-      filters,
+      regressionCase.filters,
     )
 
-    assert.ok(historicalResult.totalSeats >= 598)
-    assert.equal(
-      historicalResult.majorityThreshold,
-      Math.floor(historicalResult.totalSeats / 2) + 1,
+    assert.deepEqual(
+      summarize(historicalResult),
+      regressionCase.expectedHistoricalResult,
     )
+    assertSeatAccounting(historicalResult)
     assert.equal(fixedResult.totalSeats, 630)
     assert.equal(fixedResult.majorityThreshold, 316)
-    console.log(
-      `REGRESSION ${name} ${JSON.stringify(summarize(historicalResult))}`,
-    )
-  }
-})
+    assertSeatAccounting(fixedResult)
+  })
+}
