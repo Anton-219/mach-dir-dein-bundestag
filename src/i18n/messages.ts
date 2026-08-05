@@ -227,12 +227,77 @@ export const englishMessages = {
         'An exact positive first-vote tie was resolved by stable party order for this simulation.',
     },
     methodology: {
-      title: 'Electoral-system methodology',
+      title: 'Methodology and data',
+      close: 'Close methodology',
+      activeModel: 'Active model',
+      introduction:
+        'The application recalculates one filtered 2021 vote scenario under three electoral systems. The results are transparent political simulations, not official election results, forecasts, or voting recommendations.',
+      scenarioTitle: 'How filters are interpreted',
+      scenarioAssumptions: [
+        'Filters remove matching first and second votes. They do not change the population, the 16 federal states, the 299 constituencies, their boundaries, or the institutional starting size of an electoral system.',
+        'Excluding a federal state means that no votes from that state are counted. The state remains part of Germany and keeps its constituencies.',
+        'A constituency with no included first votes has no winner. The application never creates a winner from alphabetical order, a party identifier, or random choice.',
+        'An exact positive first-vote tie is resolved by a stable party order so that repeated calculations remain identical. This is a simulation rule, not the legally prescribed drawing of lots.',
+        'The result is aggregated by party. Candidate names, list positions, and person-level mandate assignments are not calculated.',
+      ],
+      dataPreparationTitle: 'How the vote data is prepared',
+      dataPreparationItems: [
+        'Official 2021 constituency totals by party, vote type, and postal or in-person voting remain fixed.',
+        'The source does not publish the full combination of constituency, party, first or second vote, age, gender category, and voting method. The demographic detail is therefore estimated from published aggregate tables.',
+        'Published representative statistics are used as proportions and fitted to the exact official totals. The resulting values are fractional vote weights, not individual ballot records.',
+        'For a party and voting method, every constituency in a federal state currently receives the same fitted demographic profile. Parties without a separate published profile use the state profile for “Other parties” or, as a final fallback, an even distribution.',
+        'The published male category also contains people recorded as diverse or without a gender entry in the birth register. The application preserves the source categories and does not reinterpret them.',
+      ],
+      systemsTitle: 'Compared electoral systems',
       summary: (modelName: string) => `Methodology for ${modelName}`,
-      rules: 'Rules',
-      dataSources: 'Data sources',
-      limitations: 'Limitations',
-      modelNotes: 'Active model notes',
+      rules: 'Rules and assumptions',
+      dataSources: 'Data used by the model',
+      limitations: 'Limits and special cases',
+      modelNotes: 'Notes for the active result',
+      majorityTitle: 'Majorities',
+      majorityText:
+        'The absolute majority is always calculated from the parliament that was actually produced: floor(total seats ÷ 2) + 1. It is not stored as a fixed number.',
+      sourcesTitle: 'Sources',
+      sourcesIntroduction:
+        'The prepared application files are derived from the following official publications. The detailed transformation and validation steps are documented in the project notebooks and data-preparation documentation.',
+      sources: [
+        {
+          label: 'Official results of the 2021 Bundestag election',
+          description:
+            'Constituency and federal-state results, downloadable result tables, and the confirmed national outcome.',
+          href: 'https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse.html',
+        },
+        {
+          label: 'Representative election statistics for 2021',
+          description:
+            'Published voting behaviour by gender category, age group, and postal or in-person voting.',
+          href: 'https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/repraesentative-wahlstatistik.html',
+        },
+        {
+          label: '2021 state seat contingents',
+          description:
+            'The historical distribution of the 598 initial seats among the federal states used by the 2021 model.',
+          href: 'https://www.bundeswahlleiterin.de/mitteilungen/bundestagswahlen/2021/20210909_btw21-sitzkontingente.html',
+        },
+        {
+          label: 'Explanation of the 2021 seat allocation',
+          description:
+            'Official worked explanation of the historical allocation procedure, including overhang and compensatory seats.',
+          href: 'https://www.bundeswahlleiterin.de/dam/jcr/e9eb08cc-e19e-4caa-b9f7-c69247872344/btw21_erl_sitzzuteilung.pdf',
+        },
+        {
+          label: 'Federal Elections Act',
+          description:
+            'Current consolidated text of the Bundeswahlgesetz, including the 630-seat allocation and second-vote coverage rules.',
+          href: 'https://www.gesetze-im-internet.de/bwahlg/',
+        },
+        {
+          label: 'Federal Constitutional Court judgment of 30 July 2024',
+          description:
+            'Judgment on the 2023 reform and the transitional continuation of the three-constituency rule.',
+          href: 'https://www.bundesverfassungsgericht.de/SharedDocs/Entscheidungen/DE/2024/07/fs20240730_2bvf000123.html',
+        },
+      ],
     },
     announcement: {
       activeModel: (modelName: string) =>
@@ -247,11 +312,11 @@ export const englishMessages = {
         description:
           'Seat allocation under the electoral law used for the 2021 Bundestag election, including overhang and compensatory seats. Parliament can grow beyond 598 seats.',
         rules:
-          'The model starts from 598 nominal seats. Every modeled constituency winner receives a direct seat, while overhang and compensatory seats can enlarge parliament. Up to three overhang seats may remain uncompensated.',
+          'The model starts from 598 base seats and keeps the historical state seat contingents fixed. Every winner in a non-empty constituency receives a direct seat. Overhang and compensatory seats can enlarge parliament, and up to three overhang seats may remain uncompensated. If a state contributes no votes, it creates no provisional party seats or minimum-seat claims in this simulation, while the nationwide allocation still starts from at least 598 seats.',
         dataSources:
           'Prepared 2021 first- and second-vote data, party qualification metadata, and the committed 2021 state-seat-contingent fixture.',
         limitations:
-          'Historical state seat contingents remain fixed under electorate filters. Candidate names, state-list order, and person-level mandate assignment are not modeled.',
+          'A completely inactive state is not a normal case defined by the historical law; its treatment is an explicit simulation convention. Empty constituencies do not reduce the 598-seat base. Candidate names, state-list order, and person-level mandate assignment are not modeled.',
       },
       'de-2023-fixed-630': {
         name: 'Electoral law reformed in 2023',
@@ -259,11 +324,11 @@ export const englishMessages = {
         description:
           "Seat allocation under the electoral law reformed in 2023, with a fixed size of 630 seats. A constituency win becomes a direct seat only when covered by the party's second-vote allocation.",
         rules:
-          'Exactly 630 seats are allocated by second votes. Constituency wins count as direct seats only to the extent that the party has sufficient seats in the relevant state allocation; remaining wins are reported as uncovered.',
+          'Exactly 630 seats are allocated by second votes. Constituency wins count as direct seats only to the extent that the party has sufficient seats in the relevant state allocation; remaining wins are reported as uncovered. A constituency without first votes has no winner but does not reduce parliament. An excluded state receives no seats when its lists have no votes, and the remaining votes still fill all 630 seats.',
         dataSources:
           'Prepared 2021 first- and second-vote data and party qualification metadata. The historical state-seat-contingent fixture is not used by this model.',
         limitations:
-          'The result is aggregate by party and state. It does not determine which individual constituency winners are covered or assign list seats to candidates.',
+          'The result is aggregate by party and state. It does not determine which individual constituency winners are covered or assign list seats to candidates. The model applies the Federal Constitutional Court’s transitional three-constituency rule.',
       },
       'union-parallel': {
         name: 'Parallel 299 + 299 model',
@@ -271,11 +336,11 @@ export const englishMessages = {
         description:
           'Parallel voting with two independent tiers: up to 299 direct seats from constituencies and exactly 299 list seats allocated by second votes.',
         rules:
-          'Every non-empty constituency contributes one direct seat independently of the list tier. A separate pool of exactly 299 list seats is allocated by second votes. Empty constituencies reduce the actual parliament size.',
+          'Every non-empty constituency contributes one direct seat independently of the list tier. A separate pool of exactly 299 list seats is allocated by second votes. An empty constituency contributes no direct seat; that seat is neither reassigned nor converted into a list seat. The actual parliament size is therefore the number of allocated direct seats plus 299.',
         dataSources:
           'Prepared 2021 first- and second-vote data and party qualification metadata. No historical state-seat-contingent fixture is used.',
         limitations:
-          'The model is a project-defined comparison scenario rather than enacted federal electoral law. Candidate names and list-order assignment remain outside the product scope.',
+          'The model is a project-defined comparison scenario rather than enacted federal electoral law. Candidate names and list-order assignment remain outside the product scope. Because empty constituencies reduce the actual total, the majority threshold may be lower than 300 seats.',
       },
     },
   },
@@ -535,12 +600,77 @@ export const germanMessages: MessageCatalog = {
         'Ein exakter positiver Erststimmengleichstand wurde für diese Simulation nach stabiler Parteireihenfolge aufgelöst.',
     },
     methodology: {
-      title: 'Methodik der Wahlsysteme',
+      title: 'Methodik und Daten',
+      close: 'Methodik schließen',
+      activeModel: 'Aktives Modell',
+      introduction:
+        'Die Anwendung berechnet dasselbe gefilterte Stimmenszenario der Bundestagswahl 2021 mit drei Wahlsystemen neu. Die Ergebnisse sind transparente politische Simulationen, keine amtlichen Wahlergebnisse, Prognosen oder Wahlempfehlungen.',
+      scenarioTitle: 'So werden Filter verstanden',
+      scenarioAssumptions: [
+        'Filter entfernen die passenden Erst- und Zweitstimmen. Sie verändern weder die Bevölkerung noch die 16 Bundesländer, die 299 Wahlkreise, deren Grenzen oder die institutionelle Ausgangsgröße eines Wahlsystems.',
+        'Ein Bundesland auszuschließen bedeutet, dass keine Stimmen aus diesem Land gezählt werden. Das Land bleibt Teil Deutschlands und behält seine Wahlkreise.',
+        'Ein Wahlkreis ohne einbezogene Erststimmen hat keinen Gewinner. Die Anwendung erzeugt niemals einen Gewinner durch alphabetische Reihenfolge, Partei-ID oder Zufall.',
+        'Ein exakter positiver Erststimmengleichstand wird nach einer stabilen Parteireihenfolge aufgelöst, damit wiederholte Berechnungen identisch bleiben. Das ist eine Simulationsregel und kein rechtlich vorgesehener Losentscheid.',
+        'Das Ergebnis wird nach Parteien zusammengefasst. Kandidatennamen, Listenplätze und personengenaue Mandatszuweisungen werden nicht berechnet.',
+      ],
+      dataPreparationTitle: 'So werden die Stimmdaten aufbereitet',
+      dataPreparationItems: [
+        'Die amtlichen Wahlkreissummen von 2021 nach Partei, Stimmenart und Brief- oder Urnenwahl bleiben unverändert.',
+        'Die Quelle veröffentlicht nicht die vollständige Kombination aus Wahlkreis, Partei, Erst- oder Zweitstimme, Alter, Geschlechtskategorie und Wahlart. Die demografischen Details werden deshalb aus veröffentlichten Aggregaten geschätzt.',
+        'Die repräsentative Wahlstatistik wird als Anteilsverteilung verwendet und an die exakten amtlichen Summen angepasst. Die resultierenden Werte sind gebrochene Stimmengewichte und keine einzelnen Stimmzettel.',
+        'Für eine Partei und Wahlart erhalten derzeit alle Wahlkreise eines Bundeslands dasselbe angepasste demografische Profil. Parteien ohne eigenes veröffentlichtes Profil verwenden das Landesprofil „Sonstige“ oder als letzte Rückfallregel eine Gleichverteilung.',
+        'Die veröffentlichte Kategorie „männlich“ enthält laut Quellenhinweis auch Personen mit dem Eintrag divers oder ohne Geschlechtseintrag im Geburtenregister. Die Anwendung übernimmt die Quellenkategorien und deutet sie nicht um.',
+      ],
+      systemsTitle: 'Verglichene Wahlsysteme',
       summary: (modelName: string) => `Methodik für ${modelName}`,
-      rules: 'Regeln',
-      dataSources: 'Datengrundlage',
-      limitations: 'Grenzen',
-      modelNotes: 'Hinweise zum aktiven Modell',
+      rules: 'Regeln und Annahmen',
+      dataSources: 'Vom Modell verwendete Daten',
+      limitations: 'Grenzen und Sonderfälle',
+      modelNotes: 'Hinweise zum aktiven Ergebnis',
+      majorityTitle: 'Mehrheiten',
+      majorityText:
+        'Die absolute Mehrheit wird immer aus dem tatsächlich berechneten Parlament bestimmt: abgerundet(Gesamtsitze ÷ 2) + 1. Sie ist nicht als feste Zahl hinterlegt.',
+      sourcesTitle: 'Quellen',
+      sourcesIntroduction:
+        'Die aufbereiteten Anwendungsdateien beruhen auf den folgenden amtlichen Veröffentlichungen. Die einzelnen Umformungs- und Prüfschritte sind zusätzlich in den Notebooks und der Dokumentation zur Datenaufbereitung festgehalten.',
+      sources: [
+        {
+          label: 'Amtliche Ergebnisse der Bundestagswahl 2021',
+          description:
+            'Ergebnisse nach Wahlkreisen und Bundesländern, herunterladbare Ergebnistabellen und das bestätigte Bundesergebnis.',
+          href: 'https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse.html',
+        },
+        {
+          label: 'Repräsentative Wahlstatistik 2021',
+          description:
+            'Veröffentlichte Stimmabgabe nach Geschlechtskategorie, Altersgruppe sowie Brief- und Urnenwahl.',
+          href: 'https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/repraesentative-wahlstatistik.html',
+        },
+        {
+          label: 'Sitzkontingente der Länder 2021',
+          description:
+            'Historische Verteilung der 598 Ausgangssitze auf die Bundesländer für das Modell des Wahlrechts 2021.',
+          href: 'https://www.bundeswahlleiterin.de/mitteilungen/bundestagswahlen/2021/20210909_btw21-sitzkontingente.html',
+        },
+        {
+          label: 'Erläuterung der Sitzverteilung 2021',
+          description:
+            'Amtliche Beispielrechnung des historischen Verfahrens einschließlich Überhang- und Ausgleichsmandaten.',
+          href: 'https://www.bundeswahlleiterin.de/dam/jcr/e9eb08cc-e19e-4caa-b9f7-c69247872344/btw21_erl_sitzzuteilung.pdf',
+        },
+        {
+          label: 'Bundeswahlgesetz',
+          description:
+            'Aktuelle konsolidierte Fassung des Bundeswahlgesetzes mit 630-Sitze-Verteilung und Zweitstimmendeckung.',
+          href: 'https://www.gesetze-im-internet.de/bwahlg/',
+        },
+        {
+          label: 'Urteil des Bundesverfassungsgerichts vom 30. Juli 2024',
+          description:
+            'Entscheidung zur Reform von 2023 und zur übergangsweisen Fortgeltung der Drei-Wahlkreis-Regel.',
+          href: 'https://www.bundesverfassungsgericht.de/SharedDocs/Entscheidungen/DE/2024/07/fs20240730_2bvf000123.html',
+        },
+      ],
     },
     announcement: {
       activeModel: (modelName: string) =>
@@ -555,11 +685,11 @@ export const germanMessages: MessageCatalog = {
         description:
           'Sitzverteilung nach dem bei der Bundestagswahl 2021 geltenden Wahlrecht mit Überhang- und Ausgleichsmandaten. Die Größe des Bundestags kann über 598 Sitze steigen.',
         rules:
-          'Das Modell beginnt mit einer Sollgröße von 598 Sitzen. Jeder modellierte Wahlkreisgewinner erhält ein Direktmandat; Überhang- und Ausgleichsmandate können den Bundestag vergrößern. Bis zu drei Überhangmandate können unausgeglichen bleiben.',
+          'Das Modell beginnt mit 598 Ausgangssitzen und hält die historischen Sitzkontingente der Länder fest. Jeder Gewinner eines nicht leeren Wahlkreises erhält ein Direktmandat. Überhang- und Ausgleichsmandate können den Bundestag vergrößern; bis zu drei Überhangmandate können unausgeglichen bleiben. Liefert ein Land keine Stimmen, erzeugt es in dieser Simulation keine vorläufigen Parteisitze oder Mindestsitzansprüche, während die bundesweite Verteilung weiterhin bei mindestens 598 Sitzen beginnt.',
         dataSources:
           'Aufbereitete Erst- und Zweitstimmen der Bundestagswahl 2021, Metadaten zur Parteizulassung und die hinterlegte Datei mit den Sitzkontingenten der Länder für 2021.',
         limitations:
-          'Die historischen Sitzkontingente der Länder bleiben bei Wählerfiltern unverändert. Kandidatennamen, Landeslistenreihenfolge und personengenaue Mandatszuweisung werden nicht modelliert.',
+          'Ein vollständig inaktives Bundesland ist kein normaler Fall des historischen Wahlrechts; seine Behandlung ist eine ausdrücklich festgelegte Simulationsregel. Leere Wahlkreise verkleinern die Ausgangsgröße von 598 Sitzen nicht. Kandidatennamen, Landeslistenreihenfolge und personengenaue Mandatszuweisung werden nicht modelliert.',
       },
       'de-2023-fixed-630': {
         name: '2023 reformiertes Wahlrecht',
@@ -567,11 +697,11 @@ export const germanMessages: MessageCatalog = {
         description:
           'Sitzverteilung nach dem 2023 reformierten Wahlrecht mit einer festen Größe von 630 Sitzen. Ein Wahlkreissieg führt nur bei ausreichender Zweitstimmendeckung zu einem Direktmandat.',
         rules:
-          'Genau 630 Sitze werden anhand der Zweitstimmen verteilt. Wahlkreissiege zählen nur insoweit als Direktmandate, wie die Partei in der jeweiligen Landesverteilung genügend Sitze erhält; übrige Siege werden als nicht gedeckt ausgewiesen.',
+          'Genau 630 Sitze werden anhand der Zweitstimmen verteilt. Wahlkreissiege zählen nur insoweit als Direktmandate, wie die Partei in der jeweiligen Landesverteilung genügend Sitze erhält; übrige Siege werden als nicht gedeckt ausgewiesen. Ein Wahlkreis ohne Erststimmen hat keinen Gewinner, verkleinert den Bundestag aber nicht. Ein ausgeschlossenes Bundesland erhält bei stimmlosen Landeslisten keine Sitze; die übrigen Stimmen besetzen dennoch alle 630 Sitze.',
         dataSources:
           'Aufbereitete Erst- und Zweitstimmen der Bundestagswahl 2021 und Metadaten zur Parteizulassung. Die historischen Sitzkontingente der Länder werden in diesem Modell nicht verwendet.',
         limitations:
-          'Das Ergebnis bleibt auf Parteien und Länder aggregiert. Es bestimmt nicht, welche einzelnen Wahlkreisgewinner gedeckt sind, und weist keine Listenplätze Personen zu.',
+          'Das Ergebnis bleibt auf Parteien und Länder aggregiert. Es bestimmt nicht, welche einzelnen Wahlkreisgewinner gedeckt sind, und weist keine Listenplätze Personen zu. Das Modell berücksichtigt die übergangsweise Drei-Wahlkreis-Regel des Bundesverfassungsgerichts.',
       },
       'union-parallel': {
         name: 'Grabenwahl 299 + 299',
@@ -579,11 +709,11 @@ export const germanMessages: MessageCatalog = {
         description:
           'Grabenwahl mit zwei unabhängigen Blöcken: bis zu 299 Direktmandate aus den Wahlkreisen und genau 299 Listenmandate nach Zweitstimmen.',
         rules:
-          'Jeder nicht leere Wahlkreis liefert unabhängig von der Listenebene ein Direktmandat. Ein eigener Block von genau 299 Listenmandaten wird nach Zweitstimmen verteilt. Leere Wahlkreise verkleinern die tatsächliche Parlamentsgröße.',
+          'Jeder nicht leere Wahlkreis liefert unabhängig von der Listenebene ein Direktmandat. Ein eigener Block von genau 299 Listenmandaten wird nach Zweitstimmen verteilt. Ein leerer Wahlkreis liefert kein Direktmandat; dieser Sitz wird weder neu vergeben noch in ein Listenmandat umgewandelt. Die tatsächliche Parlamentsgröße ist deshalb die Zahl der vergebenen Direktmandate plus 299.',
         dataSources:
           'Aufbereitete Erst- und Zweitstimmen der Bundestagswahl 2021 und Metadaten zur Parteizulassung. Historische Sitzkontingente der Länder werden nicht verwendet.',
         limitations:
-          'Das Modell ist ein projektspezifisches Vergleichsszenario und kein geltendes Bundeswahlrecht. Kandidatennamen und die Zuweisung nach Listenreihenfolge bleiben außerhalb des Produktumfangs.',
+          'Das Modell ist ein projektspezifisches Vergleichsszenario und kein geltendes Bundeswahlrecht. Kandidatennamen und die Zuweisung nach Listenreihenfolge bleiben außerhalb des Produktumfangs. Da leere Wahlkreise die tatsächliche Sitzanzahl verkleinern, kann die Mehrheitsschwelle unter 300 Sitzen liegen.',
       },
     },
   },
