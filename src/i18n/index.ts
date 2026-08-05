@@ -11,6 +11,14 @@ export {
   type TranslationTools,
 } from './formatters.ts'
 export {
+  formatElectoralSystemWarning,
+  getElectoralSystemCatalog,
+  getElectoralSystemModelCopy,
+  getElectoralSystemNoticeTexts,
+  getElectoralSystemOptions,
+  type ElectoralSystemModelCopy,
+} from './electoral-system-messages.ts'
+export {
   defaultLocale,
   englishMessages,
   germanMessages,
