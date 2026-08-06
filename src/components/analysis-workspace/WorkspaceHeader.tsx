@@ -1,5 +1,6 @@
 import { useI18n } from '../../i18n/index.ts'
 import { LanguageSwitcher } from '../language/LanguageSwitcher.tsx'
+import { ThemeToggle } from '../theme/ThemeToggle.tsx'
 
 interface WorkspaceHeaderProps {
   onOpenMethodology: () => void
@@ -33,6 +34,7 @@ export function WorkspaceHeader({ onOpenMethodology }: WorkspaceHeaderProps) {
             {messages.header.methodology}
           </button>
           <LanguageSwitcher />
+          <ThemeToggle />
         </div>
       </header>
     </>
