@@ -33,7 +33,7 @@
   --track-background: #354144;
   --header-background: rgb(24 33 36 / 88%);
   --dialog-header-background: #1b2528;
-  --floating-background: rgb(31 42 45 / 88%);
+  --floating-background: #222d30;
   --subtle-surface: rgb(31 42 45 / 82%);
   --footer-background: #151d20;
   --border: #354347;
@@ -51,9 +51,15 @@
   --swatch-inset: rgb(0 0 0 / 30%);
   --panel-gradient: rgb(155 199 216 / 5%);
   --map-boundary: rgb(155 199 216 / 34%);
-  --track-neutral: #354144;
+  --track-neutral: #11191b;
   --dialog-shadow: rgb(0 0 0 / 48%);
   --dialog-backdrop: rgb(0 0 0 / 62%);
+  --dark-card-background: #222d30;
+  --dark-card-background-strong: #263236;
+  --dark-track-background: #0f1618;
+  --dark-track-border: #3c4a4e;
+  --demographic-men: #3f7182;
+  --demographic-women: #566c76;
 }
 
 .workspace-header {
@@ -176,6 +182,160 @@ a:focus-visible,
     var(--accent-soft) 48%,
     var(--panel-background)
   );
+}
+
+/* Dark-mode contrast refinements for result and control surfaces. */
+
+:root[data-theme="dark"] .language-switcher {
+  border-color: var(--border-strong);
+  background: var(--dark-card-background);
+}
+
+:root[data-theme="dark"] .language-switcher-icon {
+  stroke: var(--muted);
+}
+
+:root[data-theme="dark"] .language-switcher-divider {
+  color: var(--border-strong);
+}
+
+:root[data-theme="dark"] .language-switcher button {
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .language-switcher button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .filter-scenario-card {
+  border-color: var(--border-strong);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent-soft) 72%, var(--panel-muted)),
+    var(--dark-card-background-strong)
+  );
+}
+
+:root[data-theme="dark"]
+  .filter-scenario-heading
+  .secondary-action,
+:root[data-theme="dark"] .filter-scenario-card .active-filter {
+  border-color: var(--border-strong);
+  background: var(--dark-card-background);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"]
+  .filter-scenario-heading
+  .secondary-action:disabled {
+  background: var(--panel-muted);
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .parliament-legend li {
+  border-color: var(--border-strong);
+  background: var(--dark-card-background);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"]
+  .workspace-column-center
+  .party-panel
+  .party-row {
+  border-color: var(--border-strong);
+  background: var(--dark-card-background);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"]
+  .workspace-column-center
+  .party-panel
+  .party-row::before {
+  background: radial-gradient(
+    ellipse at top left,
+    color-mix(in srgb, var(--party-color) 23%, transparent) 0%,
+    color-mix(in srgb, var(--party-color) 10%, transparent) 36%,
+    transparent 72%
+  );
+}
+
+:root[data-theme="dark"] .party-identity small,
+:root[data-theme="dark"] .party-seats small,
+:root[data-theme="dark"] .party-share strong {
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .coalition-panel .coalition-row {
+  border-color: var(--border-strong);
+  background: var(--dark-card-background);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .coalition-member {
+  border-color: var(--border-strong);
+  background: var(--panel-background);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .coalition-composition {
+  border-color: var(--dark-track-border);
+  background: var(--dark-track-background);
+}
+
+:root[data-theme="dark"] .coalition-combination small,
+:root[data-theme="dark"] .coalition-metrics > span {
+  color: var(--muted);
+}
+
+:root[data-theme="dark"] .age-gender-side,
+:root[data-theme="dark"] .method-track {
+  background: var(--dark-track-background);
+  box-shadow: 0 0 0 1px var(--dark-track-border) inset;
+}
+
+:root[data-theme="dark"] .demographic-bar,
+:root[data-theme="dark"] .method-segment-postal {
+  background: var(--demographic-men);
+  opacity: 0.92;
+}
+
+:root[data-theme="dark"]
+  .age-gender-side-women
+  .demographic-bar,
+:root[data-theme="dark"] .method-segment-in-person {
+  background: var(--demographic-women);
+  opacity: 0.92;
+}
+
+:root[data-theme="dark"] .demographic-bar-excluded {
+  opacity: 0.24 !important;
+}
+
+:root[data-theme="dark"]
+  .workspace-column-center
+  .party-panel
+  .party-track,
+:root[data-theme="dark"] .state-party-share .party-track {
+  border-color: var(--dark-track-border);
+  background: var(--dark-track-background);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .state-party-row {
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--border) 78%,
+    transparent
+  );
+}
+
+:root[data-theme="dark"] .state-landscape-note {
+  color: #9baaad;
+}
+
+:root[data-theme="dark"] .state-landscape-placeholder {
+  background: var(--dark-card-background);
 }
 
 .theme-toggle {
