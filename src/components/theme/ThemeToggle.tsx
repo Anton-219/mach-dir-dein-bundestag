@@ -19,17 +19,12 @@ function MoonIcon() {
 }
 
 export function ThemeToggle() {
-  const { locale } = useI18n()
+  const { messages } = useI18n()
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
-  const label =
-    locale === 'de'
-      ? isDark
-        ? 'Zum Hellmodus wechseln'
-        : 'Zum Dunkelmodus wechseln'
-      : isDark
-        ? 'Switch to light mode'
-        : 'Switch to dark mode'
+  const label = isDark
+    ? messages.theme.switchToLight
+    : messages.theme.switchToDark
 
   return (
     <button

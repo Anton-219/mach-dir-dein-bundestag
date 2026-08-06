@@ -6,7 +6,7 @@ export type Theme = 'light' | 'dark'
 
 const storageKey = 'mach-dir-dein-bundestag.theme'
 
-function isTheme(value: string | null): value is Theme {
+function isTheme(value: string | null | undefined): value is Theme {
   return value === 'light' || value === 'dark'
 }
 
