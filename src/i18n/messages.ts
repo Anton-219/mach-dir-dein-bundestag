@@ -20,6 +20,10 @@ export const englishMessages = {
       'Adjust an electorate scenario and compare its parliament, party result, and possible majorities in one workspace.',
     methodology: 'Methodology & data',
   },
+  theme: {
+    switchToLight: 'Switch to light mode',
+    switchToDark: 'Switch to dark mode',
+  },
   workspace: {
     ariaLabel: 'Election results workspace',
   },
@@ -403,6 +407,10 @@ export const germanMessages: MessageCatalog = {
     introduction:
       'Passe ein Wählerszenario an und vergleiche Parlament, Parteiergebnisse und mögliche Mehrheiten.',
     methodology: 'Methodik & Daten',
+  },
+  theme: {
+    switchToLight: 'Zum Hellmodus wechseln',
+    switchToDark: 'Zum Dunkelmodus wechseln',
   },
   workspace: {
     ariaLabel: 'Arbeitsfläche für Wahlergebnisse',
