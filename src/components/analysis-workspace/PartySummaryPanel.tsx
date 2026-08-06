@@ -31,6 +31,12 @@ export function PartySummaryPanel({
           ),
         )
       : []
+  const directWinsByParty = new Map(
+    scenario?.electoralSystemResult?.parties.map((result) => [
+      result.party,
+      result.directWins,
+    ]) ?? [],
+  )
   const resultMessage = getScenarioReasonText(scenario?.reason, i18n)
 
   return (
@@ -52,11 +58,11 @@ export function PartySummaryPanel({
           className="party-list"
           tabIndex={0}
           aria-labelledby="parties-title"
-          aria-describedby="party-result-note"
         >
           {partyRows.map((result) => {
             const percentage = Math.min(Math.max(result.percentage, 0), 1)
             const formattedPercentage = i18n.formatPercent(percentage)
+            const directWins = directWinsByParty.get(result.abbreviation) ?? 0
 
             return (
               <li
@@ -99,14 +105,28 @@ export function PartySummaryPanel({
                   </strong>
                 </span>
 
-                <span className="party-seats">
-                  <strong>
-                    <span className="visually-hidden">
-                      {messages.parties.seats}{' '}
-                    </span>
-                    {result.seats}
-                  </strong>
-                  <small aria-hidden="true">{messages.parties.seatsShort}</small>
+                <span className="party-metrics">
+                  <span className="party-metric party-seats">
+                    <strong>
+                      <span className="visually-hidden">
+                        {messages.parties.seats}{' '}
+                      </span>
+                      {i18n.formatNumber(result.seats)}
+                    </strong>
+                    <small aria-hidden="true">{messages.parties.seatsShort}</small>
+                  </span>
+
+                  <span className="party-metric party-constituencies">
+                    <strong>
+                      <span className="visually-hidden">
+                        {messages.parties.constituencyWins}{' '}
+                      </span>
+                      {i18n.formatNumber(directWins)}
+                    </strong>
+                    <small aria-hidden="true">
+                      {messages.parties.constituencyWinsShort}
+                    </small>
+                  </span>
                 </span>
               </li>
             )
@@ -119,10 +139,6 @@ export function PartySummaryPanel({
           {resultMessage}
         </p>
       )}
-
-      <p className="result-note" id="party-result-note">
-        {messages.parties.note}
-      </p>
     </section>
   )
 }

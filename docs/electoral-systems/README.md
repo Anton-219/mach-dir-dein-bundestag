@@ -1,0 +1,33 @@
+# Electoral-system comparison
+
+This directory contains the architecture and implementation notes for [epic #36](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/36).
+
+The epic introduces interchangeable electoral-system calculators that consume one normalized vote scenario and return one comparable aggregate result. Product code must not branch on legal rules outside those calculators.
+
+## Delivery sequence
+
+| Story | Deliverable |
+| --- | --- |
+| [#37](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/37) | Supported variants, formulas, data audit, filter semantics, reference scenarios, and shared result contract |
+| [#38](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/38) | Calculator interface, registry, and common allocation primitives |
+| [#39](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/39) | Fixed-size electoral law introduced in 2023 |
+| [#40](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/40) | Configurable parallel/Grabenwahl model |
+| [#41](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/41) | Electoral law used for the 2021 Bundestag election |
+| [#42](https://github.com/Anton-219/mach-dir-dein-bundestag/issues/42) | In-workspace model selector, aggregate comparison context, and methodology presentation |
+
+## Architecture principles
+
+- A filtered or unfiltered vote scenario is calculated once and passed unchanged to every electoral-system calculator.
+- Ordinary filters model non-participation: they change first and second votes together, but never state membership, district boundaries, historical state seat contingents, or institutional seat capacity.
+- The historical calculator consumes explicit year-specific state seat contingents rather than population figures.
+- A state is either active for both vote types or inactive for both; first-vote-only and second-vote-only scenarios are unsupported.
+- Legal eligibility, seat allocation, and system-specific warnings live behind an electoral-system strategy boundary.
+- All strategies return the same party-level result shape; candidate-level claims are outside the epic.
+- Legal variants and modeling assumptions are versioned explicitly rather than hidden behind a generic “German system” label.
+- Deterministic reference scenarios are the acceptance boundary for each calculator.
+- The analysis workspace owns only the selected `systemId`; it passes the same normalized scenario and the required supporting data to the registry and never implements legal rules inside React components.
+- Electoral-system selection is independent from electorate exclusions. Resetting filters does not reset the selected model.
+- Aggregate totals, majority thresholds, direct/list components, warnings, and assistive announcements are derived from the selected strategy result rather than from nominal seat constants.
+- Domain warnings remain language-neutral. The presentation layer maps warning codes and model identifiers to the German and English copy catalog and methodology surface.
+
+The [supported-variants specification](./specification.md) from story #37 is the normative basis for the later implementation stories.

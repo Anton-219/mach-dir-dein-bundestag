@@ -1,6 +1,7 @@
 import type { ElectionData } from '../../data/loaders.ts'
 import type { ScenarioReason } from '../../i18n/index.ts'
 import type { CoalitionResult } from '../../lib/coalitions/index.ts'
+import type { ElectoralSystemResult } from '../../lib/election/index.ts'
 import type {
   ElectionResult,
   SeatResult,
@@ -24,4 +25,5 @@ export interface ScenarioResult {
   includedShare: number
   totalSeats: number
   majorityThreshold: number
+  electoralSystemResult?: ElectoralSystemResult
 }

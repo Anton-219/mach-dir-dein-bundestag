@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "systemId": "de-2021-bwahlg",
+  "electionYear": 2021,
+  "baseSeatCount": 598,
+  "stateSeatContingents": [
+    {
+      "state": "Schleswig-Holstein",
+      "seats": 22
+    },
+    {
+      "state": "Mecklenburg-Vorpommern",
+      "seats": 13
+    },
+    {
+      "state": "Hamburg",
+      "seats": 13
+    },
+    {
+      "state": "Niedersachsen",
+      "seats": 59
+    },
+    {
+      "state": "Bremen",
+      "seats": 5
+    },
+    {
+      "state": "Brandenburg",
+      "seats": 20
+    },
+    {
+      "state": "Sachsen-Anhalt",
+      "seats": 17
+    },
+    {
+      "state": "Berlin",
+      "seats": 24
+    },
+    {
+      "state": "Nordrhein-Westfalen",
+      "seats": 127
+    },
+    {
+      "state": "Sachsen",
+      "seats": 32
+    },
+    {
+      "state": "Hessen",
+      "seats": 43
+    },
+    {
+      "state": "Thüringen",
+      "seats": 16
+    },
+    {
+      "state": "Rheinland-Pfalz",
+      "seats": 30
+    },
+    {
+      "state": "Bayern",
+      "seats": 93
+    },
+    {
+      "state": "Baden-Württemberg",
+      "seats": 77
+    },
+    {
+      "state": "Saarland",
+      "seats": 7
+    }
+  ]
+}

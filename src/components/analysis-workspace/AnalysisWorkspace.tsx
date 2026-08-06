@@ -4,8 +4,12 @@ import { useI18n, type ScenarioReason } from '../../i18n/index.ts'
 import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts'
 import {
   aggregateElectionResults,
-  allocateSeats,
-  calculateDirectMandates,
+  buildElectoralScenario,
+  calculateElectoralSystem,
+  createElectoralScenarioReference,
+  DEFAULT_ELECTORAL_SYSTEM_ID,
+  toSeatResults,
+  type ElectoralSystemId,
 } from '../../lib/election/index.ts'
 import {
   applyFilterState,
@@ -20,6 +24,7 @@ import { CoalitionPanel } from './CoalitionPanel.tsx'
 import { DemographicPanel } from './DemographicPanel.tsx'
 import { FilterPanel } from './FilterPanel.tsx'
 import { GermanyMapPanel } from './GermanyMapPanel.tsx'
+import { MethodologyDialog } from './MethodologyDialog.tsx'
 import { ParliamentPanel } from './ParliamentPanel.tsx'
 import { PartySummaryPanel } from './PartySummaryPanel.tsx'
 import { ScenarioSummary } from './ScenarioSummary.tsx'
@@ -50,9 +55,16 @@ function createUnavailableScenario(
   }
 }
 
+function hasActiveFilters(filters: FilterState): boolean {
+  return Object.values(filters).some((excludedValues) => excludedValues.length > 0)
+}
+
 export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const { messages } = useI18n()
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
+  const [electoralSystemId, setElectoralSystemId] =
+    useState<ElectoralSystemId>(DEFAULT_ELECTORAL_SYSTEM_ID)
+  const [methodologyOpen, setMethodologyOpen] = useState(false)
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
   const [highlightedState, setHighlightedState] = useState<string | null>(null)
 
@@ -62,6 +74,22 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     }
 
     return [...new Set(dataState.data.secondVotes.map((entry) => entry.state))].sort()
+  }, [dataState])
+
+  const electoralScenarioReference = useMemo(() => {
+    if (dataState.status !== 'ready') {
+      return undefined
+    }
+
+    try {
+      return createElectoralScenarioReference({
+        firstVotes: dataState.data.firstVotes,
+        secondVotes: dataState.data.secondVotes,
+        parties: dataState.data.parties,
+      })
+    } catch {
+      return null
+    }
   }, [dataState])
 
   const scenario = useMemo<ScenarioResult | undefined>(() => {
@@ -106,17 +134,44 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         )
       }
 
+      if (electoralScenarioReference === null) {
+        return createUnavailableScenario(
+          'invalid',
+          'calculationFailed',
+          includedVotes,
+          totalVotes,
+        )
+      }
+      if (electoralScenarioReference === undefined) {
+        return undefined
+      }
+
       const electionResults = aggregateElectionResults(
         filteredSecondVotes,
         dataState.data.parties,
       )
-      const directMandates = calculateDirectMandates(filteredFirstVotes)
-      const seatResults = allocateSeats(electionResults, directMandates)
-      const totalSeats = seatResults.reduce(
-        (total, result) => total + result.seats,
-        0,
+      const electoralScenario = buildElectoralScenario({
+        mode: hasActiveFilters(filters)
+          ? 'filtered-model'
+          : 'unfiltered-reference',
+        firstVotes: filteredFirstVotes,
+        secondVotes: filteredSecondVotes,
+        reference: electoralScenarioReference,
+        inactiveStates: filters.states,
+      })
+      const electoralSystemResult = calculateElectoralSystem(
+        electoralSystemId,
+        electoralScenario,
+        {
+          stateSeatContingents: dataState.data.stateSeatContingents,
+          stateSeatContingentYear: dataState.data.stateSeatContingentYear,
+        },
       )
-      const majorityThreshold = Math.floor(totalSeats / 2) + 1
+      const seatResults = toSeatResults(
+        electoralSystemResult,
+        dataState.data.parties,
+      )
+      const { totalSeats, majorityThreshold } = electoralSystemResult
 
       const hasInvalidElectionResult = electionResults.some(
         (result) =>
@@ -163,6 +218,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         includedShare: includedVotes / totalVotes,
         totalSeats,
         majorityThreshold,
+        electoralSystemResult,
       }
     } catch {
       return createUnavailableScenario(
@@ -172,7 +228,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         totalVotes,
       )
     }
-  }, [dataState, filters])
+  }, [dataState, electoralScenarioReference, electoralSystemId, filters])
 
   const statePartyLandscape = useMemo(() => {
     if (dataState.status !== 'ready' || highlightedState === null) {
@@ -207,7 +263,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
 
   return (
     <div className="application-shell">
-      <WorkspaceHeader />
+      <WorkspaceHeader onOpenMethodology={() => setMethodologyOpen(true)} />
 
       <main
         className="analysis-shell"
@@ -232,7 +288,13 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
           />
         </div>
 
-        <ScenarioSummary dataState={dataState} filters={filters} scenario={scenario} />
+        <ScenarioSummary
+          dataState={dataState}
+          filters={filters}
+          scenario={scenario}
+          electoralSystemId={electoralSystemId}
+          onElectoralSystemChange={setElectoralSystemId}
+        />
 
         <div className="analysis-workspace">
           <div className="workspace-column workspace-column-center">
@@ -261,18 +323,12 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
         </div>
       </main>
 
-      <footer
-        className="application-footer"
-        id="methodology"
-        aria-labelledby="methodology-title"
-      >
-        <h2 className="visually-hidden" id="methodology-title">
-          {messages.footer.title}
-        </h2>
-        <p>
-          <strong>{messages.footer.label}</strong> {messages.footer.text}
-        </p>
-      </footer>
+      <MethodologyDialog
+        open={methodologyOpen}
+        systemId={electoralSystemId}
+        scenario={scenario}
+        onClose={() => setMethodologyOpen(false)}
+      />
     </div>
   )
 }

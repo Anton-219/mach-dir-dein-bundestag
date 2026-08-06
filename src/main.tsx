@@ -5,10 +5,12 @@ import { I18nProvider } from './i18n/index.ts'
 import './styles.css'
 import './filter-styles.css'
 import './result-styles.css'
+import './party-constituency-styles.css'
 import './accessibility-styles.css'
 import './desktop-refinement.css'
 import './desktop-refinement-iteration.css'
 import './i18n-styles.css'
+import './electoral-system-styles.css'
 
 const rootElement = document.getElementById('root')
 
