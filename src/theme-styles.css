@@ -1,0 +1,217 @@
+:root {
+  --panel-elevated: #fbfcfa;
+  --control-background: #fafbf9;
+  --control-hover: #eef2f0;
+  --track-background: #e1e5e2;
+  --header-background: rgb(255 255 255 / 82%);
+  --dialog-header-background: rgb(255 255 255 / 96%);
+  --floating-background: rgb(255 255 255 / 78%);
+  --subtle-surface: rgb(255 255 255 / 70%);
+  --footer-background: #f7f8f6;
+  --focus-ring: #6d8998;
+  --accent-border: #78909c;
+  --accent-contrast: #ffffff;
+  --swatch-border: rgb(23 33 43 / 24%);
+  --swatch-inset: rgb(255 255 255 / 55%);
+  --panel-gradient: rgb(36 70 90 / 5%);
+  --map-boundary: rgb(36 70 90 / 32%);
+  --track-neutral: #dde2df;
+  --dialog-shadow: rgb(23 33 43 / 28%);
+  --dialog-backdrop: rgb(23 33 43 / 48%);
+}
+
+:root[data-theme="dark"] {
+  color: #eef3f2;
+  background: #101719;
+  --page-background: #101719;
+  --panel-background: #182124;
+  --panel-muted: #202a2d;
+  --panel-strong: #2a3639;
+  --panel-elevated: #151d20;
+  --control-background: #202a2d;
+  --control-hover: #293538;
+  --track-background: #354144;
+  --header-background: rgb(24 33 36 / 88%);
+  --dialog-header-background: #1b2528;
+  --floating-background: rgb(31 42 45 / 88%);
+  --subtle-surface: rgb(31 42 45 / 82%);
+  --footer-background: #151d20;
+  --border: #354347;
+  --border-strong: #4a5a5f;
+  --ink: #eef3f2;
+  --muted: #aab6b7;
+  --accent: #9bc7d8;
+  --accent-soft: #263f49;
+  --danger: #ffaaaa;
+  --focus-ring: #8fbccd;
+  --accent-border: #719baa;
+  --accent-contrast: #102027;
+  --shadow: 0 0.75rem 2.5rem rgb(0 0 0 / 24%);
+  --swatch-border: rgb(238 243 242 / 30%);
+  --swatch-inset: rgb(0 0 0 / 30%);
+  --panel-gradient: rgb(155 199 216 / 5%);
+  --map-boundary: rgb(155 199 216 / 34%);
+  --track-neutral: #354144;
+  --dialog-shadow: rgb(0 0 0 / 48%);
+  --dialog-backdrop: rgb(0 0 0 / 62%);
+}
+
+.workspace-header {
+  background: var(--header-background);
+}
+
+.workspace-introduction,
+.methodology-dialog-introduction,
+.methodology-section > ul,
+.methodology-model > p,
+.methodology-seat-growth-note p,
+.methodology-sources > p {
+  color: var(--muted);
+}
+
+.application-footer {
+  background: var(--footer-background);
+}
+
+button:focus-visible,
+a:focus-visible,
+[tabindex="0"]:focus-visible,
+.coalition-panel .coalition-list:focus-visible {
+  outline-color: var(--focus-ring);
+}
+
+.parliament-panel {
+  background:
+    linear-gradient(145deg, transparent, var(--panel-gradient)),
+    var(--panel-elevated);
+}
+
+.parliament-cutout,
+.parliament-chart .parliament-cutout {
+  background: var(--panel-elevated);
+}
+
+.parliament-totals span,
+.parliament-legend li {
+  background: var(--floating-background);
+}
+
+.parliament-track {
+  stroke: var(--track-background);
+}
+
+.party-track {
+  background: var(--track-neutral);
+}
+
+.party-swatch {
+  border-color: var(--swatch-border);
+  box-shadow: 0 0 0 1px var(--swatch-inset) inset;
+}
+
+.filter-control:hover {
+  background: var(--control-hover);
+}
+
+.filter-control[aria-expanded="true"],
+.filter-value-button:hover,
+.filter-value-button[aria-pressed="true"],
+.secondary-action:not(:disabled):hover,
+.map-copy button:hover {
+  border-color: var(--accent-border);
+}
+
+.filter-value-button {
+  background: var(--control-background);
+}
+
+.germany-boundary {
+  stroke: var(--map-boundary);
+}
+
+.electoral-system-select {
+  background: var(--subtle-surface);
+  color: var(--ink);
+}
+
+.methodology-dialog {
+  box-shadow: 0 1.5rem 5rem var(--dialog-shadow);
+}
+
+.methodology-dialog::backdrop {
+  background: var(--dialog-backdrop);
+}
+
+.methodology-dialog-header {
+  background: var(--dialog-header-background);
+}
+
+.methodology-model-heading span {
+  color: var(--accent-contrast);
+}
+
+.methodology-sources li {
+  background: var(--panel-background);
+}
+
+:root[data-theme="dark"] .methodology-model-active {
+  background: color-mix(
+    in srgb,
+    var(--accent-soft) 66%,
+    var(--panel-background)
+  );
+}
+
+:root[data-theme="dark"] .methodology-seat-growth-note {
+  background: color-mix(
+    in srgb,
+    var(--accent-soft) 60%,
+    var(--panel-background)
+  );
+}
+
+:root[data-theme="dark"] .methodology-notices {
+  background: color-mix(
+    in srgb,
+    var(--accent-soft) 48%,
+    var(--panel-background)
+  );
+}
+
+.theme-toggle {
+  width: 2rem;
+  height: 2rem;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--panel-muted);
+  color: var(--accent);
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+}
+
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+.theme-toggle svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
