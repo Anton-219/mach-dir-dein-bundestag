@@ -29,7 +29,7 @@ The election results are taken from:
 - https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/weitere-ergebnisse.html
 - https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/repraesentative-wahlstatistik.html
 - The overall results are inside `btw25_wbz_ergebnisse.csv`. They are in a zip folder: https://www.bundeswahlleiterin.de/dam/jcr/e79a7bd3-0607-4e87-9752-8e601e299e00/btw25_wbz.zip
-- The statistics: https://www.bundeswahlleiterin.de/dam/jcr/677acfc3-fc2b-4614-aaaf-aab9a1ad05ce/btw25_rws_bw2.csv
+- The statistics: https://www.bundeswahlleiterin.de/dam/jcr/de1bf90b-ae2e-43d6-8974-0a1e0a0a72e3/btw25_rws_bst2.csv
 
 (c) Die Bundeswahlleiterin (im Auftrag der Herausgebergemeinschaft), Wiesbaden 2025
 
