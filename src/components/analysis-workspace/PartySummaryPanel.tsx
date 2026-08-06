@@ -37,9 +37,6 @@ export function PartySummaryPanel({
       result.directWins,
     ]) ?? [],
   )
-  const constituencyWinsLabel =
-    i18n.locale === 'de' ? 'Gewonnene Wahlkreise:' : 'Constituencies won:'
-  const constituencyWinsShort = i18n.locale === 'de' ? 'Wahlkr.' : 'const.'
   const resultMessage = getScenarioReasonText(scenario?.reason, i18n)
 
   return (
@@ -122,11 +119,13 @@ export function PartySummaryPanel({
                   <span className="party-metric party-constituencies">
                     <strong>
                       <span className="visually-hidden">
-                        {constituencyWinsLabel}{' '}
+                        {messages.parties.constituencyWins}{' '}
                       </span>
                       {i18n.formatNumber(directWins)}
                     </strong>
-                    <small aria-hidden="true">{constituencyWinsShort}</small>
+                    <small aria-hidden="true">
+                      {messages.parties.constituencyWinsShort}
+                    </small>
                   </span>
                 </span>
               </li>

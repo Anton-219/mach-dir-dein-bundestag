@@ -168,6 +168,8 @@ export const englishMessages = {
     voteShare: 'Vote share:',
     seats: 'Seats:',
     seatsShort: 'seats',
+    constituencyWins: 'Constituencies won:',
+    constituencyWinsShort: 'const.',
   },
   coalitions: {
     kicker: 'Majority options',
@@ -191,7 +193,7 @@ export const englishMessages = {
     excludedFromScenario: 'Excluded from scenario',
     includedInScenario: 'Included in scenario',
     weight: (share: string, votes: string) =>
-      `${share} of all voters · ${votes} votes`,
+      `${share} of second votes · ${votes} votes`,
     calculationFailed: 'The state result could not be calculated.',
     unavailable: 'The state result is not available yet.',
     voteShare: 'Vote share:',
@@ -549,6 +551,8 @@ export const germanMessages: MessageCatalog = {
     voteShare: 'Stimmenanteil:',
     seats: 'Sitze:',
     seatsShort: 'Sitze',
+    constituencyWins: 'Gewonnene Wahlkreise:',
+    constituencyWinsShort: 'Wahlkr.',
   },
   coalitions: {
     kicker: 'Mehrheitsoptionen',
@@ -572,7 +576,7 @@ export const germanMessages: MessageCatalog = {
     excludedFromScenario: 'Vom Szenario ausgeschlossen',
     includedInScenario: 'Im Szenario einbezogen',
     weight: (share: string, votes: string) =>
-      `${share} aller Wählerinnen und Wähler · ${votes} Stimmen`,
+      `${share} aller Zweitstimmen· ${votes} Stimmen`,
     calculationFailed: 'Das Ergebnis des Bundeslands konnte nicht berechnet werden.',
     unavailable: 'Das Ergebnis des Bundeslands ist noch nicht verfügbar.',
     voteShare: 'Stimmenanteil:',
