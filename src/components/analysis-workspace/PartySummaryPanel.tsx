@@ -31,6 +31,15 @@ export function PartySummaryPanel({
           ),
         )
       : []
+  const directWinsByParty = new Map(
+    scenario?.electoralSystemResult?.parties.map((result) => [
+      result.party,
+      result.directWins,
+    ]) ?? [],
+  )
+  const constituencyWinsLabel =
+    i18n.locale === 'de' ? 'Gewonnene Wahlkreise:' : 'Constituencies won:'
+  const constituencyWinsShort = i18n.locale === 'de' ? 'Wahlkr.' : 'const.'
   const resultMessage = getScenarioReasonText(scenario?.reason, i18n)
 
   return (
@@ -56,6 +65,7 @@ export function PartySummaryPanel({
           {partyRows.map((result) => {
             const percentage = Math.min(Math.max(result.percentage, 0), 1)
             const formattedPercentage = i18n.formatPercent(percentage)
+            const directWins = directWinsByParty.get(result.abbreviation) ?? 0
 
             return (
               <li
@@ -98,14 +108,24 @@ export function PartySummaryPanel({
                   </strong>
                 </span>
 
-                <span className="party-seats">
+                <span className="party-metric party-seats">
                   <strong>
                     <span className="visually-hidden">
                       {messages.parties.seats}{' '}
                     </span>
-                    {result.seats}
+                    {i18n.formatNumber(result.seats)}
                   </strong>
                   <small aria-hidden="true">{messages.parties.seatsShort}</small>
+                </span>
+
+                <span className="party-metric party-constituencies">
+                  <strong>
+                    <span className="visually-hidden">
+                      {constituencyWinsLabel}{' '}
+                    </span>
+                    {i18n.formatNumber(directWins)}
+                  </strong>
+                  <small aria-hidden="true">{constituencyWinsShort}</small>
                 </span>
               </li>
             )
