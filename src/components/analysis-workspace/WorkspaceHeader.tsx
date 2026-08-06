@@ -1,7 +1,11 @@
 import { useI18n } from '../../i18n/index.ts'
 import { LanguageSwitcher } from '../language/LanguageSwitcher.tsx'
 
-export function WorkspaceHeader() {
+interface WorkspaceHeaderProps {
+  onOpenMethodology: () => void
+}
+
+export function WorkspaceHeader({ onOpenMethodology }: WorkspaceHeaderProps) {
   const { messages } = useI18n()
 
   return (
@@ -21,9 +25,13 @@ export function WorkspaceHeader() {
         </p>
 
         <div className="workspace-header-actions">
-          <a className="methodology-link" href="#methodology">
+          <button
+            className="methodology-link"
+            type="button"
+            onClick={onOpenMethodology}
+          >
             {messages.header.methodology}
-          </a>
+          </button>
           <LanguageSwitcher />
         </div>
       </header>
