@@ -1,7 +1,26 @@
+import { execFileSync } from 'node:child_process'
+
 import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
 
 import { defaultLocale, messageCatalogs } from './src/i18n/messages.ts'
+
+function resolveLastUpdatedAt(): string {
+  try {
+    const commitDate = execFileSync('git', ['log', '-1', '--format=%cI'], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim()
+
+    if (commitDate.length > 0) {
+      return commitDate
+    }
+  } catch {
+    // No git context, for example a build from an archive. Fall back to the build time.
+  }
+
+  return new Date().toISOString()
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -36,5 +55,8 @@ function localizedDefaultMetadata(): Plugin {
 }
 
 export default defineConfig({
+  define: {
+    __LAST_UPDATED_AT__: JSON.stringify(resolveLastUpdatedAt()),
+  },
   plugins: [localizedDefaultMetadata(), react()],
 })

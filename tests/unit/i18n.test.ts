@@ -39,6 +39,13 @@ test('provides complete German and English presentation tools', () => {
   )
 })
 
+test('formats dates in the active locale', () => {
+  const date = new Date('2026-03-15T12:00:00Z')
+
+  assert.match(createTranslationTools('de').formatDate(date), /März 2026/)
+  assert.match(createTranslationTools('en').formatDate(date), /March 2026/)
+})
+
 test('localizes dynamic filter summaries', () => {
   const german = createTranslationTools('de')
   const english = createTranslationTools('en')

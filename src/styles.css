@@ -598,7 +598,9 @@ h2 {
 .application-footer {
   min-height: 2rem;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 0.2rem 0.75rem;
   padding: 0.4rem 1rem;
   border-top: 1px solid var(--border);
   background: #f7f8f6;
@@ -613,6 +615,11 @@ h2 {
 
 .application-footer strong {
   color: var(--ink);
+}
+
+.application-footer-updated {
+  margin-left: auto;
+  white-space: nowrap;
 }
 
 @media (max-width: 70rem) {
