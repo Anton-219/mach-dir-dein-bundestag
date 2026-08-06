@@ -108,24 +108,26 @@ export function PartySummaryPanel({
                   </strong>
                 </span>
 
-                <span className="party-metric party-seats">
-                  <strong>
-                    <span className="visually-hidden">
-                      {messages.parties.seats}{' '}
-                    </span>
-                    {i18n.formatNumber(result.seats)}
-                  </strong>
-                  <small aria-hidden="true">{messages.parties.seatsShort}</small>
-                </span>
+                <span className="party-metrics">
+                  <span className="party-metric party-seats">
+                    <strong>
+                      <span className="visually-hidden">
+                        {messages.parties.seats}{' '}
+                      </span>
+                      {i18n.formatNumber(result.seats)}
+                    </strong>
+                    <small aria-hidden="true">{messages.parties.seatsShort}</small>
+                  </span>
 
-                <span className="party-metric party-constituencies">
-                  <strong>
-                    <span className="visually-hidden">
-                      {constituencyWinsLabel}{' '}
-                    </span>
-                    {i18n.formatNumber(directWins)}
-                  </strong>
-                  <small aria-hidden="true">{constituencyWinsShort}</small>
+                  <span className="party-metric party-constituencies">
+                    <strong>
+                      <span className="visually-hidden">
+                        {constituencyWinsLabel}{' '}
+                      </span>
+                      {i18n.formatNumber(directWins)}
+                    </strong>
+                    <small aria-hidden="true">{constituencyWinsShort}</small>
+                  </span>
                 </span>
               </li>
             )
