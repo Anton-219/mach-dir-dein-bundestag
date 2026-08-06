@@ -211,7 +211,6 @@ export const englishMessages = {
     seatBreakdown: {
       directSeats: 'Direct seats',
       listSeats: 'List seats',
-      uncoveredDistrictWins: 'Uncovered constituency wins',
     },
     notices: {
       title: 'Model notes',
@@ -259,7 +258,7 @@ export const englishMessages = {
         'The absolute majority is always calculated from the parliament that was actually produced: floor(total seats ÷ 2) + 1. It is not stored as a fixed number.',
       calculationTitle: 'Calculation and possible errors',
       calculationText:
-        'All filtering and seat calculations take place entirely in your browser; the scenarios you create are not sent to a server. The formulas and their technical implementation are covered by automated tests. Even so, calculation errors, incorrectly implemented rules, or overlooked special cases may remain and could distort the results. Treat the output as a transparent simulation, not as an official or legally binding calculation.',
+        'All filtering and seat calculations take place in the browser. Calculation errors, incorrectly implemented rules, or overlooked special cases may be included and distort the results.',
       historicalSeatGrowthTitle: 'A note on seat allocation and the number of seats',
       historicalSeatGrowthParagraphs: [
         'While experimenting with the filters, the number of seats in the Bundestag can practically explode. In my assessment, this comes from the overhang seats in combination with the constituencies won. Because the old calculation system means direct mandates always have to enter the Bundestag, the other parties have to receive more seats as compensation.',
@@ -593,7 +592,6 @@ export const germanMessages: MessageCatalog = {
     seatBreakdown: {
       directSeats: 'Direktmandate',
       listSeats: 'Listenmandate',
-      uncoveredDistrictWins: 'Nicht gedeckte Wahlkreissiege',
     },
     notices: {
       title: 'Hinweise zum Modell',
@@ -641,7 +639,7 @@ export const germanMessages: MessageCatalog = {
         'Die absolute Mehrheit wird immer aus dem tatsächlich berechneten Parlament bestimmt: abgerundet(Gesamtsitze ÷ 2) + 1. Sie ist nicht als feste Zahl hinterlegt.',
       calculationTitle: 'Berechnung und mögliche Fehler',
       calculationText:
-        'Alle Filterungen und Sitzberechnungen finden vollständig in deinem Browser statt; die von dir zusammengestellten Szenarien werden nicht an einen Server übertragen. Die Formeln und ihre technische Umsetzung werden mit automatisierten Tests geprüft. Trotzdem können Rechenfehler, falsch umgesetzte Regeln oder übersehene Sonderfälle enthalten sein und Ergebnisse verfälschen. Verstehe die Resultate deshalb als transparente Simulation und nicht als amtliche oder rechtlich verbindliche Berechnung.',
+        'Alle Filterungen und Sitzberechnungen finden im Browser statt. Es können Rechenfehler, falsch umgesetzte Regeln oder übersehene Sonderfälle enthalten sein und Ergebnisse verfälschen.',
       historicalSeatGrowthTitle: 'Hinweis zu der Sitzbelegung und -anzahl',
       historicalSeatGrowthParagraphs: [
         'Beim Experimentieren mit den Filtern kann es passieren, dass die Anzahl der Sitze im Bundestag förmlich explodiert. Meiner Einschätzung nach liegt das an den Überhangsmandaten in Zusammenhang mit den gewonnen Wahlkreisen. Da durch das alte Berechnungssystem Direktmandate immer in den Bundestag können müssen, müssen die anderen Parteien mehr Mandate als Ausgleich bekommen.',
