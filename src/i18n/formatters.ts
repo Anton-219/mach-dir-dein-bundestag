@@ -20,6 +20,7 @@ export interface TranslationTools {
   formatNumber: (value: number) => string
   formatPercent: (value: number) => string
   formatList: (values: readonly string[]) => string
+  formatDate: (value: Date) => string
   stateName: (state: string) => string
 }
 
@@ -45,6 +46,9 @@ export function createTranslationTools(locale: Locale): TranslationTools {
     style: 'long',
     type: 'conjunction',
   })
+  const dateFormatter = new Intl.DateTimeFormat(localeTag, {
+    dateStyle: 'long',
+  })
 
   return {
     locale,
@@ -52,6 +56,7 @@ export function createTranslationTools(locale: Locale): TranslationTools {
     formatNumber: (value) => numberFormatter.format(value),
     formatPercent: (value) => percentFormatter.format(value),
     formatList: (values) => listFormatter.format(values),
+    formatDate: (value) => dateFormatter.format(value),
     stateName: (state) =>
       messages.stateNames[state as keyof MessageCatalog['stateNames']] ?? state,
   }

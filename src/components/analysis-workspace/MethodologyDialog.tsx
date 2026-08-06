@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import { lastUpdatedAt } from '../../build-info.ts'
 import {
   getElectoralSystemCatalog,
   getElectoralSystemNoticeTexts,
@@ -55,14 +56,13 @@ export function MethodologyDialog({
           {messages.footer.title}
         </h2>
         <p>
-          <strong>{messages.footer.label}</strong> {messages.footer.text}{' '}
-          <button
-            className="methodology-link"
-            type="button"
-            onClick={() => dialogRef.current?.showModal()}
-          >
-            {messages.header.methodology}
-          </button>
+          <strong>{messages.footer.label}</strong> {messages.footer.text}
+        </p>
+        <p className="application-footer-updated">
+          {messages.footer.lastUpdatedLabel}{' '}
+          <time dateTime={lastUpdatedAt.toISOString()}>
+            {i18n.formatDate(lastUpdatedAt)}
+          </time>
         </p>
       </footer>
 

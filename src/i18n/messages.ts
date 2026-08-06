@@ -28,6 +28,7 @@ export const englishMessages = {
     label: 'Transparency:',
     text:
       'All calculations run entirely in your browser. Despite automated tests, errors in formulas or implementation may distort the results. The results are simulations, not official calculations.',
+    lastUpdatedLabel: 'Last updated:',
   },
   common: {
     reset: 'Reset',
@@ -162,7 +163,7 @@ export const englishMessages = {
     representedPartiesAriaLabel: 'Parties represented in parliament',
   },
   parties: {
-    kicker: 'Current result',
+    kicker: 'Current result · second votes',
     title: 'Parties',
     represented: (count: number) => `${count} represented`,
     voteShare: 'Vote share:',
@@ -408,9 +409,10 @@ export const germanMessages: MessageCatalog = {
   },
   footer: {
     title: 'Transparenz der Berechnung',
-    label: 'Transparenz:',
+    label: '',
     text:
-      'Alle Berechnungen laufen vollständig in deinem Browser. Trotz automatisierter Tests können Fehler in Formeln oder Umsetzung die Ergebnisse verfälschen. Die Resultate sind Simulationen, keine amtlichen Berechnungen.',
+      'Alle Berechnungen laufen vollständig im Browser. Trotz automatisierter Tests können Fehler in Formeln oder Umsetzung die Ergebnisse verfälschen. Die Resultate sind Simulationen, keine amtlichen Berechnungen.',
+    lastUpdatedLabel: 'Zuletzt aktualisiert:',
   },
   common: {
     reset: 'Zurücksetzen',
@@ -545,7 +547,7 @@ export const germanMessages: MessageCatalog = {
     representedPartiesAriaLabel: 'Im Parlament vertretene Parteien',
   },
   parties: {
-    kicker: 'Aktuelles Ergebnis',
+    kicker: 'Aktuelles Ergebnis · Zweitstimmen',
     title: 'Parteien',
     represented: (count: number) => `${count} vertreten`,
     voteShare: 'Stimmenanteil:',
