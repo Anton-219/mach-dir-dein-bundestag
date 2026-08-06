@@ -1,7 +1,7 @@
 I used the following data:
 
 ## Germany Map
-Germany Map from https://github.com/isellsoap/deutschlandGeoJSON
+The map of Germany is taken from https://github.com/isellsoap/deutschlandGeoJSON
 ### License:
 This is free and unencumbered software released into the public domain.
 
@@ -14,13 +14,29 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 For more information, please refer to https://unlicense.org
 
 ## Election results
+### 2021
 The election results are taken from 
 - https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/weitere-ergebnisse.html
 - https://bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/repraesentative-wahlstatistik.html
 - The overall results are inside `btw21_wbz_ergebnisse.csv`. There are in a zip folder: https://www.bundeswahlleiterin.de/dam/jcr/c2cd99e6-064e-4ebc-b634-f86b5c0e14b3/btw21_wbz.zip
 - The statistics: https://bundeswahlleiterin.de/dam/jcr/2aaec1fb-745a-422d-9ef0-0be7c9ca0ac9/btw21_rws_bw2.csv
 
+(c) Die Bundeswahlleiterin (im Auftrag der Herausgebergemeinschaft), Wiesbaden 2024
+
+
+### 2025
+The election results are taken from:
+- https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/weitere-ergebnisse.html
+- https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/repraesentative-wahlstatistik.html
+- The overall results are inside `btw25_wbz_ergebnisse.csv`. They are in a zip folder: https://www.bundeswahlleiterin.de/dam/jcr/e79a7bd3-0607-4e87-9752-8e601e299e00/btw25_wbz.zip
+- The statistics: https://www.bundeswahlleiterin.de/dam/jcr/de1bf90b-ae2e-43d6-8974-0a1e0a0a72e3/btw25_rws_bst2.csv
+
+(c) Die Bundeswahlleiterin (im Auftrag der Herausgebergemeinschaft), Wiesbaden 2025
+
 ### License
+The statistics are licensed under:
+
+---
 Datenlizenz Deutschland – Namensnennung – Version 2.0
 
 (1) Jede Nutzung ist unter den Bedingungen dieser „Datenlizenz Deutschland – Namensnennung – Version 2.0" zulässig.
@@ -40,3 +56,5 @@ Dies gilt nur soweit die datenhaltende Stelle die Angaben 1. bis 3. zum Quellenv
 (3) Veränderungen, Bearbeitungen, neue Gestaltungen oder sonstige Abwandlungen sind im Quellenvermerk mit dem Hinweis zu versehen, dass die Daten geändert wurden.
 
 URL: http://www.govdata.de/dl-de/by-2-0
+
+---
