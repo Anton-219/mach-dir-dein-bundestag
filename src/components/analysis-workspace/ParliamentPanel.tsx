@@ -134,16 +134,6 @@ export function ParliamentPanel({ parties, scenario }: ParliamentPanelProps) {
                   <dt>{electoralSystemCopy.seatBreakdown.listSeats}</dt>
                   <dd>{i18n.formatNumber(seatBreakdown.listSeats)}</dd>
                 </div>
-                {seatBreakdown.uncoveredDistrictWins > 0 ? (
-                  <div>
-                    <dt>
-                      {electoralSystemCopy.seatBreakdown.uncoveredDistrictWins}
-                    </dt>
-                    <dd>
-                      {i18n.formatNumber(seatBreakdown.uncoveredDistrictWins)}
-                    </dd>
-                  </div>
-                ) : null}
               </dl>
             ) : null}
           </div>
