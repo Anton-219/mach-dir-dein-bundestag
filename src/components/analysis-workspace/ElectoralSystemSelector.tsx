@@ -17,25 +17,31 @@ export function ElectoralSystemSelector({
   const i18n = useI18n()
   const copy = getElectoralSystemCatalog(i18n.locale)
   const options = getElectoralSystemOptions(i18n.locale)
-  const activeOption = options.find(
-    (option) => option.systemId === selectedSystemId,
-  )
 
   return (
-    <select
-      className="electoral-system-select"
-      value={selectedSystemId}
-      aria-label={copy.selector.activeLabel}
-      title={activeOption?.description}
-      onChange={(event) =>
-        onChange(event.currentTarget.value as ElectoralSystemId)
-      }
+    <div
+      className="scenario-link-options scenario-link-options-models"
+      role="group"
+      aria-label={copy.selector.optionsLabel}
     >
-      {options.map((option) => (
-        <option value={option.systemId} key={option.systemId}>
-          {option.shortName}
-        </option>
+      {options.map((option, index) => (
+        <span className="scenario-link-option-wrap" key={option.systemId}>
+          {index > 0 ? (
+            <span className="scenario-link-separator" aria-hidden="true">
+              |
+            </span>
+          ) : null}
+          <button
+            className={`scenario-link-option${option.systemId === selectedSystemId ? ' scenario-link-option-active' : ''}`}
+            type="button"
+            aria-pressed={option.systemId === selectedSystemId}
+            title={option.description}
+            onClick={() => onChange(option.systemId)}
+          >
+            {option.shortName}
+          </button>
+        </span>
       ))}
-    </select>
+    </div>
   )
 }
