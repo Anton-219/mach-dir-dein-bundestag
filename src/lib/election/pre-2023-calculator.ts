@@ -18,7 +18,7 @@ export const PRE_2023_BASE_SEAT_COUNT = 598
 export const PRE_2023_UNCOMPENSATED_OVERHANG_LIMIT = 3
 
 const LEGAL_VERSION = 'de-2021-bwahlg-2020-v1'
-const SUPPORTED_CONTINGENT_YEAR = 2021
+const SUPPORTED_CONTINGENT_YEARS = new Set<number>([2021, 2025])
 const MAXIMUM_SEARCH_SEAT_COUNT = 10_000
 
 interface PartyMinimum {
@@ -67,12 +67,16 @@ function validateStateSeatContingents(
       'The pre-2023 calculator requires historical state seat contingents.',
     )
   }
-  if (input.supportingData?.stateSeatContingentYear !== SUPPORTED_CONTINGENT_YEAR) {
+  const contingentYear = input.supportingData?.stateSeatContingentYear
+  if (
+    contingentYear === undefined ||
+    !SUPPORTED_CONTINGENT_YEARS.has(contingentYear)
+  ) {
     invalidFixture(
       'The state seat contingent fixture has an unsupported election year.',
       {
-        expectedYear: SUPPORTED_CONTINGENT_YEAR,
-        actualYear: input.supportingData?.stateSeatContingentYear ?? 'missing',
+        supportedYears: [...SUPPORTED_CONTINGENT_YEARS].join(', '),
+        actualYear: contingentYear ?? 'missing',
       },
     )
   }
@@ -441,6 +445,7 @@ export const pre2023Calculator: ElectoralSystemCalculator = {
       (total, party) => total + party.totalSeats,
       0,
     )
+    const contingentYear = input.supportingData?.stateSeatContingentYear
     return {
       systemId: 'de-2021-bwahlg',
       legalVersion: LEGAL_VERSION,
@@ -457,10 +462,12 @@ export const pre2023Calculator: ElectoralSystemCalculator = {
         reservedDirectSeats: reservedDirectSeatCount,
         uncompensatedOverhangSeats: upper.uncompensatedOverhangSeats,
         inactiveStates,
-        stateSeatContingentYear: SUPPORTED_CONTINGENT_YEAR,
+        stateSeatContingentYear: contingentYear,
         referenceScenario:
           input.scenario.mode === 'unfiltered-reference'
-            ? 'btw-2021-main-election'
+            ? contingentYear === 2025
+              ? 'btw-2025-main-election'
+              : 'btw-2021-main-election'
             : undefined,
       },
     }
