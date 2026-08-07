@@ -12,9 +12,9 @@ export type AgeGroup =
   | '18-24'
   | '25-34'
   | '35-44'
-  | '45-54'
-  | '55-64'
-  | '65+'
+  | '45-59'
+  | '60-69'
+  | '70+'
 
 export type VoteType = '1' | '2'
 
@@ -41,13 +41,5 @@ export interface VoteEntry {
   party: string
   voteType: VoteType
   electionMethod: ElectionMethod
-  votes: number
-}
-
-/** One demographic reference record from `public/data/stat_votes.json`. */
-export interface StatVotes {
-  gender: Gender
-  ageGroup: AgeGroup
-  party: string
   votes: number
 }

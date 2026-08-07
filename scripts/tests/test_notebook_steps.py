@@ -4,6 +4,7 @@ import unittest
 
 import pandas as pd
 
+from scripts.election_data.btw2021 import APP_AGE_GROUPS, normalize_age_group
 from scripts.election_data.notebook_steps import (
     calculate_demographic_profiles,
     inspect_district_rows,
@@ -38,6 +39,32 @@ class DistrictRowDiagnosticsTest(unittest.TestCase):
         self.assertEqual(diagnostics["status"].tolist(), ["invalid"])
         with self.assertRaisesRegex(ValueError, "Gesamt"):
             select_usable_district_rows(source, diagnostics)
+
+
+class AgeGroupNormalizationTest(unittest.TestCase):
+    def test_2021_birth_year_groups_map_to_shared_application_groups(self) -> None:
+        expected = {
+            "1997-2003": "18-24",
+            "1987-1996": "25-34",
+            "1977-1986": "35-44",
+            "1962-1976": "45-59",
+            "1952-1961": "60-69",
+            "1951 und früher": "70+",
+        }
+
+        self.assertEqual(
+            APP_AGE_GROUPS,
+            ("18-24", "25-34", "35-44", "45-59", "60-69", "70+"),
+        )
+        for source, age_group in expected.items():
+            with self.subTest(source=source):
+                self.assertEqual(normalize_age_group(source), age_group)
+
+    def test_obsolete_age_group_labels_are_rejected(self) -> None:
+        for label in ("45-54", "55-64", "65+"):
+            with self.subTest(label=label):
+                with self.assertRaises(ValueError):
+                    normalize_age_group(label)
 
 
 class DemographicShareTest(unittest.TestCase):

@@ -258,7 +258,6 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
   const parties = dataState.status === 'ready' ? dataState.data.parties : []
   const germanyStates =
     dataState.status === 'ready' ? dataState.data.germanyStates.features : []
-  const statVotes = dataState.status === 'ready' ? dataState.data.statVotes : []
   const secondVotes = dataState.status === 'ready' ? dataState.data.secondVotes : []
 
   return (
@@ -281,11 +280,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
             onOpenFilterChange={setOpenFilter}
             onReset={resetFilters}
           />
-          <DemographicPanel
-            statVotes={statVotes}
-            secondVotes={secondVotes}
-            filters={filters}
-          />
+          <DemographicPanel secondVotes={secondVotes} filters={filters} />
         </div>
 
         <ScenarioSummary

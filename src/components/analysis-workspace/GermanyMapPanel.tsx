@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useState,
   type KeyboardEvent,
   type MouseEvent,
@@ -31,9 +32,15 @@ export function GermanyMapPanel({
   const [hoveredState, setHoveredState] = useState<string | null>(null)
   const [focusedState, setFocusedState] = useState<string | null>(null)
   const highlightedState = hoveredState ?? focusedState
-  const statePaths = buildGermanyStatePaths(features)
-  const stateInteractionPaths = orderGermanyStatePathsForInteraction(statePaths)
-  const boundaryPath = buildGermanyBoundaryPath(statePaths)
+  const statePaths = useMemo(() => buildGermanyStatePaths(features), [features])
+  const stateInteractionPaths = useMemo(
+    () => orderGermanyStatePathsForInteraction(statePaths),
+    [statePaths],
+  )
+  const boundaryPath = useMemo(
+    () => buildGermanyBoundaryPath(statePaths),
+    [statePaths],
+  )
   const highlightedStatePath = statePaths.find(
     (state) => state.name === highlightedState,
   )

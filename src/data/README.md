@@ -5,9 +5,8 @@ The primary frontend loads the prepared election datasets from `public/data` as 
 | Purpose | Application file |
 | --- | --- |
 | Party names, abbreviations, colours, and seat positions | `public/data/partyData.json` |
-| Constituency-aware first-vote records used to determine district winners | `public/data/first_votes.json` |
-| Constituency-aware second-vote records used by the scenario calculation | `public/data/second_votes.json` |
-| Demographic reference vote records | `public/data/stat_votes.json` |
+| Constituency-aware first-vote records used to determine district winners | `public/data/btw2021/first_votes.json` |
+| Constituency-aware second-vote records used by the scenario calculation and the demographic presentation | `public/data/btw2021/second_votes.json` |
 | Federal-state geometry used by the interactive map | `public/data/germany_states_map.geo.json` |
 | Historical 2021 state seat contingents for the pre-2023 calculator | `public/data/state_seat_contingents_2021.json` |
 

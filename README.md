@@ -48,9 +48,8 @@ The project uses one application entry point and no backend, router, database, a
 The primary application loads these same-origin assets from `public/data/`:
 
 - `partyData.json`: party names, abbreviations, colours, and parliamentary positions
-- `first_votes.json`: constituency-aware first-vote records used to calculate district winners
-- `second_votes.json`: constituency-aware second-vote records used by the scenario calculation
-- `stat_votes.json`: demographic reference vote records
+- `btw2021/first_votes.json`: constituency-aware first-vote records used to calculate district winners
+- `btw2021/second_votes.json`: constituency-aware second-vote records used by the scenario calculation and the demographic presentation
 - `germany_states_map.geo.json`: federal-state geometry for the interactive map
 
 The JSON-facing field names and literal values in `src/models/json-contracts.ts` are application data contracts. They must not be changed without migrating the corresponding prepared data files.

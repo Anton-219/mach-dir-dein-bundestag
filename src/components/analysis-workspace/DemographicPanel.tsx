@@ -1,72 +1,79 @@
+import { useMemo } from 'react'
+
 import { useI18n } from '../../i18n/index.ts'
 import type { FilterState } from '../../lib/filters/index.ts'
 import type {
   AgeGroup,
+  ElectionMethod,
   Gender,
-  StatVotes,
   VoteEntry,
 } from '../../models/json-contracts.ts'
 
 const ageGroups = [
-  { value: '65+', label: '65+' },
-  { value: '55-64', label: '55–64' },
-  { value: '45-54', label: '45–54' },
+  { value: '70+', label: '70+' },
+  { value: '60-69', label: '60–69' },
+  { value: '45-59', label: '45–59' },
   { value: '35-44', label: '35–44' },
   { value: '25-34', label: '25–34' },
   { value: '18-24', label: '18–24' },
 ] as const satisfies readonly { value: AgeGroup; label: string }[]
 
-function buildAgeGenderTotals(statVotes: readonly StatVotes[]) {
-  const totals: Record<Gender, Record<AgeGroup, number>> = {
+/**
+ * Aggregates the demographic reference distribution from the prepared
+ * second-vote records in a single pass. The panel shows the unfiltered
+ * electorate, so the caller passes the raw records and the filter state only
+ * mutes the affected bars.
+ */
+function buildDemographicTotals(secondVotes: readonly VoteEntry[]) {
+  const ageGenderTotals: Record<Gender, Record<AgeGroup, number>> = {
     m: {
       '18-24': 0,
       '25-34': 0,
       '35-44': 0,
-      '45-54': 0,
-      '55-64': 0,
-      '65+': 0,
+      '45-59': 0,
+      '60-69': 0,
+      '70+': 0,
     },
     w: {
       '18-24': 0,
       '25-34': 0,
       '35-44': 0,
-      '45-54': 0,
-      '55-64': 0,
-      '65+': 0,
+      '45-59': 0,
+      '60-69': 0,
+      '70+': 0,
     },
   }
-
-  for (const entry of statVotes) {
-    totals[entry.gender][entry.ageGroup] += entry.votes
+  const methodTotals: Record<ElectionMethod, number> = {
+    postal: 0,
+    'in-person': 0,
   }
 
-  return totals
+  for (const entry of secondVotes) {
+    ageGenderTotals[entry.gender][entry.ageGroup] += entry.votes
+    methodTotals[entry.electionMethod] += entry.votes
+  }
+
+  return { ageGenderTotals, methodTotals }
 }
 
 export function DemographicPanel({
-  statVotes,
   secondVotes,
   filters,
 }: {
-  statVotes: readonly StatVotes[]
   secondVotes: readonly VoteEntry[]
   filters: FilterState
 }) {
   const { messages, formatPercent } = useI18n()
-  const ageGenderTotals = buildAgeGenderTotals(statVotes)
+  const { ageGenderTotals, methodTotals } = useMemo(
+    () => buildDemographicTotals(secondVotes),
+    [secondVotes],
+  )
   const maximumAgeGenderValue = Math.max(
     1,
     ...ageGroups.flatMap(({ value }) => [
       ageGenderTotals.m[value],
       ageGenderTotals.w[value],
     ]),
-  )
-  const methodTotals = secondVotes.reduce(
-    (totals, entry) => {
-      totals[entry.electionMethod] += entry.votes
-      return totals
-    },
-    { postal: 0, 'in-person': 0 },
   )
   const totalMethodVotes = methodTotals.postal + methodTotals['in-person']
   const postalShare = totalMethodVotes > 0 ? methodTotals.postal / totalMethodVotes : 0

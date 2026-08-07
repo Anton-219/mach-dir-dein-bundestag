@@ -5,16 +5,14 @@ import type {
   ElectionMethod,
   Gender,
   Party,
-  StatVotes,
   VoteEntry,
   VoteType,
 } from '../models/index.ts'
 
 const dataFiles = {
   parties: 'partyData.json',
-  firstVotes: 'first_votes.json',
-  secondVotes: 'second_votes.json',
-  statVotes: 'stat_votes.json',
+  firstVotes: 'btw2021/first_votes.json',
+  secondVotes: 'btw2021/second_votes.json',
   germanyStates: 'germany_states_map.geo.json',
   stateSeatContingents: 'state_seat_contingents_2021.json',
 } as const
@@ -28,10 +26,15 @@ const ageGroups = [
   '18-24',
   '25-34',
   '35-44',
-  '45-54',
-  '55-64',
-  '65+',
+  '45-59',
+  '60-69',
+  '70+',
 ] as const satisfies readonly AgeGroup[]
+const legacyAgeGroupAliases: Readonly<Record<string, AgeGroup>> = {
+  '45-54': '45-59',
+  '55-64': '60-69',
+  '65+': '70+',
+}
 const electionMethods = [
   'postal',
   'in-person',
@@ -44,7 +47,6 @@ export interface ElectionData {
   parties: Party[]
   firstVotes: VoteEntry[]
   secondVotes: VoteEntry[]
-  statVotes: StatVotes[]
   germanyStates: GermanyStatesGeoJson
   stateSeatContingents: Readonly<Record<string, number>>
   stateSeatContingentYear: number
@@ -75,6 +77,18 @@ function isOneOf<T extends string>(
   )
 }
 
+function normalizeAgeGroup(value: unknown): AgeGroup | undefined {
+  if (isOneOf(value, ageGroups)) {
+    return value
+  }
+
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  return legacyAgeGroupAliases[value]
+}
+
 function isParty(value: unknown): value is Party {
   return (
     isRecord(value) &&
@@ -89,14 +103,18 @@ function normalizeVoteEntry(
   value: unknown,
   expectedVoteType: VoteType,
 ): VoteEntry | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const ageGroup = normalizeAgeGroup(value.ageGroup)
   if (
-    !isRecord(value) ||
     typeof value.districtId !== 'number' ||
     !Number.isInteger(value.districtId) ||
     value.districtId <= 0 ||
     typeof value.state !== 'string' ||
     !isOneOf(value.gender, genders) ||
-    !isOneOf(value.ageGroup, ageGroups) ||
+    ageGroup === undefined ||
     typeof value.party !== 'string' ||
     value.voteType !== expectedVoteType ||
     !isOneOf(value.electionMethod, electionMethods) ||
@@ -110,22 +128,12 @@ function normalizeVoteEntry(
     districtId: value.districtId,
     state: value.state,
     gender: value.gender,
-    ageGroup: value.ageGroup,
+    ageGroup,
     party: value.party,
     voteType: expectedVoteType,
     electionMethod: value.electionMethod,
     votes: value.votes,
   }
-}
-
-function isStatVotes(value: unknown): value is StatVotes {
-  return (
-    isRecord(value) &&
-    isOneOf(value.gender, genders) &&
-    isOneOf(value.ageGroup, ageGroups) &&
-    typeof value.party === 'string' &&
-    isFiniteNumber(value.votes)
-  )
 }
 
 function parseArray<T>(
@@ -191,7 +199,7 @@ async function fetchJson(
     return json
   } catch (cause) {
     throw new ElectionDataLoadError(
-      `The election data file ${fileName} does not contain valid JSON.`,
+      `${fileName} does not contain valid JSON.`,
       { cause },
     )
   }
@@ -369,14 +377,12 @@ export async function loadElectionData(
     partiesJson,
     firstVotesJson,
     secondVotesJson,
-    statVotesJson,
     germanyStatesJson,
     stateSeatContingentsJson,
   ] = await Promise.all([
     fetchJson(dataFiles.parties, fetcher),
     fetchJson(dataFiles.firstVotes, fetcher),
     fetchJson(dataFiles.secondVotes, fetcher),
-    fetchJson(dataFiles.statVotes, fetcher),
     fetchJson(dataFiles.germanyStates, fetcher),
     fetchJson(dataFiles.stateSeatContingents, fetcher),
   ])
@@ -411,9 +417,6 @@ export async function loadElectionData(
     ),
     firstVotes,
     secondVotes,
-    statVotes: parseArray(statVotesJson, dataFiles.statVotes, (item) =>
-      isStatVotes(item) ? item : undefined,
-    ),
     germanyStates: germanyStatesJson,
     ...historicalStateSeatContingents,
   }

@@ -3,7 +3,6 @@ import type {
   ElectionMethod,
   Gender,
   Party,
-  StatVotes,
   VoteEntry,
   VoteType,
 } from './json-contracts.ts'
@@ -20,9 +19,9 @@ export const ageGroupValues = [
   '18-24',
   '25-34',
   '35-44',
-  '45-54',
-  '55-64',
-  '65+',
+  '45-59',
+  '60-69',
+  '70+',
 ] as const satisfies readonly AgeGroup[]
 
 export const voteTypeValues = ['1', '2'] as const satisfies readonly VoteType[]
@@ -49,10 +48,3 @@ export const representativeVoteEntryRecord = {
   electionMethod: 'in-person',
   votes: 3696.789641579922,
 } satisfies VoteEntry
-
-export const representativeStatVotesRecord = {
-  gender: 'm',
-  ageGroup: '18-24',
-  party: 'CDU',
-  votes: 144724,
-} satisfies StatVotes
