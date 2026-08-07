@@ -4,7 +4,17 @@ from dataclasses import dataclass
 from typing import Literal
 
 Gender = Literal["m", "w"]
-AgeGroup = Literal["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+AgeGroup = Literal[
+    "18-24",
+    "25-34",
+    "35-44",
+    "45-54",
+    "55-64",
+    "65+",
+    "45-59",
+    "60-69",
+    "70+",
+]
 VoteType = Literal["1", "2"]
 ElectionMethod = Literal["postal", "in-person"]
 

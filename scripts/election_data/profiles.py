@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
@@ -78,9 +79,13 @@ def iterative_proportional_fit(
     )
 
 
-def _complete_demographic_index() -> pd.MultiIndex:
+def _complete_demographic_index(
+    *,
+    genders: Sequence[str],
+    age_groups: Sequence[str],
+) -> pd.MultiIndex:
     return pd.MultiIndex.from_product(
-        [APP_GENDERS, APP_AGE_GROUPS], names=["gender", "ageGroup"]
+        [tuple(genders), tuple(age_groups)], names=["gender", "ageGroup"]
     )
 
 
@@ -90,8 +95,8 @@ def _select_demographic_profile(
     state: str,
     vote_type: str,
     party: str,
+    demographic_index: pd.MultiIndex,
 ) -> ProfileSelection:
-    index = _complete_demographic_index()
     for candidate, source in ((party, "party-statistics"), ("Sonstige", "other-statistics")):
         selected = profiles[
             (profiles["state"] == state)
@@ -101,12 +106,15 @@ def _select_demographic_profile(
         if not selected.empty:
             series = (
                 selected.set_index(["gender", "ageGroup"])["share"]
-                .reindex(index, fill_value=0.0)
+                .reindex(demographic_index, fill_value=0.0)
                 .astype(float)
             )
             if series.sum() > 0:
                 return ProfileSelection((series / series.sum()).to_numpy(), source)
-    return ProfileSelection(np.full(len(index), 1.0 / len(index)), "uniform-fallback")
+    return ProfileSelection(
+        np.full(len(demographic_index), 1.0 / len(demographic_index)),
+        "uniform-fallback",
+    )
 
 
 def _select_method_seed(
@@ -116,10 +124,14 @@ def _select_method_seed(
     party: str,
     demographic_share: np.ndarray,
     method_targets: np.ndarray,
+    demographic_index: pd.MultiIndex,
+    methods: Sequence[str],
 ) -> ProfileSelection:
-    index = _complete_demographic_index()
     if seed_profiles is not None:
-        for candidate, source in ((party, "party-federal-seed"), ("Sonstige", "other-federal-seed")):
+        for candidate, source in (
+            (party, "party-federal-seed"),
+            ("Sonstige", "other-federal-seed"),
+        ):
             selected = seed_profiles[
                 (seed_profiles["voteType"] == vote_type)
                 & (seed_profiles["party"] == candidate)
@@ -133,7 +145,11 @@ def _select_method_seed(
                         aggfunc="sum",
                         fill_value=0.0,
                     )
-                    .reindex(index=index, columns=APP_METHODS, fill_value=0.0)
+                    .reindex(
+                        index=demographic_index,
+                        columns=tuple(methods),
+                        fill_value=0.0,
+                    )
                     .to_numpy(dtype=float)
                 )
                 if matrix.sum() > 0:
@@ -141,7 +157,8 @@ def _select_method_seed(
 
     method_share = method_targets / method_targets.sum()
     return ProfileSelection(
-        np.outer(demographic_share, method_share), "independent-method-fallback"
+        np.outer(demographic_share, method_share),
+        "independent-method-fallback",
     )
 
 
@@ -149,15 +166,25 @@ def build_state_method_profiles(
     district_totals: pd.DataFrame,
     demographic_profiles: pd.DataFrame,
     federal_method_seed: pd.DataFrame | None = None,
+    *,
+    age_groups: Sequence[str] = APP_AGE_GROUPS,
+    genders: Sequence[str] = APP_GENDERS,
+    methods: Sequence[str] = APP_METHODS,
 ) -> pd.DataFrame:
     """Build one demographic profile per state, party, vote type and method.
 
     The result is fitted so that state demographic margins and official method totals
-    are both preserved. The same fitted method profile is later applied to every
-    constituency of the state.
+    are both preserved. Election-specific age groups can be supplied without changing
+    the shared VoteEntry record structure.
     """
 
-    demographic_index = _complete_demographic_index()
+    if not age_groups or not genders or not methods:
+        raise ValueError("Age groups, genders, and methods must not be empty")
+
+    demographic_index = _complete_demographic_index(
+        genders=genders,
+        age_groups=age_groups,
+    )
     records: list[dict[str, object]] = []
 
     grouped = district_totals.groupby(["state", "voteType", "party"], sort=True)
@@ -165,7 +192,7 @@ def build_state_method_profiles(
         method_series = (
             group.groupby("electionMethod")["votes"]
             .sum()
-            .reindex(APP_METHODS, fill_value=0.0)
+            .reindex(tuple(methods), fill_value=0.0)
             .astype(float)
         )
         method_targets = method_series.to_numpy()
@@ -178,6 +205,7 @@ def build_state_method_profiles(
             state=state,
             vote_type=vote_type,
             party=party,
+            demographic_index=demographic_index,
         )
         row_targets = demographic.values * official_total
         seed = _select_method_seed(
@@ -186,17 +214,21 @@ def build_state_method_profiles(
             party=party,
             demographic_share=demographic.values,
             method_targets=method_targets,
+            demographic_index=demographic_index,
+            methods=methods,
         )
         fitted = iterative_proportional_fit(seed.values, row_targets, method_targets)
 
-        for method_index, method in enumerate(APP_METHODS):
+        for method_index, method in enumerate(methods):
             method_total = float(method_targets[method_index])
             if method_total <= 0:
                 shares = demographic.values
             else:
                 shares = fitted[:, method_index] / method_total
 
-            for demographic_index_number, (gender, age_group) in enumerate(demographic_index):
+            for demographic_index_number, (gender, age_group) in enumerate(
+                demographic_index
+            ):
                 records.append(
                     {
                         "state": state,
@@ -207,7 +239,9 @@ def build_state_method_profiles(
                         "ageGroup": age_group,
                         "share": float(shares[demographic_index_number]),
                         "stateMethodVotes": method_total,
-                        "fittedStateVotes": float(fitted[demographic_index_number, method_index]),
+                        "fittedStateVotes": float(
+                            fitted[demographic_index_number, method_index]
+                        ),
                         "demographicProfileSource": demographic.source,
                         "methodSeedSource": seed.source,
                     }
