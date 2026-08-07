@@ -28,9 +28,9 @@ const ageGroups = [
   '18-24',
   '25-34',
   '35-44',
-  '45-54',
-  '55-64',
-  '65+',
+  '45-59',
+  '60-69',
+  '70+',
 ] as const satisfies readonly AgeGroup[]
 const electionMethods = [
   'postal',
