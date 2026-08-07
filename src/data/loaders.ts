@@ -8,17 +8,36 @@ import type {
   VoteEntry,
   VoteType,
 } from '../models/index.ts'
+import {
+  DEFAULT_ELECTION_YEAR,
+  type ElectionYear,
+} from './elections.ts'
 
-const dataFiles = {
+const sharedDataFiles = {
   parties: 'partyData.json',
-  firstVotes: 'btw2021/first_votes.json',
-  secondVotes: 'btw2021/second_votes.json',
   germanyStates: 'germany_states_map.geo.json',
-  stateSeatContingents: 'state_seat_contingents_2021.json',
 } as const
 
+interface ElectionDataFiles {
+  firstVotes: string
+  secondVotes: string
+  stateSeatContingents: string
+}
+
+const electionDataFiles: Readonly<Record<ElectionYear, ElectionDataFiles>> = {
+  2021: {
+    firstVotes: 'btw2021/first_votes.json',
+    secondVotes: 'btw2021/second_votes.json',
+    stateSeatContingents: 'state_seat_contingents_2021.json',
+  },
+  2025: {
+    firstVotes: 'btw2025/first_votes.json',
+    secondVotes: 'btw2025/second_votes.json',
+    stateSeatContingents: 'state_seat_contingents_2025.json',
+  },
+}
+
 const HISTORICAL_STATE_SEAT_CONTINGENT_SCHEMA_VERSION = 1
-const HISTORICAL_STATE_SEAT_CONTINGENT_YEAR = 2021
 const HISTORICAL_STATE_SEAT_COUNT = 598
 
 const genders = ['m', 'w'] as const satisfies readonly Gender[]
@@ -44,6 +63,7 @@ type JsonFetcher = typeof fetch
 type JsonRecord = Record<string, unknown>
 
 export interface ElectionData {
+  electionYear: ElectionYear
   parties: Party[]
   firstVotes: VoteEntry[]
   secondVotes: VoteEntry[]
@@ -57,6 +77,12 @@ export class ElectionDataLoadError extends Error {
     super(message, options)
     this.name = 'ElectionDataLoadError'
   }
+}
+
+export function getElectionDataFiles(
+  electionYear: ElectionYear,
+): Readonly<ElectionDataFiles> {
+  return electionDataFiles[electionYear]
 }
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -227,11 +253,12 @@ function collectDistrictStates(
 function verifyDistrictCoverage(
   firstVotes: readonly VoteEntry[],
   secondVotes: readonly VoteEntry[],
+  files: Readonly<ElectionDataFiles>,
 ): void {
-  const firstVoteDistricts = collectDistrictStates(firstVotes, dataFiles.firstVotes)
+  const firstVoteDistricts = collectDistrictStates(firstVotes, files.firstVotes)
   const secondVoteDistricts = collectDistrictStates(
     secondVotes,
-    dataFiles.secondVotes,
+    files.secondVotes,
   )
   const firstOnly = [...firstVoteDistricts.keys()].filter(
     (districtId) => !secondVoteDistricts.has(districtId),
@@ -254,7 +281,7 @@ function verifyDistrictCoverage(
   }
 
   throw new ElectionDataLoadError(
-    `${dataFiles.firstVotes} and ${dataFiles.secondVotes} do not contain the same constituency-to-state coverage.`,
+    `${files.firstVotes} and ${files.secondVotes} do not contain the same constituency-to-state coverage.`,
   )
 }
 
@@ -302,12 +329,14 @@ function verifyStateCoverage(
     .join('; ')
 
   throw new ElectionDataLoadError(
-    `The prepared vote files do not match ${dataFiles.germanyStates}: ${details}.`,
+    `The prepared vote files do not match ${sharedDataFiles.germanyStates}: ${details}.`,
   )
 }
 
 function parseStateSeatContingents(
   value: unknown,
+  fileName: string,
+  electionYear: ElectionYear,
   germanyStates: GermanyStatesGeoJson,
 ): {
   stateSeatContingents: Readonly<Record<string, number>>
@@ -317,12 +346,12 @@ function parseStateSeatContingents(
     !isRecord(value) ||
     value.schemaVersion !== HISTORICAL_STATE_SEAT_CONTINGENT_SCHEMA_VERSION ||
     value.systemId !== 'de-2021-bwahlg' ||
-    value.electionYear !== HISTORICAL_STATE_SEAT_CONTINGENT_YEAR ||
+    value.electionYear !== electionYear ||
     value.baseSeatCount !== HISTORICAL_STATE_SEAT_COUNT ||
     !Array.isArray(value.stateSeatContingents)
   ) {
     throw new ElectionDataLoadError(
-      `${dataFiles.stateSeatContingents} has invalid fixture metadata.`,
+      `${fileName} has invalid fixture metadata.`,
     )
   }
 
@@ -331,7 +360,7 @@ function parseStateSeatContingents(
   )
   if (value.stateSeatContingents.length !== expectedStates.size) {
     throw new ElectionDataLoadError(
-      `${dataFiles.stateSeatContingents} must contain every federal state exactly once.`,
+      `${fileName} must contain every federal state exactly once.`,
     )
   }
 
@@ -348,7 +377,7 @@ function parseStateSeatContingents(
       stateSeatContingents[entry.state] !== undefined
     ) {
       throw new ElectionDataLoadError(
-        `${dataFiles.stateSeatContingents} contains an invalid or duplicate state entry.`,
+        `${fileName} contains an invalid or duplicate state entry.`,
       )
     }
     stateSeatContingents[entry.state] = entry.seats
@@ -360,19 +389,21 @@ function parseStateSeatContingents(
   )
   if (missingStates.length > 0 || totalSeats !== HISTORICAL_STATE_SEAT_COUNT) {
     throw new ElectionDataLoadError(
-      `${dataFiles.stateSeatContingents} must contain all 16 states and add up to 598 seats.`,
+      `${fileName} must contain all 16 states and add up to 598 seats.`,
     )
   }
 
   return {
     stateSeatContingents,
-    stateSeatContingentYear: HISTORICAL_STATE_SEAT_CONTINGENT_YEAR,
+    stateSeatContingentYear: electionYear,
   }
 }
 
 export async function loadElectionData(
+  electionYear: ElectionYear = DEFAULT_ELECTION_YEAR,
   fetcher: JsonFetcher = fetch,
 ): Promise<ElectionData> {
+  const files = getElectionDataFiles(electionYear)
   const [
     partiesJson,
     firstVotesJson,
@@ -380,39 +411,42 @@ export async function loadElectionData(
     germanyStatesJson,
     stateSeatContingentsJson,
   ] = await Promise.all([
-    fetchJson(dataFiles.parties, fetcher),
-    fetchJson(dataFiles.firstVotes, fetcher),
-    fetchJson(dataFiles.secondVotes, fetcher),
-    fetchJson(dataFiles.germanyStates, fetcher),
-    fetchJson(dataFiles.stateSeatContingents, fetcher),
+    fetchJson(sharedDataFiles.parties, fetcher),
+    fetchJson(files.firstVotes, fetcher),
+    fetchJson(files.secondVotes, fetcher),
+    fetchJson(sharedDataFiles.germanyStates, fetcher),
+    fetchJson(files.stateSeatContingents, fetcher),
   ])
 
   const firstVotes = parseVoteEntries(
     firstVotesJson,
-    dataFiles.firstVotes,
+    files.firstVotes,
     '1',
   )
   const secondVotes = parseVoteEntries(
     secondVotesJson,
-    dataFiles.secondVotes,
+    files.secondVotes,
     '2',
   )
 
   if (!isGermanyStatesGeoJson(germanyStatesJson)) {
     throw new ElectionDataLoadError(
-      `${dataFiles.germanyStates} does not contain a valid state FeatureCollection.`,
+      `${sharedDataFiles.germanyStates} does not contain a valid state FeatureCollection.`,
     )
   }
 
-  verifyDistrictCoverage(firstVotes, secondVotes)
+  verifyDistrictCoverage(firstVotes, secondVotes, files)
   verifyStateCoverage(firstVotes, secondVotes, germanyStatesJson)
   const historicalStateSeatContingents = parseStateSeatContingents(
     stateSeatContingentsJson,
+    files.stateSeatContingents,
+    electionYear,
     germanyStatesJson,
   )
 
   return {
-    parties: parseArray(partiesJson, dataFiles.parties, (item) =>
+    electionYear,
+    parties: parseArray(partiesJson, sharedDataFiles.parties, (item) =>
       isParty(item) ? item : undefined,
     ),
     firstVotes,
