@@ -8,9 +8,9 @@ import type {
 } from '../../models/json-contracts.ts'
 
 const ageGroups = [
-  { value: '65+', label: '65+' },
-  { value: '55-64', label: '55–64' },
-  { value: '45-54', label: '45–54' },
+  { value: '70+', label: '70+' },
+  { value: '60-69', label: '60–69' },
+  { value: '45-59', label: '45–59' },
   { value: '35-44', label: '35–44' },
   { value: '25-34', label: '25–34' },
   { value: '18-24', label: '18–24' },
@@ -22,17 +22,17 @@ function buildAgeGenderTotals(statVotes: readonly StatVotes[]) {
       '18-24': 0,
       '25-34': 0,
       '35-44': 0,
-      '45-54': 0,
-      '55-64': 0,
-      '65+': 0,
+      '45-59': 0,
+      '60-69': 0,
+      '70+': 0,
     },
     w: {
       '18-24': 0,
       '25-34': 0,
       '35-44': 0,
-      '45-54': 0,
-      '55-64': 0,
-      '65+': 0,
+      '45-59': 0,
+      '60-69': 0,
+      '70+': 0,
     },
   }
 

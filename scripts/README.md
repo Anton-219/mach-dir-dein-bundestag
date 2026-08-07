@@ -80,7 +80,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 Gender = Literal["m", "w"]
-AgeGroup = Literal["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+AgeGroup = Literal["18-24", "25-34", "35-44", "45-59", "60-69", "70+"]
 VoteType = Literal["1", "2"]
 ElectionMethod = Literal["postal", "in-person"]
 
@@ -100,6 +100,30 @@ class VoteEntry:
 `districtId` is the constituency number for the corresponding election. Polling districts are used as an input source but are not stored in the application JSON.
 
 `first_votes.json` contains only `voteType == "1"`; `second_votes.json` contains only `voteType == "2"`.
+
+The application age groups are deliberately the same for every election dataset:
+
+```text
+18-24
+25-34
+35-44
+45-59
+60-69
+70+
+```
+
+The source files publish birth-year cohorts whose boundaries shift with the election year. The preparation scripts normalize those cohorts into the shared age-group labels. For the 2021 representative statistics the mapping is:
+
+| Source birth-year cohort | `ageGroup` |
+|---|---|
+| `1997-2003` | `18-24` |
+| `1987-1996` | `25-34` |
+| `1977-1986` | `35-44` |
+| `1962-1976` | `45-59` |
+| `1952-1961` | `60-69` |
+| `1951 und früher` | `70+` |
+
+The 2025 workflow maps its newer birth-year cohorts to these same six values.
 
 ## Methodology
 
@@ -129,7 +153,7 @@ These constituency totals are the fixed basis of the final JSON. The model must 
 
 ### Representative demographic statistics
 
-The representative statistics provide party results by state, vote type, gender category, and age group. Their published absolute values can differ slightly from the official result because of rounding and statistical methodology.
+The representative statistics provide party results by state, vote type, gender category, and birth-year cohort. The preparation normalizes those cohorts to the shared application age groups listed above. Their published absolute values can differ slightly from the official result because of rounding and statistical methodology.
 
 For that reason, the notebook uses them as proportions rather than competing official totals:
 
@@ -230,7 +254,7 @@ Run them from the repository root with:
 python -m scripts.run_tests
 ```
 
-The tests cover constituency-row diagnostics, use of rounded statistics as shares, iterative proportional fitting, preservation of known margins, and the separate seat-allocation reference calculations.
+The tests cover constituency-row diagnostics, age-group normalization, use of rounded statistics as shares, iterative proportional fitting, preservation of known margins, and the separate seat-allocation reference calculations.
 
 ## Related Python modules
 

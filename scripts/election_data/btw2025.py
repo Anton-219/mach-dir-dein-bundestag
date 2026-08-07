@@ -6,6 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from .btw2021 import (
+    APP_AGE_GROUPS,
     canonical_party_name as canonical_party_name_2021,
     normalize_state,
     normalize_vote_type,
@@ -14,14 +15,7 @@ from .btw2021 import (
 from .models import AgeGroup, Gender, VoteType
 from .notebook_steps import numeric_votes, require_columns
 
-BTW2025_AGE_GROUPS: tuple[AgeGroup, ...] = (
-    "18-24",
-    "25-34",
-    "35-44",
-    "45-59",
-    "60-69",
-    "70+",
-)
+BTW2025_AGE_GROUPS: tuple[AgeGroup, ...] = APP_AGE_GROUPS
 
 _DISTRICT_VOTE_SUFFIXES: dict[VoteType, str] = {
     "1": " - Erststimmen",
@@ -75,7 +69,7 @@ def _normalize_age_label(value: object) -> str:
 
 
 def normalize_age_group(value: object) -> AgeGroup | None:
-    """Convert the published 2025 birth-year cohorts to election-age labels."""
+    """Convert the published 2025 birth-year cohorts to the shared age labels."""
 
     label = _normalize_age_label(value)
     mapping: dict[str, AgeGroup] = {

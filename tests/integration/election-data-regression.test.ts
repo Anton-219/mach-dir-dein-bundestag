@@ -55,14 +55,38 @@ interface RegressionCase {
   expectedHistoricalResult: RegressionSummary
 }
 
+type RawVoteEntry = Omit<VoteEntry, 'ageGroup'> & { ageGroup: string }
+
 const ALL_AGE_GROUPS: readonly AgeGroup[] = [
   '18-24',
   '25-34',
   '35-44',
-  '45-54',
-  '55-64',
-  '65+',
+  '45-59',
+  '60-69',
+  '70+',
 ]
+
+const LEGACY_AGE_GROUP_ALIASES: Readonly<Record<string, AgeGroup>> = {
+  '45-54': '45-59',
+  '55-64': '60-69',
+  '65+': '70+',
+}
+
+function normalizeFixtureAgeGroup(value: string): AgeGroup {
+  const canonical = ALL_AGE_GROUPS.find((ageGroup) => ageGroup === value)
+  const normalized = canonical ?? LEGACY_AGE_GROUP_ALIASES[value]
+  assert.ok(normalized, `Unexpected age group in regression fixture: ${value}`)
+  return normalized
+}
+
+function normalizeFixtureVoteEntries(
+  entries: readonly RawVoteEntry[],
+): VoteEntry[] {
+  return entries.map((entry) => ({
+    ...entry,
+    ageGroup: normalizeFixtureAgeGroup(entry.ageGroup),
+  }))
+}
 
 async function readJson<T>(fileName: string): Promise<T> {
   const filePath = join(process.cwd(), 'public', 'data', fileName)
@@ -70,11 +94,11 @@ async function readJson<T>(fileName: string): Promise<T> {
 }
 
 async function loadRegressionData(): Promise<RegressionData> {
-  const [parties, firstVotes, secondVotes, contingentFixture] =
+  const [parties, rawFirstVotes, rawSecondVotes, contingentFixture] =
     await Promise.all([
       readJson<Party[]>('partyData.json'),
-      readJson<VoteEntry[]>('first_votes.json'),
-      readJson<VoteEntry[]>('second_votes.json'),
+      readJson<RawVoteEntry[]>('first_votes.json'),
+      readJson<RawVoteEntry[]>('second_votes.json'),
       readJson<StateSeatContingentFixture>(
         'state_seat_contingents_2021.json',
       ),
@@ -82,8 +106,8 @@ async function loadRegressionData(): Promise<RegressionData> {
 
   return {
     parties,
-    firstVotes,
-    secondVotes,
+    firstVotes: normalizeFixtureVoteEntries(rawFirstVotes),
+    secondVotes: normalizeFixtureVoteEntries(rawSecondVotes),
     stateSeatContingents: Object.fromEntries(
       contingentFixture.stateSeatContingents.map(({ state, seats }) => [
         state,
@@ -208,10 +232,10 @@ const regressionCases: readonly RegressionCase[] = [
     },
   },
   {
-    name: 'age group 45-54 excluded',
+    name: 'age group 45-59 excluded',
     filters: {
       ...createEmptyFilterState(),
-      ageGroups: ['45-54'],
+      ageGroups: ['45-59'],
     },
     expectedHistoricalResult: {
       totalSeats: 721,

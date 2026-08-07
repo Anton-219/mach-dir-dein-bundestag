@@ -30,9 +30,9 @@ const ageGroupOptions = [
   { value: '18-24', label: '18–24' },
   { value: '25-34', label: '25–34' },
   { value: '35-44', label: '35–44' },
-  { value: '45-54', label: '45–54' },
-  { value: '55-64', label: '55–64' },
-  { value: '65+', label: '65+' },
+  { value: '45-59', label: '45–59' },
+  { value: '60-69', label: '60–69' },
+  { value: '70+', label: '70+' },
 ] as const satisfies readonly { value: AgeGroup; label: string }[]
 
 const genderValues = ['m', 'w'] as const satisfies readonly Gender[]

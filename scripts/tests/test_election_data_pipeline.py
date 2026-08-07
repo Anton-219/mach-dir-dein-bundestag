@@ -5,6 +5,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
+from scripts.election_data.btw2021 import APP_AGE_GROUPS
 from scripts.election_data.pipeline import distribute_district_votes
 from scripts.election_data.profiles import (
     build_state_method_profiles,
@@ -49,7 +50,7 @@ class DistributionTest(unittest.TestCase):
         )
         records = []
         for gender in ("m", "w"):
-            for age_group in ("18-24", "25-34", "35-44", "45-54", "55-64", "65+"):
+            for age_group in APP_AGE_GROUPS:
                 records.append(
                     {
                         "state": "Testland",
