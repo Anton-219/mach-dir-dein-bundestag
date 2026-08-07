@@ -23,18 +23,29 @@ export function buildStatePartyLandscape(
   filters: FilterState,
 ): StatePartyLandscape {
   try {
-    const demographicEntries = entries.filter(
-      (entry) =>
-        !filters.ageGroups.includes(entry.ageGroup) &&
-        !filters.genders.includes(entry.gender) &&
-        !filters.electionMethods.includes(entry.electionMethod),
-    )
-    const stateEntries = demographicEntries.filter((entry) => entry.state === state)
+    // Single pass over the prepared records. The nationwide comparison only
+    // needs a running sum, so the demographic subset is never materialized;
+    // just the selected state's entries are collected for the aggregation.
+    const stateEntries: VoteEntry[] = []
+    let votes = 0
+    let nationwideVotes = 0
 
-    const countVotes = (selection: readonly VoteEntry[]) =>
-      selection.reduce((total, entry) => total + entry.votes, 0)
-    const votes = countVotes(stateEntries)
-    const nationwideVotes = countVotes(demographicEntries)
+    for (const entry of entries) {
+      if (
+        filters.ageGroups.includes(entry.ageGroup) ||
+        filters.genders.includes(entry.gender) ||
+        filters.electionMethods.includes(entry.electionMethod)
+      ) {
+        continue
+      }
+
+      nationwideVotes += entry.votes
+
+      if (entry.state === state) {
+        stateEntries.push(entry)
+        votes += entry.votes
+      }
+    }
 
     const results = aggregateElectionResults(stateEntries, parties)
       .filter((result) => result.votes > 0)
