@@ -18,6 +18,12 @@ interface ElectionCopy {
 
 const commonEnglishSources: readonly ElectionSourceCopy[] = [
   {
+    label: 'Germany federal-state map',
+    description:
+      'GeoJSON geometry used for the interactive map of the German federal states.',
+    href: 'https://github.com/isellsoap/deutschlandGeoJSON',
+  },
+  {
     label: 'Federal Elections Act',
     description:
       'Current consolidated text of the Bundeswahlgesetz, including the 630-seat allocation and second-vote coverage rules.',
@@ -32,6 +38,12 @@ const commonEnglishSources: readonly ElectionSourceCopy[] = [
 ]
 
 const commonGermanSources: readonly ElectionSourceCopy[] = [
+  {
+    label: 'Deutschlandkarte der Bundesländer',
+    description:
+      'GeoJSON-Geometrie für die interaktive Karte der deutschen Bundesländer.',
+    href: 'https://github.com/isellsoap/deutschlandGeoJSON',
+  },
   {
     label: 'Bundeswahlgesetz',
     description:
@@ -223,6 +235,21 @@ export function getElectionCopy(
   return locale === 'de'
     ? germanElectionCopy[electionYear]
     : englishElectionCopy[electionYear]
+}
+
+export function getElectionSelectionLabel(locale: Locale): string {
+  return locale === 'de' ? 'Bundestagswahl' : 'Federal election'
+}
+
+export function getAllElectionSources(
+  locale: Locale,
+): readonly ElectionSourceCopy[] {
+  const catalog = locale === 'de' ? germanElectionCopy : englishElectionCopy
+  const sources = [catalog[2021].sources, catalog[2025].sources].flat()
+  return sources.filter(
+    (source, index) =>
+      sources.findIndex((candidate) => candidate.href === source.href) === index,
+  )
 }
 
 export function getElectionModelDataSources(
