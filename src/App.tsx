@@ -16,7 +16,6 @@ function App() {
 
   useEffect(() => {
     let isCurrent = true
-    setDataState({ status: 'loading' })
 
     loadElectionData(electionYear)
       .then((data) => {
@@ -35,11 +34,19 @@ function App() {
     }
   }, [electionYear])
 
+  const changeElectionYear = (nextElectionYear: ElectionYear) => {
+    if (nextElectionYear === electionYear) {
+      return
+    }
+    setDataState({ status: 'loading' })
+    setElectionYear(nextElectionYear)
+  }
+
   return (
     <AnalysisWorkspace
       dataState={dataState}
       electionYear={electionYear}
-      onElectionYearChange={setElectionYear}
+      onElectionYearChange={changeElectionYear}
     />
   )
 }
