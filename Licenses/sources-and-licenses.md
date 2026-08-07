@@ -33,6 +33,8 @@ The election results are taken from:
 
 (c) Die Bundeswahlleiterin (im Auftrag der Herausgebergemeinschaft), Wiesbaden 2025
 
+- seat contingent 2025: https://www.bundeswahlleiterin.de/dam/jcr/099c2094-2785-49d6-9567-94abc8bfcb19/bwg2020_sitzberechnung_erg2025.pdf
+
 ### License
 The statistics are licensed under:
 
