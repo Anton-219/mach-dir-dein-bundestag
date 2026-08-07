@@ -1,4 +1,5 @@
 import type { ElectionYear } from '../../data/elections.ts'
+import { getElectionSelectionLabel } from '../../i18n/election-messages.ts'
 import {
   getElectoralSystemCatalog,
   getElectoralSystemModelCopy,
@@ -145,9 +146,7 @@ export function ScenarioSummary({
             </dd>
           </div>
           <div className="scenario-fact-model">
-            <dt className="visually-hidden">
-              {electoralSystemCopy.selector.activeLabel}
-            </dt>
+            <dt>{electoralSystemCopy.selector.legend}</dt>
             <dd>
               <ElectoralSystemSelector
                 selectedSystemId={electoralSystemId}
@@ -156,7 +155,7 @@ export function ScenarioSummary({
             </dd>
           </div>
           <div className="scenario-fact-election">
-            <dt>{messages.scenario.election}</dt>
+            <dt>{getElectionSelectionLabel(i18n.locale)}</dt>
             <dd>
               <ElectionSelector
                 electionYear={electionYear}
