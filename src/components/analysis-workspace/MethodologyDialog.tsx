@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { lastUpdatedAt } from '../../build-info.ts'
 import type { ElectionYear } from '../../data/elections.ts'
 import {
+  getAllElectionSources,
   getElectionCopy,
   getElectionModelDataSources,
 } from '../../i18n/election-messages.ts'
@@ -40,6 +41,15 @@ export function MethodologyDialog({
     electionCopy.officialTotals,
     ...copy.methodology.dataPreparationItems.slice(1),
   ]
+  const sourceCandidates = [
+    ...copy.methodology.sources,
+    ...getAllElectionSources(i18n.locale),
+  ]
+  const sources = sourceCandidates.filter(
+    (source, index) =>
+      sourceCandidates.findIndex((candidate) => candidate.href === source.href) ===
+      index,
+  )
   const result =
     scenario?.status === 'ready' ? scenario.electoralSystemResult : undefined
   const notices =
@@ -208,7 +218,7 @@ export function MethodologyDialog({
               <h3>{copy.methodology.sourcesTitle}</h3>
               <p>{copy.methodology.sourcesIntroduction}</p>
               <ul>
-                {electionCopy.sources.map((source) => (
+                {sources.map((source) => (
                   <li key={source.href}>
                     <a href={source.href} target="_blank" rel="noreferrer">
                       {source.label}
