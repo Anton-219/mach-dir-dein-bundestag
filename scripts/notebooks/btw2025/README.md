@@ -33,7 +33,18 @@ The party columns use names such as `SPD - Erststimmen` and `SPD - Zweitstimmen`
 
 The representative statistics publish `m|d|o` for men together with people recorded as diverse and people without a gender entry. The established JSON field remains `gender="m"` so the shared `VoteEntry` record shape is preserved, but the notebooks and code explicitly retain the broader source meaning.
 
-The published birth-year cohorts are converted as follows:
+Both the 2021 and 2025 workflows use the same application age groups:
+
+```text
+18-24
+25-34
+35-44
+45-59
+60-69
+70+
+```
+
+The 2025 birth-year cohorts are converted as follows:
 
 | Source cohort | JSON `ageGroup` |
 |---|---|
@@ -44,7 +55,7 @@ The published birth-year cohorts are converted as follows:
 | `1956-1965` | `60-69` |
 | `<=1955` | `70+` |
 
-These boundaries differ from the 2021 groups. The workflow does not invent a split into the 2021 bins. The JSON record structure is shared, but the frontend must offer election-specific age filters before the 2025 files can be used as live application data.
+The source birth-year boundaries differ between elections because the electorate has aged between election years. They are normalized to the same six application age groups rather than creating election-specific age-filter labels.
 
 ## Methodology
 
