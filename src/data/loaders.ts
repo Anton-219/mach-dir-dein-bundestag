@@ -32,6 +32,11 @@ const ageGroups = [
   '60-69',
   '70+',
 ] as const satisfies readonly AgeGroup[]
+const legacyAgeGroupAliases: Readonly<Record<string, AgeGroup>> = {
+  '45-54': '45-59',
+  '55-64': '60-69',
+  '65+': '70+',
+}
 const electionMethods = [
   'postal',
   'in-person',
@@ -75,6 +80,18 @@ function isOneOf<T extends string>(
   )
 }
 
+function normalizeAgeGroup(value: unknown): AgeGroup | undefined {
+  if (isOneOf(value, ageGroups)) {
+    return value
+  }
+
+  if (typeof value !== 'string') {
+    return undefined
+  }
+
+  return legacyAgeGroupAliases[value]
+}
+
 function isParty(value: unknown): value is Party {
   return (
     isRecord(value) &&
@@ -89,14 +106,18 @@ function normalizeVoteEntry(
   value: unknown,
   expectedVoteType: VoteType,
 ): VoteEntry | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const ageGroup = normalizeAgeGroup(value.ageGroup)
   if (
-    !isRecord(value) ||
     typeof value.districtId !== 'number' ||
     !Number.isInteger(value.districtId) ||
     value.districtId <= 0 ||
     typeof value.state !== 'string' ||
     !isOneOf(value.gender, genders) ||
-    !isOneOf(value.ageGroup, ageGroups) ||
+    ageGroup === undefined ||
     typeof value.party !== 'string' ||
     value.voteType !== expectedVoteType ||
     !isOneOf(value.electionMethod, electionMethods) ||
@@ -110,7 +131,7 @@ function normalizeVoteEntry(
     districtId: value.districtId,
     state: value.state,
     gender: value.gender,
-    ageGroup: value.ageGroup,
+    ageGroup,
     party: value.party,
     voteType: expectedVoteType,
     electionMethod: value.electionMethod,
@@ -118,14 +139,27 @@ function normalizeVoteEntry(
   }
 }
 
-function isStatVotes(value: unknown): value is StatVotes {
-  return (
-    isRecord(value) &&
-    isOneOf(value.gender, genders) &&
-    isOneOf(value.ageGroup, ageGroups) &&
-    typeof value.party === 'string' &&
-    isFiniteNumber(value.votes)
-  )
+function normalizeStatVotes(value: unknown): StatVotes | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const ageGroup = normalizeAgeGroup(value.ageGroup)
+  if (
+    !isOneOf(value.gender, genders) ||
+    ageGroup === undefined ||
+    typeof value.party !== 'string' ||
+    !isFiniteNumber(value.votes)
+  ) {
+    return undefined
+  }
+
+  return {
+    gender: value.gender,
+    ageGroup,
+    party: value.party,
+    votes: value.votes,
+  }
 }
 
 function parseArray<T>(
@@ -191,7 +225,7 @@ async function fetchJson(
     return json
   } catch (cause) {
     throw new ElectionDataLoadError(
-      `The election data file ${fileName} does not contain valid JSON.`,
+      `${fileName} does not contain valid JSON.`,
       { cause },
     )
   }
@@ -411,9 +445,7 @@ export async function loadElectionData(
     ),
     firstVotes,
     secondVotes,
-    statVotes: parseArray(statVotesJson, dataFiles.statVotes, (item) =>
-      isStatVotes(item) ? item : undefined,
-    ),
+    statVotes: parseArray(statVotesJson, dataFiles.statVotes, normalizeStatVotes),
     germanyStates: germanyStatesJson,
     ...historicalStateSeatContingents,
   }
