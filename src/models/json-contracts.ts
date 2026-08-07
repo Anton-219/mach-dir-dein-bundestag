@@ -43,11 +43,3 @@ export interface VoteEntry {
   electionMethod: ElectionMethod
   votes: number
 }
-
-/** One demographic reference record from `public/data/stat_votes.json`. */
-export interface StatVotes {
-  gender: Gender
-  ageGroup: AgeGroup
-  party: string
-  votes: number
-}

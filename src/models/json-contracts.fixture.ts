@@ -3,7 +3,6 @@ import type {
   ElectionMethod,
   Gender,
   Party,
-  StatVotes,
   VoteEntry,
   VoteType,
 } from './json-contracts.ts'
@@ -49,10 +48,3 @@ export const representativeVoteEntryRecord = {
   electionMethod: 'in-person',
   votes: 3696.789641579922,
 } satisfies VoteEntry
-
-export const representativeStatVotesRecord = {
-  gender: 'm',
-  ageGroup: '18-24',
-  party: 'CDU',
-  votes: 144724,
-} satisfies StatVotes

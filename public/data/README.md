@@ -4,9 +4,7 @@ Files:
 - `btw2021/first_votes.json`
   - Constituency-aware first-vote records used to determine district winners for the active scenario.
 - `btw2021/second_votes.json`
-  - Constituency-aware second-vote records used to calculate party results and seats for the active scenario.
-- `stat_votes.json`
-  - Demographic reference vote records used by the demographic presentation.
+  - Constituency-aware second-vote records used to calculate party results and seats for the active scenario. The demographic presentation aggregates its age, gender, and voting-method distribution from the same records.
 - `partyData.json`
   - Party names, abbreviations, colours, and parliamentary positions.
 - `germany_states_map.geo.json`

@@ -5,7 +5,6 @@ import type {
   ElectionMethod,
   Gender,
   Party,
-  StatVotes,
   VoteEntry,
   VoteType,
 } from '../models/index.ts'
@@ -14,7 +13,6 @@ const dataFiles = {
   parties: 'partyData.json',
   firstVotes: 'btw2021/first_votes.json',
   secondVotes: 'btw2021/second_votes.json',
-  statVotes: 'stat_votes.json',
   germanyStates: 'germany_states_map.geo.json',
   stateSeatContingents: 'state_seat_contingents_2021.json',
 } as const
@@ -49,7 +47,6 @@ export interface ElectionData {
   parties: Party[]
   firstVotes: VoteEntry[]
   secondVotes: VoteEntry[]
-  statVotes: StatVotes[]
   germanyStates: GermanyStatesGeoJson
   stateSeatContingents: Readonly<Record<string, number>>
   stateSeatContingentYear: number
@@ -135,29 +132,6 @@ function normalizeVoteEntry(
     party: value.party,
     voteType: expectedVoteType,
     electionMethod: value.electionMethod,
-    votes: value.votes,
-  }
-}
-
-function normalizeStatVotes(value: unknown): StatVotes | undefined {
-  if (!isRecord(value)) {
-    return undefined
-  }
-
-  const ageGroup = normalizeAgeGroup(value.ageGroup)
-  if (
-    !isOneOf(value.gender, genders) ||
-    ageGroup === undefined ||
-    typeof value.party !== 'string' ||
-    !isFiniteNumber(value.votes)
-  ) {
-    return undefined
-  }
-
-  return {
-    gender: value.gender,
-    ageGroup,
-    party: value.party,
     votes: value.votes,
   }
 }
@@ -403,14 +377,12 @@ export async function loadElectionData(
     partiesJson,
     firstVotesJson,
     secondVotesJson,
-    statVotesJson,
     germanyStatesJson,
     stateSeatContingentsJson,
   ] = await Promise.all([
     fetchJson(dataFiles.parties, fetcher),
     fetchJson(dataFiles.firstVotes, fetcher),
     fetchJson(dataFiles.secondVotes, fetcher),
-    fetchJson(dataFiles.statVotes, fetcher),
     fetchJson(dataFiles.germanyStates, fetcher),
     fetchJson(dataFiles.stateSeatContingents, fetcher),
   ])
@@ -445,7 +417,6 @@ export async function loadElectionData(
     ),
     firstVotes,
     secondVotes,
-    statVotes: parseArray(statVotesJson, dataFiles.statVotes, normalizeStatVotes),
     germanyStates: germanyStatesJson,
     ...historicalStateSeatContingents,
   }

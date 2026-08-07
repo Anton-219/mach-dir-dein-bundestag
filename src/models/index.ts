@@ -3,7 +3,6 @@ export type {
   ElectionMethod,
   Gender,
   Party,
-  StatVotes,
   VoteEntry,
   VoteType,
 } from './json-contracts.ts'
