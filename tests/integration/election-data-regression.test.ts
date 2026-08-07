@@ -97,8 +97,8 @@ async function loadRegressionData(): Promise<RegressionData> {
   const [parties, rawFirstVotes, rawSecondVotes, contingentFixture] =
     await Promise.all([
       readJson<Party[]>('partyData.json'),
-      readJson<RawVoteEntry[]>('first_votes.json'),
-      readJson<RawVoteEntry[]>('second_votes.json'),
+      readJson<RawVoteEntry[]>('btw2021/first_votes.json'),
+      readJson<RawVoteEntry[]>('btw2021/second_votes.json'),
       readJson<StateSeatContingentFixture>(
         'state_seat_contingents_2021.json',
       ),

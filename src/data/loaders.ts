@@ -12,8 +12,8 @@ import type {
 
 const dataFiles = {
   parties: 'partyData.json',
-  firstVotes: 'first_votes.json',
-  secondVotes: 'second_votes.json',
+  firstVotes: 'btw2021/first_votes.json',
+  secondVotes: 'btw2021/second_votes.json',
   statVotes: 'stat_votes.json',
   germanyStates: 'germany_states_map.geo.json',
   stateSeatContingents: 'state_seat_contingents_2021.json',
