@@ -1,9 +1,5 @@
-import {
-  ELECTION_YEARS,
-  isElectionYear,
-  type ElectionYear,
-} from '../../data/elections.ts'
-import { getElectionCopy } from '../../i18n/election-messages.ts'
+import { ELECTION_YEARS, type ElectionYear } from '../../data/elections.ts'
+import { getElectionSelectionLabel } from '../../i18n/election-messages.ts'
 import { useI18n } from '../../i18n/index.ts'
 
 interface ElectionSelectorProps {
@@ -18,22 +14,28 @@ export function ElectionSelector({
   const i18n = useI18n()
 
   return (
-    <select
-      className="electoral-system-select election-select"
-      value={electionYear}
-      aria-label={i18n.messages.scenario.election}
-      onChange={(event) => {
-        const nextYear = Number(event.currentTarget.value)
-        if (isElectionYear(nextYear)) {
-          onChange(nextYear)
-        }
-      }}
+    <div
+      className="scenario-link-options"
+      role="group"
+      aria-label={getElectionSelectionLabel(i18n.locale)}
     >
-      {ELECTION_YEARS.map((year) => (
-        <option value={year} key={year}>
-          {getElectionCopy(i18n.locale, year).confirmedResult}
-        </option>
+      {ELECTION_YEARS.map((year, index) => (
+        <span className="scenario-link-option-wrap" key={year}>
+          {index > 0 ? (
+            <span className="scenario-link-separator" aria-hidden="true">
+              |
+            </span>
+          ) : null}
+          <button
+            className={`scenario-link-option${year === electionYear ? ' scenario-link-option-active' : ''}`}
+            type="button"
+            aria-pressed={year === electionYear}
+            onClick={() => onChange(year)}
+          >
+            {year}
+          </button>
+        </span>
       ))}
-    </select>
+    </div>
   )
 }
