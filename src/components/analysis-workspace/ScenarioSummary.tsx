@@ -1,3 +1,4 @@
+import type { ElectionYear } from '../../data/elections.ts'
 import {
   getElectoralSystemCatalog,
   getElectoralSystemModelCopy,
@@ -9,6 +10,7 @@ import {
 import type { ElectoralSystemId } from '../../lib/election/index.ts'
 import type { FilterState } from '../../lib/filters/index.ts'
 import { createElectoralSystemPresentation } from '../../lib/results/electoral-system-presentation.ts'
+import { ElectionSelector } from './ElectionSelector.tsx'
 import { ElectoralSystemSelector } from './ElectoralSystemSelector.tsx'
 import type { DataState, ScenarioResult } from './types.ts'
 
@@ -98,7 +100,9 @@ interface ScenarioSummaryProps {
   filters: FilterState
   scenario?: ScenarioResult
   electoralSystemId: ElectoralSystemId
+  electionYear: ElectionYear
   onElectoralSystemChange: (systemId: ElectoralSystemId) => void
+  onElectionYearChange: (electionYear: ElectionYear) => void
 }
 
 export function ScenarioSummary({
@@ -106,7 +110,9 @@ export function ScenarioSummary({
   filters,
   scenario,
   electoralSystemId,
+  electionYear,
   onElectoralSystemChange,
+  onElectionYearChange,
 }: ScenarioSummaryProps) {
   const i18n = useI18n()
   const { messages } = i18n
@@ -151,7 +157,12 @@ export function ScenarioSummary({
           </div>
           <div className="scenario-fact-election">
             <dt>{messages.scenario.election}</dt>
-            <dd>{messages.scenario.confirmedResult}</dd>
+            <dd>
+              <ElectionSelector
+                electionYear={electionYear}
+                onChange={onElectionYearChange}
+              />
+            </dd>
           </div>
         </dl>
       </div>
