@@ -181,6 +181,7 @@ export const englishMessages = {
     kicker: 'Regional selection',
     title: 'Germany map',
     includedBadge: (count: number) => `${count} included`,
+    invertSelection: 'Invert federal state selection',
     resetAriaLabel: 'Reset federal state selection',
     svgTitle: 'Interactive map of German federal states',
     svgDescription:
@@ -666,6 +667,7 @@ export const germanMessages: MessageCatalog = {
     kicker: 'Regionale Auswahl',
     title: 'Deutschlandkarte',
     includedBadge: (count: number) => `${count} einbezogen`,
+    invertSelection: 'Bundeslandauswahl umkehren',
     resetAriaLabel: 'Auswahl der Bundesländer zurücksetzen',
     svgTitle: 'Interaktive Karte der deutschen Bundesländer',
     svgDescription:
