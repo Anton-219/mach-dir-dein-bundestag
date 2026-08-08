@@ -320,22 +320,20 @@ export function AnalysisWorkspace({
         />
 
         <fieldset className="compact-workspace-switcher">
-          <legend className="visually-hidden">
-            {messages.workspace.compactSwitcher.label}
-          </legend>
+          <legend className="visually-hidden">{messages.workspace.ariaLabel}</legend>
           <button
             type="button"
             aria-pressed={compactView === 'scenario'}
             onClick={() => setCompactView('scenario')}
           >
-            {messages.workspace.compactSwitcher.scenario}
+            {messages.filters.activeScenario}
           </button>
           <button
             type="button"
             aria-pressed={compactView === 'results'}
             onClick={() => setCompactView('results')}
           >
-            {messages.workspace.compactSwitcher.results}
+            {messages.parliament.kicker}
           </button>
         </fieldset>
 
