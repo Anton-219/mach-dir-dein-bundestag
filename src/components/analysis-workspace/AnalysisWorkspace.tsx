@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react'
 
 import type { ElectionYear } from '../../data/elections.ts'
-import { useI18n, type ScenarioReason } from '../../i18n/index.ts'
+import {
+  getResponsiveWorkspaceCopy,
+  useI18n,
+  type ScenarioReason,
+} from '../../i18n/index.ts'
 import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts'
 import {
   aggregateElectionResults,
@@ -33,6 +37,8 @@ import { ScenarioSummary } from './ScenarioSummary.tsx'
 import { StatePartyLandscapePanel } from './StatePartyLandscapePanel.tsx'
 import type { DataState, ScenarioResult } from './types.ts'
 import { WorkspaceHeader } from './WorkspaceHeader.tsx'
+
+type CompactView = 'scenario' | 'results'
 
 function createUnavailableScenario(
   status: 'empty' | 'invalid',
@@ -72,13 +78,16 @@ export function AnalysisWorkspace({
   electionYear,
   onElectionYearChange,
 }: AnalysisWorkspaceProps) {
-  const { messages } = useI18n()
+  const i18n = useI18n()
+  const { messages } = i18n
+  const responsiveWorkspaceCopy = getResponsiveWorkspaceCopy(i18n.locale)
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [electoralSystemId, setElectoralSystemId] =
     useState<ElectoralSystemId>(DEFAULT_ELECTORAL_SYSTEM_ID)
   const [methodologyOpen, setMethodologyOpen] = useState(false)
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
   const [highlightedState, setHighlightedState] = useState<string | null>(null)
+  const [compactView, setCompactView] = useState<CompactView>('scenario')
 
   const availableStates = useMemo(() => {
     if (dataState.status !== 'ready') {
@@ -289,6 +298,7 @@ export function AnalysisWorkspace({
       <main
         className="analysis-shell"
         id="analysis-workspace"
+        data-compact-view={compactView}
         aria-label={messages.workspace.ariaLabel}
         aria-busy={dataState.status === 'loading'}
       >
@@ -314,6 +324,27 @@ export function AnalysisWorkspace({
           onElectoralSystemChange={setElectoralSystemId}
           onElectionYearChange={onElectionYearChange}
         />
+
+        <div
+          className="compact-workspace-switcher"
+          role="group"
+          aria-label={responsiveWorkspaceCopy.switcherLabel}
+        >
+          <button
+            type="button"
+            aria-pressed={compactView === 'scenario'}
+            onClick={() => setCompactView('scenario')}
+          >
+            {responsiveWorkspaceCopy.scenario}
+          </button>
+          <button
+            type="button"
+            aria-pressed={compactView === 'results'}
+            onClick={() => setCompactView('results')}
+          >
+            {responsiveWorkspaceCopy.results}
+          </button>
+        </div>
 
         <div className="analysis-workspace">
           <div className="workspace-column workspace-column-center">
