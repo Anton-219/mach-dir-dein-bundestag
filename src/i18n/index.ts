@@ -27,6 +27,7 @@ export {
   getElectoralSystemOptions,
   type ElectoralSystemModelCopy,
 } from './electoral-system-messages.ts'
+export { getResponsiveWorkspaceCopy } from './responsive-workspace-messages.ts'
 export {
   defaultLocale,
   englishMessages,
