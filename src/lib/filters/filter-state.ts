@@ -34,6 +34,13 @@ export function toggleExcludedValue<T extends string>(
     : [...excludedValues, value]
 }
 
+export function invertExcludedValues<T extends string>(
+  availableValues: readonly T[],
+  excludedValues: readonly T[],
+): readonly T[] {
+  return availableValues.filter((value) => !excludedValues.includes(value))
+}
+
 export function clearFilterDimension(
   filters: FilterState,
   dimension: FilterDimension,
