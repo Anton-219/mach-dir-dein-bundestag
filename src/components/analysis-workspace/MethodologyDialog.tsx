@@ -4,7 +4,6 @@ import { lastUpdatedAt } from '../../build-info.ts'
 import type { ElectionYear } from '../../data/elections.ts'
 import {
   getAllElectionSources,
-  getElectionCopy,
   getElectionModelDataSources,
 } from '../../i18n/election-messages.ts'
 import {
@@ -35,7 +34,7 @@ export function MethodologyDialog({
   const i18n = useI18n()
   const { messages } = i18n
   const copy = getElectoralSystemCatalog(i18n.locale)
-  const electionCopy = getElectionCopy(i18n.locale, electionYear)
+  const electionCopy = messages.elections.years[electionYear]
   const models = getElectoralSystemOptions(i18n.locale)
   const dataPreparationItems = [
     electionCopy.officialTotals,

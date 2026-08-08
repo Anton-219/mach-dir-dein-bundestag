@@ -1,5 +1,4 @@
 import type { ElectionYear } from '../../data/elections.ts'
-import { getElectionCopy } from '../../i18n/election-messages.ts'
 import { useI18n } from '../../i18n/index.ts'
 import { LanguageSwitcher } from '../language/LanguageSwitcher.tsx'
 import { ThemeToggle } from '../theme/ThemeToggle.tsx'
@@ -15,7 +14,7 @@ export function WorkspaceHeader({
 }: WorkspaceHeaderProps) {
   const i18n = useI18n()
   const { messages } = i18n
-  const electionCopy = getElectionCopy(i18n.locale, electionYear)
+  const electionCopy = messages.elections.years[electionYear]
 
   return (
     <>
