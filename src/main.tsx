@@ -13,6 +13,7 @@ import './desktop-refinement-iteration.css'
 import './i18n-styles.css'
 import './electoral-system-styles.css'
 import './theme-styles.css'
+import './responsive.css'
 
 initializeTheme()
 
