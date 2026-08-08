@@ -55,6 +55,7 @@ function localizedDefaultMetadata(): Plugin {
 }
 
 export default defineConfig({
+  base: '/mach-dir-dein-bundestag/',
   define: {
     __LAST_UPDATED_AT__: JSON.stringify(resolveLastUpdatedAt()),
   },
