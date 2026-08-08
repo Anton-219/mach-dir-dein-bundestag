@@ -1,13 +1,20 @@
+import type { ElectionYear } from '../../data/elections.ts'
 import { useI18n } from '../../i18n/index.ts'
 import { LanguageSwitcher } from '../language/LanguageSwitcher.tsx'
 import { ThemeToggle } from '../theme/ThemeToggle.tsx'
 
 interface WorkspaceHeaderProps {
+  electionYear: ElectionYear
   onOpenMethodology: () => void
 }
 
-export function WorkspaceHeader({ onOpenMethodology }: WorkspaceHeaderProps) {
-  const { messages } = useI18n()
+export function WorkspaceHeader({
+  electionYear,
+  onOpenMethodology,
+}: WorkspaceHeaderProps) {
+  const i18n = useI18n()
+  const { messages } = i18n
+  const electionCopy = messages.elections.years[electionYear]
 
   return (
     <>
@@ -17,7 +24,7 @@ export function WorkspaceHeader({ onOpenMethodology }: WorkspaceHeaderProps) {
 
       <header className="workspace-header">
         <div className="workspace-brand">
-          <p className="workspace-eyebrow">{messages.header.eyebrow}</p>
+          <p className="workspace-eyebrow">{electionCopy.eyebrow}</p>
           <h1>{messages.header.title}</h1>
         </div>
 

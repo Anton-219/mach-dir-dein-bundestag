@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import type { ElectionYear } from '../../data/elections.ts'
 import { useI18n, type ScenarioReason } from '../../i18n/index.ts'
 import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts'
 import {
@@ -60,7 +61,17 @@ function hasActiveFilters(filters: FilterState): boolean {
   return Object.values(filters).some((excludedValues) => excludedValues.length > 0)
 }
 
-export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
+interface AnalysisWorkspaceProps {
+  dataState: DataState
+  electionYear: ElectionYear
+  onElectionYearChange: (electionYear: ElectionYear) => void
+}
+
+export function AnalysisWorkspace({
+  dataState,
+  electionYear,
+  onElectionYearChange,
+}: AnalysisWorkspaceProps) {
   const { messages } = useI18n()
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [electoralSystemId, setElectoralSystemId] =
@@ -270,7 +281,10 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
 
   return (
     <div className="application-shell">
-      <WorkspaceHeader onOpenMethodology={() => setMethodologyOpen(true)} />
+      <WorkspaceHeader
+        electionYear={electionYear}
+        onOpenMethodology={() => setMethodologyOpen(true)}
+      />
 
       <main
         className="analysis-shell"
@@ -296,7 +310,9 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
           filters={filters}
           scenario={scenario}
           electoralSystemId={electoralSystemId}
+          electionYear={electionYear}
           onElectoralSystemChange={setElectoralSystemId}
+          onElectionYearChange={onElectionYearChange}
         />
 
         <div className="analysis-workspace">
@@ -330,6 +346,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
       <MethodologyDialog
         open={methodologyOpen}
         systemId={electoralSystemId}
+        electionYear={electionYear}
         scenario={scenario}
         onClose={() => setMethodologyOpen(false)}
       />

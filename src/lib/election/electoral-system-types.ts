@@ -117,7 +117,7 @@ export interface ElectoralSystemMetadata {
   uncompensatedOverhangSeats: number
   inactiveStates: string[]
   stateSeatContingentYear?: number
-  referenceScenario?: 'btw-2021-main-election'
+  referenceScenario?: 'btw-2021-main-election' | 'btw-2025-main-election'
 }
 
 export interface ElectoralSystemResult {

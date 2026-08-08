@@ -11,6 +11,15 @@ export {
   type TranslationTools,
 } from './formatters.ts'
 export {
+  getAllElectionSources,
+  getElectionCatalog,
+  getElectionCopy,
+  getElectionModelDataSources,
+  getElectionSelectionLabel,
+  type ElectionCopy,
+  type ElectionSourceCopy,
+} from './election-messages.ts'
+export {
   formatElectoralSystemWarning,
   getElectoralSystemCatalog,
   getElectoralSystemModelCopy,

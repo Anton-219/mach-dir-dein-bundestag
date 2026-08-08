@@ -129,6 +129,8 @@ test('reproduces the documented 2021 pre-2023 aggregate result', () => {
   assert.equal(result.majorityThreshold, 369)
   assert.equal(result.metadata.institutionalSeatCapacity, 598)
   assert.equal(result.metadata.uncompensatedOverhangSeats, 3)
+  assert.equal(result.metadata.stateSeatContingentYear, 2021)
+  assert.equal(result.metadata.referenceScenario, 'btw-2021-main-election')
   assert.deepEqual(
     Object.fromEntries(
       result.parties
@@ -152,6 +154,24 @@ test('reproduces the documented 2021 pre-2023 aggregate result', () => {
     ),
   )
   assert.ok(result.parties.every((party) => party.uncoveredDistrictWins === 0))
+})
+
+test('accepts 2025 state-seat-contingent metadata', () => {
+  const { scenario, districtWinners } = createScenario({ A: 100 }, { A: 1 })
+
+  const result = pre2023Calculator.calculate({
+    scenario,
+    districtWinners,
+    directWinsByParty: { A: 1 },
+    supportingData: {
+      stateSeatContingents: { Germany: 598 },
+      stateSeatContingentYear: 2025,
+    },
+  })
+
+  assert.equal(result.totalSeats, 598)
+  assert.equal(result.metadata.stateSeatContingentYear, 2025)
+  assert.equal(result.metadata.referenceScenario, 'btw-2025-main-election')
 })
 
 test('reserves one or two direct wins of a below-threshold party', () => {
@@ -211,7 +231,7 @@ test('retains the national base size while an inactive state receives no prelimi
   assert.deepEqual(result.metadata.inactiveStates, ['Inactive'])
 })
 
-test('requires a complete 2021 state-seat-contingent fixture', () => {
+test('requires a complete supported state-seat-contingent fixture', () => {
   const { scenario, districtWinners } = createScenario({ A: 100 }, { A: 1 })
 
   assert.throws(
@@ -234,6 +254,21 @@ test('requires a complete 2021 state-seat-contingent fixture', () => {
         supportingData: {
           stateSeatContingents: { Germany: 597 },
           stateSeatContingentYear: 2021,
+        },
+      }),
+    (error: unknown) =>
+      error instanceof ElectoralSystemCalculationError &&
+      error.code === 'INVALID_STATE_SEAT_CONTINGENT_FIXTURE',
+  )
+  assert.throws(
+    () =>
+      pre2023Calculator.calculate({
+        scenario,
+        districtWinners,
+        directWinsByParty: { A: 1 },
+        supportingData: {
+          stateSeatContingents: { Germany: 598 },
+          stateSeatContingentYear: 2024,
         },
       }),
     (error: unknown) =>
