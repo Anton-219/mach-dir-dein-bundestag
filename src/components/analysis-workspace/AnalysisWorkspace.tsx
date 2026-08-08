@@ -15,6 +15,7 @@ import {
   applyFilterState,
   countVotes,
   createEmptyFilterState,
+  invertExcludedValues,
   toggleExcludedValue,
   type FilterDimension,
   type FilterState,
@@ -255,6 +256,13 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
     }))
   }
 
+  const invertStates = () => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      states: invertExcludedValues(availableStates, currentFilters.states),
+    }))
+  }
+
   const parties = dataState.status === 'ready' ? dataState.data.parties : []
   const germanyStates =
     dataState.status === 'ready' ? dataState.data.germanyStates.features : []
@@ -305,6 +313,7 @@ export function AnalysisWorkspace({ dataState }: { dataState: DataState }) {
             features={germanyStates}
             excludedStates={filters.states}
             onToggleState={toggleState}
+            onInvertStates={invertStates}
             onHighlightedStateChange={setHighlightedState}
           />
           <StatePartyLandscapePanel
