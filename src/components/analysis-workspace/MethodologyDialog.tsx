@@ -36,6 +36,7 @@ export function MethodologyDialog({
   const copy = getElectoralSystemCatalog(i18n.locale)
   const electionCopy = messages.elections.years[electionYear]
   const models = getElectoralSystemOptions(i18n.locale)
+  const sourceAttribution = messages.electoralSystems.methodology.sourceAttribution
   const dataPreparationItems = [
     electionCopy.officialTotals,
     ...copy.methodology.dataPreparationItems.slice(1),
@@ -226,6 +227,16 @@ export function MethodologyDialog({
                   </li>
                 ))}
               </ul>
+              <p>
+                {sourceAttribution.text}{' '}
+                <a
+                  href={sourceAttribution.licenseHref}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {sourceAttribution.licenseLabel}
+                </a>
+              </p>
             </section>
           </div>
         </div>

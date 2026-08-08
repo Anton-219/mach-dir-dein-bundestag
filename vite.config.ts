@@ -56,6 +56,11 @@ function localizedDefaultMetadata(): Plugin {
 
 export default defineConfig({
   base: '/mach-dir-dein-bundestag/',
+  build: {
+    license: {
+      fileName: 'third-party-licenses.md',
+    },
+  },
   define: {
     __LAST_UPDATED_AT__: JSON.stringify(resolveLastUpdatedAt()),
   },

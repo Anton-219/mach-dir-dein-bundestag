@@ -1,3 +1,13 @@
+# Sources and licenses
+
+This file documents third-party data and material used by the application. The repository's MIT License applies to the application's own source code unless otherwise noted; it does not relicense the external data and material listed here.
+
+## Election-data attribution
+
+Election data: Die Bundeswahlleiterin (im Auftrag der Herausgebergemeinschaft), Wiesbaden 2024/2025.
+
+The official source data listed below are used under the **Datenlizenz Deutschland – Namensnennung – Version 2.0 (dl-de/by-2-0)**. The source data were prepared, combined, statistically modelled, and partly modified for this application. The original dataset URIs are listed with the respective election sources below.
+
 I used the following data:
 
 ## Germany Map
@@ -57,6 +67,6 @@ Dies gilt nur soweit die datenhaltende Stelle die Angaben 1. bis 3. zum Quellenv
 
 (3) Veränderungen, Bearbeitungen, neue Gestaltungen oder sonstige Abwandlungen sind im Quellenvermerk mit dem Hinweis zu versehen, dass die Daten geändert wurden.
 
-URL: http://www.govdata.de/dl-de/by-2-0
+URL: https://www.govdata.de/dl-de/by-2-0
 
 ---
