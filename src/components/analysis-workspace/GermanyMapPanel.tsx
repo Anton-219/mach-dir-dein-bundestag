@@ -7,7 +7,6 @@ import {
 } from 'react'
 
 import { describeStateSelection, useI18n } from '../../i18n/index.ts'
-import { getMapInteractionMessages } from '../../i18n/map-interaction-messages.ts'
 import {
   buildGermanyBoundaryPath,
   buildGermanyStatePaths,
@@ -32,7 +31,6 @@ export function GermanyMapPanel({
 }: GermanyMapPanelProps) {
   const i18n = useI18n()
   const { messages } = i18n
-  const mapInteractionMessages = getMapInteractionMessages(i18n.locale)
   const [hoveredState, setHoveredState] = useState<string | null>(null)
   const [focusedState, setFocusedState] = useState<string | null>(null)
   const highlightedState = hoveredState ?? focusedState
@@ -79,8 +77,8 @@ export function GermanyMapPanel({
             className="panel-badge"
             type="button"
             disabled={!stateControlsAvailable}
-            aria-label={mapInteractionMessages.invertSelection}
-            title={mapInteractionMessages.invertSelection}
+            aria-label={messages.map.invertSelection}
+            title={messages.map.invertSelection}
             style={{ cursor: stateControlsAvailable ? 'pointer' : 'not-allowed' }}
             onClick={onInvertStates}
           >
