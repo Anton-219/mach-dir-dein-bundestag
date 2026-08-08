@@ -18,6 +18,7 @@ interface GermanyMapPanelProps {
   features: readonly GermanyStateFeature[]
   excludedStates: readonly string[]
   onToggleState: (state: string) => void
+  onInvertStates: () => void
   onHighlightedStateChange: (state: string | null) => void
 }
 
@@ -25,6 +26,7 @@ export function GermanyMapPanel({
   features,
   excludedStates,
   onToggleState,
+  onInvertStates,
   onHighlightedStateChange,
 }: GermanyMapPanelProps) {
   const i18n = useI18n()
@@ -71,11 +73,19 @@ export function GermanyMapPanel({
           <h2 id="map-title">{messages.map.title}</h2>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-          <span className="panel-badge">
+          <button
+            className="panel-badge"
+            type="button"
+            disabled={!stateControlsAvailable}
+            aria-label={messages.map.invertSelection}
+            title={messages.map.invertSelection}
+            style={{ cursor: stateControlsAvailable ? 'pointer' : 'not-allowed' }}
+            onClick={onInvertStates}
+          >
             {stateControlsAvailable
               ? messages.map.includedBadge(includedStateCount)
               : messages.common.unavailable}
-          </span>
+          </button>
           <button
             className="secondary-action"
             type="button"

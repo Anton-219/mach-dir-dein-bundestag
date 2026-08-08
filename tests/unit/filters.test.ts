@@ -7,6 +7,7 @@ import {
   countActiveFilterDimensions,
   countVotes,
   createEmptyFilterState,
+  invertExcludedValues,
   toggleExcludedValue,
   type FilterState,
 } from '../../src/lib/filters/index.ts'
@@ -112,4 +113,19 @@ test('toggles exclusions and clears one dimension without changing the others', 
   assert.deepEqual(cleared.states, [])
   assert.deepEqual(cleared.genders, ['m'])
   assert.equal(countActiveFilterDimensions(cleared), 1)
+})
+
+test('inverts excluded values against the available values', () => {
+  const availableStates = ['Berlin', 'Hamburg', 'Hessen'] as const
+
+  assert.deepEqual(invertExcludedValues(availableStates, []), [
+    'Berlin',
+    'Hamburg',
+    'Hessen',
+  ])
+  assert.deepEqual(invertExcludedValues(availableStates, ['Berlin']), [
+    'Hamburg',
+    'Hessen',
+  ])
+  assert.deepEqual(invertExcludedValues(availableStates, availableStates), [])
 })
