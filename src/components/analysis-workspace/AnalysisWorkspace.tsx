@@ -1,11 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import type { ElectionYear } from '../../data/elections.ts'
-import {
-  getResponsiveWorkspaceCopy,
-  useI18n,
-  type ScenarioReason,
-} from '../../i18n/index.ts'
+import { useI18n, type ScenarioReason } from '../../i18n/index.ts'
 import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts'
 import {
   aggregateElectionResults,
@@ -78,9 +74,7 @@ export function AnalysisWorkspace({
   electionYear,
   onElectionYearChange,
 }: AnalysisWorkspaceProps) {
-  const i18n = useI18n()
-  const { messages } = i18n
-  const responsiveWorkspaceCopy = getResponsiveWorkspaceCopy(i18n.locale)
+  const { messages } = useI18n()
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [electoralSystemId, setElectoralSystemId] =
     useState<ElectoralSystemId>(DEFAULT_ELECTORAL_SYSTEM_ID)
@@ -325,26 +319,25 @@ export function AnalysisWorkspace({
           onElectionYearChange={onElectionYearChange}
         />
 
-        <div
-          className="compact-workspace-switcher"
-          role="group"
-          aria-label={responsiveWorkspaceCopy.switcherLabel}
-        >
+        <fieldset className="compact-workspace-switcher">
+          <legend className="visually-hidden">
+            {messages.workspace.compactSwitcher.label}
+          </legend>
           <button
             type="button"
             aria-pressed={compactView === 'scenario'}
             onClick={() => setCompactView('scenario')}
           >
-            {responsiveWorkspaceCopy.scenario}
+            {messages.workspace.compactSwitcher.scenario}
           </button>
           <button
             type="button"
             aria-pressed={compactView === 'results'}
             onClick={() => setCompactView('results')}
           >
-            {responsiveWorkspaceCopy.results}
+            {messages.workspace.compactSwitcher.results}
           </button>
-        </div>
+        </fieldset>
 
         <div className="analysis-workspace">
           <div className="workspace-column workspace-column-center">
