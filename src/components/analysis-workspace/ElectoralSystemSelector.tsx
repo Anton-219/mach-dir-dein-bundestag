@@ -19,9 +19,8 @@ export function ElectoralSystemSelector({
   const options = getElectoralSystemOptions(i18n.locale)
 
   return (
-    <div
+    <fieldset
       className="scenario-link-options scenario-link-options-models"
-      role="group"
       aria-label={copy.selector.optionsLabel}
     >
       {options.map((option, index) => (
@@ -42,6 +41,6 @@ export function ElectoralSystemSelector({
           </button>
         </span>
       ))}
-    </div>
+    </fieldset>
   )
 }

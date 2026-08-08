@@ -14,9 +14,8 @@ export function ElectionSelector({
   const i18n = useI18n()
 
   return (
-    <div
+    <fieldset
       className="scenario-link-options"
-      role="group"
       aria-label={getElectionSelectionLabel(i18n.locale)}
     >
       {ELECTION_YEARS.map((year, index) => (
@@ -36,6 +35,6 @@ export function ElectionSelector({
           </button>
         </span>
       ))}
-    </div>
+    </fieldset>
   )
 }
