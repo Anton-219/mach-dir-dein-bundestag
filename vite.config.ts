@@ -55,6 +55,11 @@ function localizedDefaultMetadata(): Plugin {
 }
 
 export default defineConfig({
+  build: {
+    license: {
+      fileName: 'third-party-licenses.md',
+    },
+  },
   define: {
     __LAST_UPDATED_AT__: JSON.stringify(resolveLastUpdatedAt()),
   },
