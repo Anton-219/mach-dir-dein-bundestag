@@ -74,6 +74,14 @@ The primary workflow lives in `scripts/notebooks/btw2021/`. See `scripts/README.
 
 See [`docs/PROJECT_VISION.md`](docs/PROJECT_VISION.md) for the product scope, transparency requirements, technical principles, and known methodological limitations. More detailed source disclosure and methodology presentation remain tracked separately from this repository cut-over.
 
+## License and third-party material
+
+The application's own source code is licensed under the [MIT License](LICENSE), unless otherwise noted.
+
+Election data, geographic data, prepared or derived datasets, and other third-party material are not relicensed under the repository's MIT License. They remain subject to their respective source licences, attribution requirements, and notices. See [`Licenses/sources-and-licenses.md`](Licenses/sources-and-licenses.md) for the data sources and applicable licence information.
+
+Production builds also generate `dist/third-party-licenses.md`, containing licence information for dependencies bundled by Vite.
+
 ## Repository history
 
 The former root prototype and the temporary `app-v2` rebuild workspace were removed from the active tree during the final cut-over. Their complete implementation history remains available through Git.
