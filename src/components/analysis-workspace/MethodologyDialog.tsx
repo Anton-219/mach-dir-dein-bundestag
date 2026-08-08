@@ -1,6 +1,11 @@
 import { useEffect, useRef } from 'react'
 
 import { lastUpdatedAt } from '../../build-info.ts'
+import type { ElectionYear } from '../../data/elections.ts'
+import {
+  getAllElectionSources,
+  getElectionModelDataSources,
+} from '../../i18n/election-messages.ts'
 import {
   getElectoralSystemCatalog,
   getElectoralSystemNoticeTexts,
@@ -13,6 +18,7 @@ import type { ScenarioResult } from './types.ts'
 interface MethodologyDialogProps {
   open: boolean
   systemId: ElectoralSystemId
+  electionYear: ElectionYear
   scenario?: ScenarioResult
   onClose: () => void
 }
@@ -20,6 +26,7 @@ interface MethodologyDialogProps {
 export function MethodologyDialog({
   open,
   systemId,
+  electionYear,
   scenario,
   onClose,
 }: MethodologyDialogProps) {
@@ -27,7 +34,21 @@ export function MethodologyDialog({
   const i18n = useI18n()
   const { messages } = i18n
   const copy = getElectoralSystemCatalog(i18n.locale)
+  const electionCopy = messages.elections.years[electionYear]
   const models = getElectoralSystemOptions(i18n.locale)
+  const dataPreparationItems = [
+    electionCopy.officialTotals,
+    ...copy.methodology.dataPreparationItems.slice(1),
+  ]
+  const sourceCandidates = [
+    ...copy.methodology.sources,
+    ...getAllElectionSources(i18n.locale),
+  ]
+  const sources = sourceCandidates.filter(
+    (source, index) =>
+      sourceCandidates.findIndex((candidate) => candidate.href === source.href) ===
+      index,
+  )
   const result =
     scenario?.status === 'ready' ? scenario.electoralSystemResult : undefined
   const notices =
@@ -93,7 +114,7 @@ export function MethodologyDialog({
               className="methodology-dialog-introduction"
               id="methodology-dialog-introduction"
             >
-              {copy.methodology.introduction}
+              {electionCopy.methodologyIntroduction}
             </p>
 
             <section className="methodology-section methodology-notices">
@@ -113,7 +134,7 @@ export function MethodologyDialog({
             <section className="methodology-section">
               <h3>{copy.methodology.dataPreparationTitle}</h3>
               <ul>
-                {copy.methodology.dataPreparationItems.map((item) => (
+                {dataPreparationItems.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
@@ -146,7 +167,13 @@ export function MethodologyDialog({
                         </div>
                         <div>
                           <dt>{copy.methodology.dataSources}</dt>
-                          <dd>{model.dataSources}</dd>
+                          <dd>
+                            {getElectionModelDataSources(
+                              i18n.locale,
+                              electionYear,
+                              model.systemId,
+                            )}
+                          </dd>
                         </div>
                         <div>
                           <dt>{copy.methodology.limitations}</dt>
@@ -190,7 +217,7 @@ export function MethodologyDialog({
               <h3>{copy.methodology.sourcesTitle}</h3>
               <p>{copy.methodology.sourcesIntroduction}</p>
               <ul>
-                {copy.methodology.sources.map((source) => (
+                {sources.map((source) => (
                   <li key={source.href}>
                     <a href={source.href} target="_blank" rel="noreferrer">
                       {source.label}
