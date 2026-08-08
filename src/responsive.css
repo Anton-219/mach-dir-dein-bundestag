@@ -1,0 +1,336 @@
+.compact-workspace-switcher {
+  display: none;
+}
+
+@media (max-width: 92rem), (max-height: 43rem) {
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  .application-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+    grid-template-rows: auto auto auto;
+  }
+
+  .workspace-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .workspace-introduction {
+    display: none;
+  }
+
+  .analysis-shell {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    display: grid;
+    grid-template-columns: minmax(20rem, 0.78fr) minmax(0, 1.6fr);
+    grid-template-rows: auto auto auto;
+    gap: 0.65rem;
+    align-items: start;
+    padding: 0.65rem 0.8rem;
+  }
+
+  .analysis-shell > .scenario-summary {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .analysis-shell > .workspace-column-left {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .analysis-shell > .analysis-workspace {
+    grid-column: 2;
+    grid-row: 2 / 4;
+  }
+
+  .analysis-shell > .workspace-column-context {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .demographic-panel,
+  .state-landscape-panel {
+    display: none;
+  }
+
+  .analysis-workspace {
+    height: auto;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .workspace-column,
+  .workspace-column-left,
+  .workspace-column-center,
+  .workspace-column-context {
+    height: auto;
+    min-height: 0;
+    grid-template-rows: auto;
+    align-content: start;
+  }
+
+  .workspace-panel {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .filter-panel {
+    min-height: 0;
+  }
+
+  .map-panel {
+    min-height: 28rem;
+  }
+
+  .parliament-panel {
+    min-height: 24rem;
+  }
+
+  .party-panel .party-list,
+  .coalition-panel .coalition-list,
+  .filter-list {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .workspace-column-center .party-panel .party-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .parliament-chart {
+    width: min(100%, 30rem);
+  }
+
+  .majority-axis {
+    width: min(100%, 32rem);
+  }
+
+  .workspace-column-left .filter-menu {
+    width: min(34rem, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+@media (max-width: 56rem) {
+  .workspace-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.6rem;
+  }
+
+  .analysis-shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    gap: 0.6rem;
+    padding: 0.6rem;
+  }
+
+  .analysis-shell > .scenario-summary {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .compact-workspace-switcher {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.2rem;
+    padding: 0.22rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--panel-strong);
+  }
+
+  .compact-workspace-switcher button {
+    min-height: 2.45rem;
+    padding: 0.45rem 0.7rem;
+    border: 0;
+    border-radius: 0.58rem;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.74rem;
+    font-weight: 800;
+  }
+
+  .compact-workspace-switcher button[aria-pressed="true"] {
+    background: var(--panel-background);
+    color: var(--ink);
+    box-shadow: 0 0.2rem 0.7rem rgb(31 45 39 / 9%);
+  }
+
+  .analysis-shell > .workspace-column-left,
+  .analysis-shell > .analysis-workspace {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .analysis-shell > .workspace-column-context {
+    grid-column: 1;
+    grid-row: 4;
+  }
+
+  .analysis-shell[data-compact-view="scenario"] > .analysis-workspace,
+  .analysis-shell[data-compact-view="results"] > .workspace-column-left,
+  .analysis-shell[data-compact-view="results"] > .workspace-column-context {
+    display: none;
+  }
+
+  .scenario-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.42rem;
+    min-height: 0;
+  }
+
+  .scenario-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.85rem;
+    align-items: center;
+  }
+
+  .scenario-facts div,
+  .scenario-facts div:first-child {
+    padding: 0;
+    border: 0;
+  }
+
+  .scenario-facts .scenario-fact-election {
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .workspace-panel {
+    border-radius: 0.8rem;
+  }
+
+  .filter-menu {
+    position: static;
+    width: 100%;
+    max-width: none;
+    max-height: none;
+    margin-top: 0.35rem;
+    box-shadow: none;
+  }
+
+  .filter-option-grid-wide {
+    max-height: none;
+  }
+
+  .filter-menu .filter-option-grid-wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .map-panel {
+    min-height: 27rem;
+  }
+
+  .parliament-panel {
+    min-height: 23rem;
+  }
+
+  .analysis-workspace,
+  .workspace-column-center {
+    gap: 0.6rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .workspace-header {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0.55rem 0.65rem;
+  }
+
+  .workspace-header-actions {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    justify-self: stretch;
+    gap: 0.45rem 0.65rem;
+  }
+
+  .workspace-brand h1 {
+    font-size: 1.2rem;
+  }
+
+  .workspace-eyebrow {
+    font-size: 0.56rem;
+  }
+
+  .scenario-facts {
+    gap: 0.45rem 0.7rem;
+  }
+
+  .scenario-facts div {
+    min-width: calc(50% - 0.4rem);
+  }
+
+  .scenario-facts .scenario-fact-votes {
+    width: 100%;
+  }
+
+  .workspace-column-center .party-panel .party-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .parliament-heading {
+    flex-wrap: wrap;
+  }
+
+  .parliament-totals {
+    flex-wrap: wrap;
+  }
+
+  .map-panel {
+    min-height: 24rem;
+  }
+
+  .application-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .application-footer-updated {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 30rem) {
+  .analysis-shell {
+    padding: 0.45rem;
+  }
+
+  .workspace-panel,
+  .scenario-summary {
+    padding: 0.62rem;
+  }
+
+  .filter-menu .filter-option-grid-wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .filter-value-state {
+    white-space: normal;
+    text-align: right;
+  }
+}

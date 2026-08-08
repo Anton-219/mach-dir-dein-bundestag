@@ -34,6 +34,8 @@ import { StatePartyLandscapePanel } from './StatePartyLandscapePanel.tsx'
 import type { DataState, ScenarioResult } from './types.ts'
 import { WorkspaceHeader } from './WorkspaceHeader.tsx'
 
+type CompactView = 'scenario' | 'results'
+
 function createUnavailableScenario(
   status: 'empty' | 'invalid',
   reason: ScenarioReason,
@@ -79,6 +81,7 @@ export function AnalysisWorkspace({
   const [methodologyOpen, setMethodologyOpen] = useState(false)
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
   const [highlightedState, setHighlightedState] = useState<string | null>(null)
+  const [compactView, setCompactView] = useState<CompactView>('scenario')
 
   const availableStates = useMemo(() => {
     if (dataState.status !== 'ready') {
@@ -289,6 +292,7 @@ export function AnalysisWorkspace({
       <main
         className="analysis-shell"
         id="analysis-workspace"
+        data-compact-view={compactView}
         aria-label={messages.workspace.ariaLabel}
         aria-busy={dataState.status === 'loading'}
       >
@@ -314,6 +318,24 @@ export function AnalysisWorkspace({
           onElectoralSystemChange={setElectoralSystemId}
           onElectionYearChange={onElectionYearChange}
         />
+
+        <fieldset className="compact-workspace-switcher">
+          <legend className="visually-hidden">{messages.workspace.ariaLabel}</legend>
+          <button
+            type="button"
+            aria-pressed={compactView === 'scenario'}
+            onClick={() => setCompactView('scenario')}
+          >
+            {messages.filters.activeScenario}
+          </button>
+          <button
+            type="button"
+            aria-pressed={compactView === 'results'}
+            onClick={() => setCompactView('results')}
+          >
+            {messages.parliament.kicker}
+          </button>
+        </fieldset>
 
         <div className="analysis-workspace">
           <div className="workspace-column workspace-column-center">
