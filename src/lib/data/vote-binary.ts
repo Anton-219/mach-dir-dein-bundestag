@@ -263,7 +263,7 @@ export function parseVoteBinaryEntries(
   const view = new DataView(buffer)
   assertBinaryHeader(view, fileMetadata)
 
-  const entries = new Array<VoteEntry>(fileMetadata.recordCount)
+  const entries: VoteEntry[] = []
 
   for (let index = 0; index < fileMetadata.recordCount; index += 1) {
     const offset = HEADER_SIZE + index * RECORD_SIZE
@@ -292,7 +292,7 @@ export function parseVoteBinaryEntries(
     }
 
     const { gender, ageGroup, electionMethod } = decodeGroupId(groupId)
-    entries[index] = {
+    entries.push({
       districtId,
       state,
       gender,
@@ -301,7 +301,7 @@ export function parseVoteBinaryEntries(
       voteType: fileMetadata.voteType,
       electionMethod,
       votes,
-    }
+    })
   }
 
   return entries
