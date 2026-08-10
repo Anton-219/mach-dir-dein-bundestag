@@ -18,7 +18,8 @@ from typing import Any
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DATA_ROOT = REPOSITORY_ROOT / "public" / "data"
+DEFAULT_SOURCE_ROOT = REPOSITORY_ROOT / "scripts" / "data" / "generated"
+DEFAULT_OUTPUT_ROOT = REPOSITORY_ROOT / "public" / "data"
 DEFAULT_ELECTION_DIRECTORIES = ("btw2021", "btw2025")
 
 MAGIC = b"MDBVOTE\0"
@@ -243,9 +244,13 @@ def export_vote_file(
     return metadata
 
 
-def export_election_directory(directory: Path) -> dict[str, Any]:
-    first_source = directory / "first_votes.json"
-    second_source = directory / "second_votes.json"
+def export_election_directory(
+    source_directory: Path,
+    output_directory: Path | None = None,
+) -> dict[str, Any]:
+    output_directory = source_directory if output_directory is None else output_directory
+    first_source = source_directory / "first_votes.json"
+    second_source = source_directory / "second_votes.json"
     if not first_source.is_file() or not second_source.is_file():
         missing = [
             str(path)
@@ -256,12 +261,12 @@ def export_election_directory(directory: Path) -> dict[str, Any]:
 
     first_metadata = export_vote_file(
         first_source,
-        directory / "first_votes.bin",
+        output_directory / "first_votes.bin",
         "1",
     )
     second_metadata = export_vote_file(
         second_source,
-        directory / "second_votes.bin",
+        output_directory / "second_votes.bin",
         "2",
     )
 
@@ -277,7 +282,7 @@ def export_election_directory(directory: Path) -> dict[str, Any]:
     }
     if first_districts != second_districts:
         raise ValueError(
-            f"{directory}: first- and second-vote files do not have identical "
+            f"{source_directory}: first- and second-vote files do not have identical "
             "constituency-to-state coverage"
         )
 
@@ -292,7 +297,8 @@ def export_election_directory(directory: Path) -> dict[str, Any]:
             "secondVotes": second_metadata.to_json(),
         },
     }
-    manifest_path = directory / "vote_data.json"
+    output_directory.mkdir(parents=True, exist_ok=True)
+    manifest_path = output_directory / "vote_data.json"
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -308,10 +314,16 @@ def _parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument(
-        "--data-root",
+        "--source-root",
         type=Path,
-        default=DEFAULT_DATA_ROOT,
-        help="Root containing btw2021/, btw2025/, ... directories",
+        default=DEFAULT_SOURCE_ROOT,
+        help="Root containing generated btw2021/, btw2025/, ... JSON directories",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=DEFAULT_OUTPUT_ROOT,
+        help="Root receiving the runtime btw2021/, btw2025/, ... assets",
     )
     parser.add_argument(
         "--election",
@@ -326,13 +338,14 @@ def main() -> int:
     args = _parse_args()
     elections = tuple(args.elections or DEFAULT_ELECTION_DIRECTORIES)
     for election in elections:
-        directory = args.data_root / election
-        manifest = export_election_directory(directory)
+        source_directory = args.source_root / election
+        output_directory = args.output_root / election
+        manifest = export_election_directory(source_directory, output_directory)
         first = manifest["files"]["firstVotes"]
         second = manifest["files"]["secondVotes"]
         source_bytes = (
-            (directory / "first_votes.json").stat().st_size
-            + (directory / "second_votes.json").stat().st_size
+            (source_directory / "first_votes.json").stat().st_size
+            + (source_directory / "second_votes.json").stat().st_size
         )
         binary_bytes = first["byteLength"] + second["byteLength"]
         reduction = 0 if source_bytes == 0 else 1 - binary_bytes / source_bytes
