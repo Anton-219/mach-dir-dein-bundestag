@@ -18,9 +18,12 @@ from scripts.export_vote_binary import (
 
 
 class VoteBinaryExportTests(unittest.TestCase):
-    def test_exports_columnar_binary_and_manifest(self) -> None:
+    def test_exports_columnar_binary_and_manifest_to_separate_runtime_directory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
-            directory = Path(temporary_directory)
+            root = Path(temporary_directory)
+            source_directory = root / "generated" / "btw2025"
+            output_directory = root / "public" / "data" / "btw2025"
+            source_directory.mkdir(parents=True)
             first_entries = [
                 {
                     "districtId": 1,
@@ -47,14 +50,14 @@ class VoteBinaryExportTests(unittest.TestCase):
                 {**entry, "voteType": "2", "votes": entry["votes"] + 1}
                 for entry in first_entries
             ]
-            (directory / "first_votes.json").write_text(
+            (source_directory / "first_votes.json").write_text(
                 json.dumps(first_entries), encoding="utf-8"
             )
-            (directory / "second_votes.json").write_text(
+            (source_directory / "second_votes.json").write_text(
                 json.dumps(second_entries), encoding="utf-8"
             )
 
-            manifest = export_election_directory(directory)
+            manifest = export_election_directory(source_directory, output_directory)
 
             self.assertEqual(manifest["schemaVersion"], SCHEMA_VERSION)
             self.assertEqual(manifest["genders"], list(GENDERS))
@@ -66,8 +69,10 @@ class VoteBinaryExportTests(unittest.TestCase):
             self.assertEqual(first_metadata["recordCount"], 2)
             self.assertEqual(first_metadata["parties"], ["AAA", "BBB"])
             self.assertEqual(first_metadata["districtStates"], [None, "State A"])
+            self.assertFalse((source_directory / "first_votes.bin").exists())
+            self.assertTrue((output_directory / "vote_data.json").is_file())
 
-            binary = (directory / "first_votes.bin").read_bytes()
+            binary = (output_directory / "first_votes.bin").read_bytes()
             header = HEADER_STRUCT.unpack_from(binary, 0)
             (
                 magic,
