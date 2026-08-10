@@ -257,7 +257,7 @@ export function decodeBinaryVoteEntries(
     expectedVoteType,
     fileName,
   )
-  const entries = new Array<VoteEntry>(metadata.recordCount)
+  const entries: VoteEntry[] = []
 
   for (let index = 0; index < metadata.recordCount; index += 1) {
     const districtId = columns.districtIds[index]
@@ -278,7 +278,7 @@ export function decodeBinaryVoteEntries(
       throw new Error(`${fileName} contains invalid votes at record ${index}.`)
     }
 
-    entries[index] = {
+    entries.push({
       districtId,
       state,
       gender: group.gender,
@@ -287,7 +287,7 @@ export function decodeBinaryVoteEntries(
       voteType: expectedVoteType,
       electionMethod: group.electionMethod,
       votes,
-    }
+    })
   }
 
   return entries
