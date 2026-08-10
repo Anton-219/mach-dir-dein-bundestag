@@ -2,7 +2,7 @@
 
 An interactive React and TypeScript application for exploring how selected voter groups could change the composition of the German Bundestag.
 
-The application uses prepared data for the 2021 German federal election. Users can include or exclude federal states, age groups, genders represented by the source data, and postal or in-person votes. Party results, the parliamentary seat distribution, and minimal winning coalitions update immediately inside one connected desktop analysis workspace.
+The application uses prepared data for the 2021 and 2025 German federal elections. Users can include or exclude federal states, age groups, genders represented by the source data, and postal or in-person votes. Party results, the parliamentary seat distribution, and minimal winning coalitions update immediately inside one connected desktop analysis workspace.
 
 The application is an educational analysis tool. Filtered results are hypothetical scenarios, not forecasts or voting recommendations.
 
@@ -20,7 +20,7 @@ npm ci
 npm run dev
 ```
 
-The Vite development server opens the single frontend application.
+The Vite development server opens the single frontend application. Before it starts, the canonical `VoteEntry` JSON files are converted into compact binary runtime data automatically.
 
 ## Validation
 
@@ -31,28 +31,31 @@ npm run lint
 npm run build
 ```
 
-`npm run build` performs the TypeScript project build and creates the production bundle in `dist/`.
+`npm run build` performs the binary vote-data export, TypeScript project build, and Vite production build, then removes the large source vote JSON copies from `dist/`.
 
 ## Application structure
 
 - `src/components/analysis-workspace/` contains the connected filters, Germany map, parliament result, party summaries, demographic context, and coalition presentation.
-- `src/lib/` contains framework-independent filter, election, map, result, and coalition logic.
+- `src/lib/` contains framework-independent filter, election, map, result, coalition, and binary-data decoding logic.
 - `src/models/` contains the prepared JSON contracts and calculated result models.
 - `src/data/loaders.ts` loads and validates the static application data.
-- `tests/unit/` contains calculation, filter, presentation, map, and regional-result tests.
+- `tests/unit/` contains calculation, filter, presentation, map, regional-result, and binary-data tests.
 
 The project uses one application entry point and no backend, router, database, account system, or persistence layer.
 
 ## Static data
 
-The primary application loads these same-origin assets from `public/data/`:
+The application keeps the notebook-generated `first_votes.json` and `second_votes.json` files as its canonical, human-readable prepared-data artifacts. `scripts/export-vote-binary.mjs` derives compact runtime files from them before development and production builds.
+
+The browser loads these same-origin runtime assets from `public/data/`:
 
 - `partyData.json`: party names, abbreviations, colours, and parliamentary positions
-- `btw2021/first_votes.json`: constituency-aware first-vote records used to calculate district winners
-- `btw2021/second_votes.json`: constituency-aware second-vote records used by the scenario calculation and the demographic presentation
+- `btw2021/vote_data.json` and `btw2025/vote_data.json`: binary schema metadata, party dictionaries, and constituency-to-state mappings
+- `btw2021/first_votes.bin` and `btw2025/first_votes.bin`: constituency-aware first-vote records used to calculate district winners
+- `btw2021/second_votes.bin` and `btw2025/second_votes.bin`: constituency-aware second-vote records used by the scenario calculation and demographic presentation
 - `germany_states_map.geo.json`: federal-state geometry for the interactive map
 
-The JSON-facing field names and literal values in `src/models/json-contracts.ts` are application data contracts. They must not be changed without migrating the corresponding prepared data files.
+The JSON-facing field names and literal values in `src/models/json-contracts.ts` remain the canonical prepared-data contract. The binary format is a derived, versioned transport representation; the browser decoder reconstructs the existing `VoteEntry[]` shape before passing data to the electoral calculations.
 
 ## Calculation scope
 
@@ -70,7 +73,7 @@ These calculations reproduce the agreed reference behavior of the former prototy
 
 Python and Jupyter sources under `scripts/` prepare the election datasets outside the React application. Some demographic values are modelled from differently aggregated source tables and must not be interpreted as individual-level observations.
 
-The primary workflow lives in `scripts/notebooks/btw2021/`. See `scripts/README.md` for inputs, methodology, generated files, validation, and known limitations.
+The notebook workflows continue to write the same `VoteEntry` JSON representation as before. The binary export is a separate deterministic deployment step and does not modify those source artifacts. See `scripts/README.md` for inputs, methodology, generated files, validation, and known limitations, and `public/data/README.md` for the runtime binary format.
 
 See [`docs/PROJECT_VISION.md`](docs/PROJECT_VISION.md) for the product scope, transparency requirements, technical principles, and known methodological limitations. More detailed source disclosure and methodology presentation remain tracked separately from this repository cut-over.
 
