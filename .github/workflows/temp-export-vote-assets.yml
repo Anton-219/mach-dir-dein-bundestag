@@ -1,42 +1,117 @@
-name: Temporary vote asset export
+name: Temporary vote asset migration
 
 on:
   pull_request:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  export:
+  migrate:
     if: github.head_ref == 'agent/binary-vote-runtime'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Check out repository
+      - name: Check out migration branch
         uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          ref: agent/binary-vote-runtime
 
-      - name: Export current binary assets
-        run: npm run prepare:vote-data
+      - name: Stop when migration is already complete
+        id: migration-state
+        shell: bash
+        run: |
+          if [[ -f public/data/btw2021/first_votes.json && -f public/data/btw2025/first_votes.json ]]; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Upload migration inputs
-        uses: actions/upload-artifact@v4
-        with:
-          name: vote-binary-migration
-          if-no-files-found: error
-          path: |
-            public/data/btw2021/first_votes.bin
-            public/data/btw2021/second_votes.bin
-            public/data/btw2021/vote_data.json
-            public/data/btw2025/first_votes.bin
-            public/data/btw2025/second_votes.bin
-            public/data/btw2025/vote_data.json
-            scripts/notebooks/btw2021/01_prepare_btw2021_vote_entries.ipynb
+      - name: Update 2021 notebook output paths
+        if: steps.migration-state.outputs.needed == 'true'
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def update_notebook(path: str, replacements: list[tuple[str, str]]) -> None:
+              notebook_path = Path(path)
+              notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
+              replacement_counts = [0] * len(replacements)
+
+              for cell in notebook.get("cells", []):
+                  source = cell.get("source")
+                  if isinstance(source, list):
+                      updated = []
+                      for line in source:
+                          for index, (old, new) in enumerate(replacements):
+                              if old in line:
+                                  replacement_counts[index] += line.count(old)
+                                  line = line.replace(old, new)
+                          updated.append(line)
+                      cell["source"] = updated
+                  elif isinstance(source, str):
+                      for index, (old, new) in enumerate(replacements):
+                          if old in source:
+                              replacement_counts[index] += source.count(old)
+                              source = source.replace(old, new)
+                      cell["source"] = source
+
+              if any(count == 0 for count in replacement_counts):
+                  raise RuntimeError(
+                      f"Expected notebook replacement was not found in {notebook_path}: "
+                      f"{replacement_counts}"
+                  )
+
+              notebook_path.write_text(
+                  json.dumps(notebook, ensure_ascii=False, indent=1) + "\n",
+                  encoding="utf-8",
+              )
+
+          update_notebook(
+              "scripts/notebooks/btw2021/01_prepare_btw2021_vote_entries.ipynb",
+              [("scripts/data/generated", "scripts/data/generated/btw2021")],
+          )
+          update_notebook(
+              "scripts/notebooks/btw2021/02_validate_btw2021_vote_entries.ipynb",
+              [
+                  ("scripts/data/generated", "scripts/data/generated/btw2021"),
+                  (
+                      'allowed_age_groups = {"18-24", "25-34", "35-44", "45-54", "55-64", "65+"}',
+                      'allowed_age_groups = {"18-24", "25-34", "35-44", "45-59", "60-69", "70+"}',
+                  ),
+              ],
+          )
+          PY
+
+      - name: Export runtime binary assets from the existing committed JSON
+        if: steps.migration-state.outputs.needed == 'true'
+        run: >-
+          python3 scripts/export_vote_binary.py
+          --source-root public/data
+          --output-root public/data
+
+      - name: Replace source JSON with committed runtime assets
+        if: steps.migration-state.outputs.needed == 'true'
+        shell: bash
+        run: |
+          git rm \
+            public/data/btw2021/first_votes.json \
+            public/data/btw2021/second_votes.json \
+            public/data/btw2025/first_votes.json \
+            public/data/btw2025/second_votes.json
+          git add \
+            public/data/btw2021/first_votes.bin \
+            public/data/btw2021/second_votes.bin \
+            public/data/btw2021/vote_data.json \
+            public/data/btw2025/first_votes.bin \
+            public/data/btw2025/second_votes.bin \
+            public/data/btw2025/vote_data.json \
+            scripts/notebooks/btw2021/01_prepare_btw2021_vote_entries.ipynb \
             scripts/notebooks/btw2021/02_validate_btw2021_vote_entries.ipynb
-            scripts/notebooks/btw2025/01_prepare_btw2025_vote_entries.ipynb
-            scripts/notebooks/btw2025/02_validate_btw2025_vote_entries.ipynb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Commit binary vote runtime assets"
+          git push origin HEAD:agent/binary-vote-runtime
