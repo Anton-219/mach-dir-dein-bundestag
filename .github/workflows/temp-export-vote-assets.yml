@@ -1,4 +1,4 @@
-name: Temporary vote asset migration
+name: Temporary election data workflow validation
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  migrate:
+  validate:
     if: github.head_ref == 'agent/binary-vote-runtime'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -18,100 +18,83 @@ jobs:
         with:
           ref: agent/binary-vote-runtime
 
-      - name: Stop when migration is already complete
-        id: migration-state
-        shell: bash
-        run: |
-          if [[ -f public/data/btw2021/first_votes.json && -f public/data/btw2025/first_votes.json ]]; then
-            echo "needed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "needed=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Update 2021 notebook output paths
-        if: steps.migration-state.outputs.needed == 'true'
+      - name: Update data preparation documentation
         run: |
           python3 - <<'PY'
-          import json
           from pathlib import Path
 
-          def update_notebook(path: str, replacements: list[tuple[str, str]]) -> None:
-              notebook_path = Path(path)
-              notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
-              replacement_counts = [0] * len(replacements)
+          path = Path("scripts/README.md")
+          text = path.read_text(encoding="utf-8")
 
-              for cell in notebook.get("cells", []):
-                  source = cell.get("source")
-                  if isinstance(source, list):
-                      updated = []
-                      for line in source:
-                          for index, (old, new) in enumerate(replacements):
-                              if old in line:
-                                  replacement_counts[index] += line.count(old)
-                                  line = line.replace(old, new)
-                          updated.append(line)
-                      cell["source"] = updated
-                  elif isinstance(source, str):
-                      for index, (old, new) in enumerate(replacements):
-                          if old in source:
-                              replacement_counts[index] += source.count(old)
-                              source = source.replace(old, new)
-                      cell["source"] = source
-
-              if any(count == 0 for count in replacement_counts):
-                  raise RuntimeError(
-                      f"Expected notebook replacement was not found in {notebook_path}: "
-                      f"{replacement_counts}"
-                  )
-
-              notebook_path.write_text(
-                  json.dumps(notebook, ensure_ascii=False, indent=1) + "\n",
-                  encoding="utf-8",
-              )
-
-          update_notebook(
-              "scripts/notebooks/btw2021/01_prepare_btw2021_vote_entries.ipynb",
-              [("scripts/data/generated", "scripts/data/generated/btw2021")],
+          text = text.replace(
+              "scripts/data/generated/first_votes.json\nscripts/data/generated/second_votes.json",
+              "scripts/data/generated/btw2021/first_votes.json\nscripts/data/generated/btw2021/second_votes.json",
           )
-          update_notebook(
-              "scripts/notebooks/btw2021/02_validate_btw2021_vote_entries.ipynb",
-              [
-                  ("scripts/data/generated", "scripts/data/generated/btw2021"),
-                  (
-                      'allowed_age_groups = {"18-24", "25-34", "35-44", "45-54", "55-64", "65+"}',
-                      'allowed_age_groups = {"18-24", "25-34", "35-44", "45-59", "60-69", "70+"}',
-                  ),
-              ],
+          text = text.replace(
+              'OUTPUT_DIRECTORY = ROOT / "scripts/data/generated"',
+              'OUTPUT_DIRECTORY = ROOT / "scripts/data/generated/btw2021"',
           )
+
+          marker = "## Running the complete local preparation"
+          if marker not in text:
+              insertion_point = "The Python modules in `scripts/election_data/` contain the reusable operations called by those notebook cells. They are deliberately kept out of the foreground so that the preparation process remains readable in the notebooks rather than becoming one opaque pipeline call.\n"
+              section = """
+
+## Running the complete local preparation
+
+Election-data preparation is intentionally separate from frontend development and builds. Download the official source files and place them under `scripts/data/` at the paths expected by the notebooks:
+
+```text
+scripts/data/btw21_wbz_ergebnisse.csv
+scripts/data/btw21_rws_bst2.csv
+scripts/data/btw25_wbz_ergebnisse.csv
+scripts/data/btw25_rws_bst2.csv
+```
+
+Then run the complete notebook, validation and binary-export workflow explicitly:
+
+```bash
+npm run prepare:election-data
+```
+
+The two stages can also be run separately:
+
+```bash
+npm run prepare:vote-json
+npm run prepare:vote-data
+```
+
+The notebooks write gitignored human-readable data to `scripts/data/generated/btw2021/` and `scripts/data/generated/btw2025/`. The binary exporter converts those files into the committed runtime assets under `public/data/btw2021/` and `public/data/btw2025/`.
+"""
+              if insertion_point not in text:
+                  raise RuntimeError("Could not find scripts/README.md insertion point")
+              text = text.replace(insertion_point, insertion_point + section, 1)
+
+          path.write_text(text, encoding="utf-8")
+
+          notebook_path = Path("scripts/notebooks/btw2025/02_validate_btw2025_vote_entries.ipynb")
+          notebook_text = notebook_path.read_text(encoding="utf-8")
+          notebook_text = notebook_text.replace(
+              "the permitted 2025 age-group values are election-specific.",
+              "the permitted age-group values use the shared application categories.",
+          )
+          notebook_path.write_text(notebook_text, encoding="utf-8")
           PY
 
-      - name: Export runtime binary assets from the existing committed JSON
-        if: steps.migration-state.outputs.needed == 'true'
-        run: >-
-          python3 scripts/export_vote_binary.py
-          --source-root public/data
-          --output-root public/data
+      - name: Validate exporter and command scripts
+        run: |
+          python3 -m unittest scripts.tests.test_vote_binary_export
+          node --check scripts/run-election-notebooks.mjs
+          node --check scripts/run-vote-binary-export.mjs
 
-      - name: Replace source JSON with committed runtime assets
-        if: steps.migration-state.outputs.needed == 'true'
+      - name: Commit documentation adjustments
         shell: bash
         run: |
-          git rm \
-            public/data/btw2021/first_votes.json \
-            public/data/btw2021/second_votes.json \
-            public/data/btw2025/first_votes.json \
-            public/data/btw2025/second_votes.json
-          git add \
-            public/data/btw2021/first_votes.bin \
-            public/data/btw2021/second_votes.bin \
-            public/data/btw2021/vote_data.json \
-            public/data/btw2025/first_votes.bin \
-            public/data/btw2025/second_votes.bin \
-            public/data/btw2025/vote_data.json \
-            scripts/notebooks/btw2021/01_prepare_btw2021_vote_entries.ipynb \
-            scripts/notebooks/btw2021/02_validate_btw2021_vote_entries.ipynb
-
+          if git diff --quiet; then
+            exit 0
+          fi
+          git add scripts/README.md scripts/notebooks/btw2025/02_validate_btw2025_vote_entries.ipynb
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Commit binary vote runtime assets"
+          git commit -m "Document explicit election data preparation"
           git push origin HEAD:agent/binary-vote-runtime
