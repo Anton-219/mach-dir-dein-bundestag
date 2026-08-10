@@ -1,34 +1,70 @@
 # Binary vote runtime data
 
-The Jupyter notebooks continue to produce the canonical `first_votes.json` and `second_votes.json` files. Those JSON files remain the human-readable output used for methodology review and validation.
+The Jupyter notebooks produce the canonical `first_votes.json` and `second_votes.json` files under `scripts/data/generated/<election>/`. Those JSON files are the human-readable output used for methodology review and validation and are intentionally ignored by Git.
 
-The web application uses a separate generated runtime representation to avoid transferring the repeated JSON field names and string values for every `VoteEntry`.
+The web application uses a separate compact runtime representation under `public/data/<election>/` to avoid transferring repeated JSON field names and string values for every `VoteEntry`.
 
 ## Generation flow
 
 ```text
-Official source data
+Official source data under scripts/data/
         ↓
-Jupyter notebooks
+Jupyter preparation + validation notebooks
         ↓
-first_votes.json / second_votes.json
+scripts/data/generated/btw2021/*.json
+scripts/data/generated/btw2025/*.json
         ↓
 scripts/export_vote_binary.py
         ↓
-first_votes.bin / second_votes.bin / vote_data.json
+public/data/btw2021/*.bin + vote_data.json
+public/data/btw2025/*.bin + vote_data.json
         ↓
 web application
 ```
 
-Run the export explicitly with:
+Election-data preparation is deliberately explicit and is not part of `npm run dev` or `npm run build`.
+
+Run only the notebooks and their validation notebooks with:
+
+```bash
+npm run prepare:vote-json
+```
+
+Convert existing generated JSON files into runtime binary assets with:
 
 ```bash
 npm run prepare:vote-data
 ```
 
-`npm run dev` and `npm run build` invoke the same export automatically. The generated `.bin` files and `vote_data.json` manifests are ignored by Git.
+Run both steps in sequence with:
 
-Production builds remove the source `first_votes.json` and `second_votes.json` files from `dist/`. They remain committed in the repository but are not part of the deployed GitHub Pages payload.
+```bash
+npm run prepare:election-data
+```
+
+The generated JSON files under `scripts/data/generated/` stay local. The resulting `.bin` files and `vote_data.json` manifests under `public/data/` are committed to Git because they are the assets the browser actually loads.
+
+The notebook runner executes temporary copies through Jupyter `nbconvert`; it does not overwrite the committed notebooks with fresh cell outputs.
+
+## Local source files
+
+The notebooks deliberately read local source files instead of downloading them automatically. Download the official source files and place them at the documented paths under `scripts/data/` before running `npm run prepare:vote-json` or `npm run prepare:election-data`.
+
+For 2021 the preparation notebook expects:
+
+```text
+scripts/data/btw21_wbz_ergebnisse.csv
+scripts/data/btw21_rws_bst2.csv
+```
+
+For 2025 it expects:
+
+```text
+scripts/data/btw25_wbz_ergebnisse.csv
+scripts/data/btw25_rws_bst2.csv
+```
+
+The detailed source descriptions and methodology are documented in `scripts/README.md` and `scripts/notebooks/btw2025/README.md`.
 
 ## Binary schema version 1
 
@@ -80,6 +116,6 @@ This first implementation therefore changes the transport and parsing format wit
 
 ## Validation
 
-`scripts/tests/test_vote_binary_export.py` verifies binary generation with small synthetic `VoteEntry` fixtures, including legacy age-label normalization and constituency/state coverage checks.
+`scripts/tests/test_vote_binary_export.py` verifies binary generation with small synthetic `VoteEntry` fixtures, including separate source/runtime directories, legacy age-label normalization and constituency/state coverage checks.
 
 `tests/unit/binary-vote-format.test.ts` verifies the browser-side decoder and manifest validation against a synthetic binary fixture.
