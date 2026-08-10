@@ -8,9 +8,12 @@ The application is an educational analysis tool. Filtered results are hypothetic
 
 ## Requirements
 
+For normal frontend development:
+
 - Node.js 20.19 or newer, or Node.js 22.12 or newer
 - npm
-- Python 3 for generating the compact runtime vote data from the prepared JSON files
+
+Python 3, Jupyter and the notebook dependencies are only required when the election data itself is regenerated.
 
 ## Development
 
@@ -21,7 +24,7 @@ npm ci
 npm run dev
 ```
 
-The `predev` hook converts the prepared `VoteEntry` JSON files into compact binary runtime assets before Vite starts. The Vite development server then opens the single frontend application.
+The Vite development server uses the committed binary election assets under `public/data/`. It does not execute Python or Jupyter.
 
 ## Validation
 
@@ -33,7 +36,7 @@ npm run lint
 npm run build
 ```
 
-`npm run build` generates the binary vote assets, performs the TypeScript project build, creates the production bundle in `dist/`, and removes the large source vote JSON files from that deployment output.
+`npm run build` performs the TypeScript project build and creates the production bundle in `dist/`. It uses the same committed binary election assets as local development.
 
 ## Application structure
 
@@ -47,16 +50,46 @@ The project uses one application entry point and no backend, router, database, a
 
 ## Static data
 
-The prepared source data remains under `public/data/` as human-readable `VoteEntry` JSON. The application itself loads generated same-origin runtime assets:
+The application loads committed same-origin runtime assets from `public/data/`:
 
 - `partyData.json`: party names, abbreviations, colours, and parliamentary positions
 - `btw2021/vote_data.json`, `btw2021/first_votes.bin`, and `btw2021/second_votes.bin`: compact 2021 vote metadata and columns
 - `btw2025/vote_data.json`, `btw2025/first_votes.bin`, and `btw2025/second_votes.bin`: compact 2025 vote metadata and columns
 - `germany_states_map.geo.json`: federal-state geometry for the interactive map
 
-`scripts/export_vote_binary.py` deterministically derives the runtime files from the existing `first_votes.json` and `second_votes.json` files. The source JSON therefore remains the inspectable output of the notebook workflow, while the generated binary files remove repeated strings and field names from the browser payload. Generated runtime files are ignored by Git.
+The large human-readable `VoteEntry` JSON files are not runtime assets and are not committed. The notebooks create them locally under `scripts/data/generated/btw2021/` and `scripts/data/generated/btw2025/`. `scripts/export_vote_binary.py` converts those files into the committed runtime assets under `public/data/`.
 
-The JSON-facing field names and literal values in `src/models/json-contracts.ts` remain the prepared data contract. They must not be changed without migrating the corresponding source data and binary exporter. See [`docs/BINARY_VOTE_DATA.md`](docs/BINARY_VOTE_DATA.md) for the runtime format.
+The JSON-facing field names and literal values in `src/models/json-contracts.ts` remain the prepared data contract. They must not be changed without migrating the notebook output and binary exporter. See [`docs/BINARY_VOTE_DATA.md`](docs/BINARY_VOTE_DATA.md) for the runtime format.
+
+## Regenerating election data
+
+Election-data preparation is an explicit maintenance operation and is deliberately not part of `npm run dev` or `npm run build`.
+
+Download the official source files and place them at the documented paths under `scripts/data/`. The current default paths are:
+
+```text
+scripts/data/btw21_wbz_ergebnisse.csv
+scripts/data/btw21_rws_bst2.csv
+scripts/data/btw25_wbz_ergebnisse.csv
+scripts/data/btw25_rws_bst2.csv
+```
+
+Then either run the complete preparation:
+
+```bash
+npm run prepare:election-data
+```
+
+or run its two stages separately:
+
+```bash
+npm run prepare:vote-json
+npm run prepare:vote-data
+```
+
+`prepare:vote-json` executes the 2021 and 2025 preparation and validation notebooks through Jupyter without overwriting the committed notebook cell outputs. It writes the large gitignored JSON files under `scripts/data/generated/<election>/`.
+
+`prepare:vote-data` converts those JSON files into `first_votes.bin`, `second_votes.bin`, and `vote_data.json` under `public/data/<election>/`. Those compact runtime files should be reviewed and committed when the election data changes.
 
 ## Calculation scope
 
