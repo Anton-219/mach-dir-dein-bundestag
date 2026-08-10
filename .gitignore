@@ -24,5 +24,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Ignore generated and pure external files by the Python script.
+# Ignore generated and pure external files used by the Python notebooks.
 /scripts/data/*

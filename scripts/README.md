@@ -4,6 +4,36 @@ The election JSON files are created through the notebooks in `scripts/notebooks/
 
 The Python modules in `scripts/election_data/` contain the reusable operations called by those notebook cells. They are deliberately kept out of the foreground so that the preparation process remains readable in the notebooks rather than becoming one opaque pipeline call.
 
+## Running the complete local preparation
+
+Election-data preparation is intentionally separate from frontend development and builds. Download the official source files and place them under `scripts/data/` at the paths expected by the notebooks:
+
+```text
+scripts/data/btw21_wbz_ergebnisse.csv
+scripts/data/btw21_rws_bst2.csv
+scripts/data/btw25_wbz_ergebnisse.csv
+scripts/data/btw25_rws_bst2.csv
+```
+
+Then run the complete notebook, validation and binary-export workflow explicitly:
+
+```bash
+npm run prepare:election-data
+```
+
+The two stages can also be run separately:
+
+```bash
+npm run prepare:vote-json
+npm run prepare:vote-data
+```
+
+`prepare:vote-json` executes the preparation and validation notebooks for 2021 and 2025 through Jupyter. Executed notebook copies are written only to a temporary directory, so the committed notebook cell outputs are not overwritten.
+
+The notebooks write gitignored human-readable data to `scripts/data/generated/btw2021/` and `scripts/data/generated/btw2025/`. `prepare:vote-data` converts those files into the committed runtime assets under `public/data/btw2021/` and `public/data/btw2025/`.
+
+Normal `npm run dev` and `npm run build` commands use the committed runtime assets and do not execute Python or Jupyter.
+
 ## Bundestag election 2021
 
 The current preparation notebooks are:
@@ -17,8 +47,8 @@ scripts/notebooks/btw2021/
 The first notebook creates:
 
 ```text
-scripts/data/generated/first_votes.json
-scripts/data/generated/second_votes.json
+scripts/data/generated/btw2021/first_votes.json
+scripts/data/generated/btw2021/second_votes.json
 ```
 
 The second notebook reads those finished files and checks their structure, coverage, duplicate rows, value ranges, file size, constituency examples, and nationwide percentage results.
@@ -37,9 +67,9 @@ Set the actual local paths near the beginning of the preparation notebook:
 
 ```python
 DISTRICT_RESULTS_CSV = ROOT / "scripts/data/btw21_wbz_ergebnisse.csv"
-STATE_DEMOGRAPHICS_CSV = ROOT / "scripts/data/btw21_rws_stimmabgabe_laender.csv"
+STATE_DEMOGRAPHICS_CSV = ROOT / "scripts/data/btw21_rws_bst2.csv"
 FEDERAL_METHOD_DEMOGRAPHICS_CSV = None  # or a local Path
-OUTPUT_DIRECTORY = ROOT / "scripts/data/generated"
+OUTPUT_DIRECTORY = ROOT / "scripts/data/generated/btw2021"
 ```
 
 The file names are local suggestions, not mandatory official names.

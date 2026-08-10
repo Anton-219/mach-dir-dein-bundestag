@@ -2,14 +2,18 @@
 
 An interactive React and TypeScript application for exploring how selected voter groups could change the composition of the German Bundestag.
 
-The application uses prepared data for the 2021 German federal election. Users can include or exclude federal states, age groups, genders represented by the source data, and postal or in-person votes. Party results, the parliamentary seat distribution, and minimal winning coalitions update immediately inside one connected desktop analysis workspace.
+The application uses prepared data for the 2021 and 2025 German federal elections. Users can include or exclude federal states, age groups, genders represented by the source data, and postal or in-person votes. Party results, the parliamentary seat distribution, and minimal winning coalitions update immediately inside one connected desktop analysis workspace.
 
 The application is an educational analysis tool. Filtered results are hypothetical scenarios, not forecasts or voting recommendations.
 
 ## Requirements
 
+For normal frontend development:
+
 - Node.js 20.19 or newer, or Node.js 22.12 or newer
 - npm
+
+Python 3, Jupyter and the notebook dependencies are only required when the election data itself is regenerated.
 
 ## Development
 
@@ -20,39 +24,72 @@ npm ci
 npm run dev
 ```
 
-The Vite development server opens the single frontend application.
+The Vite development server uses the committed binary election assets under `public/data/`. It does not execute Python or Jupyter.
 
 ## Validation
 
 ```bash
 npm audit
 npm test
+python -m scripts.run_tests
 npm run lint
 npm run build
 ```
 
-`npm run build` performs the TypeScript project build and creates the production bundle in `dist/`.
+`npm run build` performs the TypeScript project build and creates the production bundle in `dist/`. It uses the same committed binary election assets as local development.
 
 ## Application structure
 
 - `src/components/analysis-workspace/` contains the connected filters, Germany map, parliament result, party summaries, demographic context, and coalition presentation.
-- `src/lib/` contains framework-independent filter, election, map, result, and coalition logic.
+- `src/lib/` contains framework-independent filter, election, map, result, coalition, and binary-data logic.
 - `src/models/` contains the prepared JSON contracts and calculated result models.
 - `src/data/loaders.ts` loads and validates the static application data.
-- `tests/unit/` contains calculation, filter, presentation, map, and regional-result tests.
+- `tests/unit/` contains calculation, filter, presentation, map, regional-result, and binary-format tests.
 
 The project uses one application entry point and no backend, router, database, account system, or persistence layer.
 
 ## Static data
 
-The primary application loads these same-origin assets from `public/data/`:
+The application loads committed same-origin runtime assets from `public/data/`:
 
 - `partyData.json`: party names, abbreviations, colours, and parliamentary positions
-- `btw2021/first_votes.json`: constituency-aware first-vote records used to calculate district winners
-- `btw2021/second_votes.json`: constituency-aware second-vote records used by the scenario calculation and the demographic presentation
+- `btw2021/vote_data.json`, `btw2021/first_votes.bin`, and `btw2021/second_votes.bin`: compact 2021 vote metadata and columns
+- `btw2025/vote_data.json`, `btw2025/first_votes.bin`, and `btw2025/second_votes.bin`: compact 2025 vote metadata and columns
 - `germany_states_map.geo.json`: federal-state geometry for the interactive map
 
-The JSON-facing field names and literal values in `src/models/json-contracts.ts` are application data contracts. They must not be changed without migrating the corresponding prepared data files.
+The large human-readable `VoteEntry` JSON files are not runtime assets and are not committed. The notebooks create them locally under `scripts/data/generated/btw2021/` and `scripts/data/generated/btw2025/`. `scripts/export_vote_binary.py` converts those files into the committed runtime assets under `public/data/`.
+
+The JSON-facing field names and literal values in `src/models/json-contracts.ts` remain the prepared data contract. They must not be changed without migrating the notebook output and binary exporter. See [`docs/BINARY_VOTE_DATA.md`](docs/BINARY_VOTE_DATA.md) for the runtime format.
+
+## Regenerating election data
+
+Election-data preparation is an explicit maintenance operation and is deliberately not part of `npm run dev` or `npm run build`.
+
+Download the official source files and place them at the documented paths under `scripts/data/`. The current default paths are:
+
+```text
+scripts/data/btw21_wbz_ergebnisse.csv
+scripts/data/btw21_rws_bst2.csv
+scripts/data/btw25_wbz_ergebnisse.csv
+scripts/data/btw25_rws_bst2.csv
+```
+
+Then either run the complete preparation:
+
+```bash
+npm run prepare:election-data
+```
+
+or run its two stages separately:
+
+```bash
+npm run prepare:vote-json
+npm run prepare:vote-data
+```
+
+`prepare:vote-json` executes the 2021 and 2025 preparation and validation notebooks through Jupyter without overwriting the committed notebook cell outputs. It writes the large gitignored JSON files under `scripts/data/generated/<election>/`.
+
+`prepare:vote-data` converts those JSON files into `first_votes.bin`, `second_votes.bin`, and `vote_data.json` under `public/data/<election>/`. Those compact runtime files should be reviewed and committed when the election data changes.
 
 ## Calculation scope
 
@@ -70,7 +107,7 @@ These calculations reproduce the agreed reference behavior of the former prototy
 
 Python and Jupyter sources under `scripts/` prepare the election datasets outside the React application. Some demographic values are modelled from differently aggregated source tables and must not be interpreted as individual-level observations.
 
-The primary workflow lives in `scripts/notebooks/btw2021/`. See `scripts/README.md` for inputs, methodology, generated files, validation, and known limitations.
+The primary workflows live in `scripts/notebooks/btw2021/` and `scripts/notebooks/btw2025/`. See `scripts/README.md` for inputs, methodology, generated files, validation, and known limitations. The binary exporter runs only after those workflows and does not change their prepared `VoteEntry` output.
 
 See [`docs/PROJECT_VISION.md`](docs/PROJECT_VISION.md) for the product scope, transparency requirements, technical principles, and known methodological limitations. More detailed source disclosure and methodology presentation remain tracked separately from this repository cut-over.
 

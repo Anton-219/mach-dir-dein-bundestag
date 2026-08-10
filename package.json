@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prepare:vote-json": "node scripts/run-election-notebooks.mjs",
+    "prepare:vote-data": "node scripts/run-vote-binary-export.mjs",
+    "prepare:election-data": "npm run prepare:vote-json && npm run prepare:vote-data",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
