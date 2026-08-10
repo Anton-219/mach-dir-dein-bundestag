@@ -4,6 +4,10 @@ import { join } from 'node:path'
 import test from 'node:test'
 
 import {
+  decodeBinaryVoteEntries,
+  parseVoteDataManifest,
+} from '../../src/lib/data/binary-vote-format.ts'
+import {
   buildElectoralScenario,
   calculateElectoralSystem,
   createElectoralScenarioReference,
@@ -55,8 +59,6 @@ interface RegressionCase {
   expectedHistoricalResult: RegressionSummary
 }
 
-type RawVoteEntry = Omit<VoteEntry, 'ageGroup'> & { ageGroup: string }
-
 const ALL_AGE_GROUPS: readonly AgeGroup[] = [
   '18-24',
   '25-34',
@@ -66,48 +68,48 @@ const ALL_AGE_GROUPS: readonly AgeGroup[] = [
   '70+',
 ]
 
-const LEGACY_AGE_GROUP_ALIASES: Readonly<Record<string, AgeGroup>> = {
-  '45-54': '45-59',
-  '55-64': '60-69',
-  '65+': '70+',
-}
-
-function normalizeFixtureAgeGroup(value: string): AgeGroup {
-  const canonical = ALL_AGE_GROUPS.find((ageGroup) => ageGroup === value)
-  const normalized = canonical ?? LEGACY_AGE_GROUP_ALIASES[value]
-  assert.ok(normalized, `Unexpected age group in regression fixture: ${value}`)
-  return normalized
-}
-
-function normalizeFixtureVoteEntries(
-  entries: readonly RawVoteEntry[],
-): VoteEntry[] {
-  return entries.map((entry) => ({
-    ...entry,
-    ageGroup: normalizeFixtureAgeGroup(entry.ageGroup),
-  }))
+function dataPath(fileName: string): string {
+  return join(process.cwd(), 'public', 'data', fileName)
 }
 
 async function readJson<T>(fileName: string): Promise<T> {
-  const filePath = join(process.cwd(), 'public', 'data', fileName)
-  return JSON.parse(await readFile(filePath, 'utf8')) as T
+  return JSON.parse(await readFile(dataPath(fileName), 'utf8')) as T
+}
+
+async function readBinary(fileName: string): Promise<ArrayBuffer> {
+  const buffer = await readFile(dataPath(fileName))
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength,
+  ) as ArrayBuffer
 }
 
 async function loadRegressionData(): Promise<RegressionData> {
-  const [parties, rawFirstVotes, rawSecondVotes, contingentFixture] =
-    await Promise.all([
-      readJson<Party[]>('partyData.json'),
-      readJson<RawVoteEntry[]>('btw2021/first_votes.json'),
-      readJson<RawVoteEntry[]>('btw2021/second_votes.json'),
-      readJson<StateSeatContingentFixture>(
-        'state_seat_contingents_2021.json',
-      ),
-    ])
+  const [parties, manifestJson, contingentFixture] = await Promise.all([
+    readJson<Party[]>('partyData.json'),
+    readJson<unknown>('btw2021/vote_data.json'),
+    readJson<StateSeatContingentFixture>('state_seat_contingents_2021.json'),
+  ])
+  const manifest = parseVoteDataManifest(manifestJson, 'btw2021/vote_data.json')
+  const [firstVotesBuffer, secondVotesBuffer] = await Promise.all([
+    readBinary(`btw2021/${manifest.files.firstVotes.file}`),
+    readBinary(`btw2021/${manifest.files.secondVotes.file}`),
+  ])
 
   return {
     parties,
-    firstVotes: normalizeFixtureVoteEntries(rawFirstVotes),
-    secondVotes: normalizeFixtureVoteEntries(rawSecondVotes),
+    firstVotes: decodeBinaryVoteEntries(
+      firstVotesBuffer,
+      manifest.files.firstVotes,
+      '1',
+      `btw2021/${manifest.files.firstVotes.file}`,
+    ),
+    secondVotes: decodeBinaryVoteEntries(
+      secondVotesBuffer,
+      manifest.files.secondVotes,
+      '2',
+      `btw2021/${manifest.files.secondVotes.file}`,
+    ),
     stateSeatContingents: Object.fromEntries(
       contingentFixture.stateSeatContingents.map(({ state, seats }) => [
         state,
