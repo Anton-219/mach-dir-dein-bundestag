@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { test } from 'node:test'
 
 import {
@@ -7,10 +8,15 @@ import {
   BINARY_VOTE_SCHEMA_VERSION,
   decodeBinaryVoteEntries,
   parseVoteDataManifest,
+  verifyBinaryVotePayload,
   type VoteBinaryFileMetadata,
 } from '../../src/lib/data/binary-vote-format.ts'
 
 const SHA = '0'.repeat(64)
+
+function sha256(buffer: ArrayBuffer): string {
+  return createHash('sha256').update(new Uint8Array(buffer)).digest('hex')
+}
 
 function buildBinaryFixture(): {
   buffer: ArrayBuffer
@@ -83,6 +89,21 @@ test('decodes the columnar binary format into VoteEntry records', () => {
       votes: 3.25,
     },
   ])
+})
+
+test('verifies the binary payload against the manifest SHA-256', async () => {
+  const { buffer, metadata } = buildBinaryFixture()
+  metadata.binarySha256 = sha256(buffer)
+
+  await assert.doesNotReject(() =>
+    verifyBinaryVotePayload(buffer, metadata, 'second_votes.bin'),
+  )
+
+  new Uint8Array(buffer)[buffer.byteLength - 1] ^= 0xff
+  await assert.rejects(
+    () => verifyBinaryVotePayload(buffer, metadata, 'second_votes.bin'),
+    /does not match its manifest SHA-256/,
+  )
 })
 
 test('rejects an invalid binary signature', () => {

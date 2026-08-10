@@ -126,7 +126,11 @@ class VoteBinaryExportTests(unittest.TestCase):
 
     def test_rejects_different_district_state_coverage(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
-            directory = Path(temporary_directory)
+            root = Path(temporary_directory)
+            source_directory = root / "generated" / "btw2025"
+            output_directory = root / "public" / "data" / "btw2025"
+            source_directory.mkdir(parents=True)
+            output_directory.mkdir(parents=True)
             common = {
                 "districtId": 1,
                 "gender": "m",
@@ -135,17 +139,28 @@ class VoteBinaryExportTests(unittest.TestCase):
                 "electionMethod": "postal",
                 "votes": 1.0,
             }
-            (directory / "first_votes.json").write_text(
+            (source_directory / "first_votes.json").write_text(
                 json.dumps([{**common, "state": "State A", "voteType": "1"}]),
                 encoding="utf-8",
             )
-            (directory / "second_votes.json").write_text(
+            (source_directory / "second_votes.json").write_text(
                 json.dumps([{**common, "state": "State B", "voteType": "2"}]),
                 encoding="utf-8",
             )
 
+            previous_outputs = {
+                "first_votes.bin": b"previous first votes",
+                "second_votes.bin": b"previous second votes",
+                "vote_data.json": b"{\"previous\":true}\n",
+            }
+            for file_name, content in previous_outputs.items():
+                (output_directory / file_name).write_bytes(content)
+
             with self.assertRaisesRegex(ValueError, "constituency-to-state coverage"):
-                export_election_directory(directory)
+                export_election_directory(source_directory, output_directory)
+
+            for file_name, content in previous_outputs.items():
+                self.assertEqual((output_directory / file_name).read_bytes(), content)
 
 
 if __name__ == "__main__":

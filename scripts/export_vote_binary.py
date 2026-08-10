@@ -14,6 +14,7 @@ import json
 import math
 from pathlib import Path
 import struct
+from tempfile import TemporaryDirectory
 from typing import Any
 
 
@@ -259,50 +260,59 @@ def export_election_directory(
         ]
         raise FileNotFoundError(f"missing prepared vote JSON: {', '.join(missing)}")
 
-    first_metadata = export_vote_file(
-        first_source,
-        output_directory / "first_votes.bin",
-        "1",
-    )
-    second_metadata = export_vote_file(
-        second_source,
-        output_directory / "second_votes.bin",
-        "2",
-    )
-
-    first_districts = {
-        index: state
-        for index, state in enumerate(first_metadata.districtStates)
-        if state is not None
-    }
-    second_districts = {
-        index: state
-        for index, state in enumerate(second_metadata.districtStates)
-        if state is not None
-    }
-    if first_districts != second_districts:
-        raise ValueError(
-            f"{source_directory}: first- and second-vote files do not have identical "
-            "constituency-to-state coverage"
+    output_directory.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(
+        prefix=".vote-export-",
+        dir=output_directory,
+    ) as temporary_directory:
+        staging_directory = Path(temporary_directory)
+        first_metadata = export_vote_file(
+            first_source,
+            staging_directory / "first_votes.bin",
+            "1",
+        )
+        second_metadata = export_vote_file(
+            second_source,
+            staging_directory / "second_votes.bin",
+            "2",
         )
 
-    manifest = {
-        "schemaVersion": SCHEMA_VERSION,
-        "format": FORMAT_NAME,
-        "genders": list(GENDERS),
-        "ageGroups": list(AGE_GROUPS),
-        "electionMethods": list(ELECTION_METHODS),
-        "files": {
-            "firstVotes": first_metadata.to_json(),
-            "secondVotes": second_metadata.to_json(),
-        },
-    }
-    output_directory.mkdir(parents=True, exist_ok=True)
-    manifest_path = output_directory / "vote_data.json"
-    manifest_path.write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+        first_districts = {
+            index: state
+            for index, state in enumerate(first_metadata.districtStates)
+            if state is not None
+        }
+        second_districts = {
+            index: state
+            for index, state in enumerate(second_metadata.districtStates)
+            if state is not None
+        }
+        if first_districts != second_districts:
+            raise ValueError(
+                f"{source_directory}: first- and second-vote files do not have identical "
+                "constituency-to-state coverage"
+            )
+
+        manifest = {
+            "schemaVersion": SCHEMA_VERSION,
+            "format": FORMAT_NAME,
+            "genders": list(GENDERS),
+            "ageGroups": list(AGE_GROUPS),
+            "electionMethods": list(ELECTION_METHODS),
+            "files": {
+                "firstVotes": first_metadata.to_json(),
+                "secondVotes": second_metadata.to_json(),
+            },
+        }
+        manifest_path = staging_directory / "vote_data.json"
+        manifest_path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+        for file_name in ("first_votes.bin", "second_votes.bin", "vote_data.json"):
+            (staging_directory / file_name).replace(output_directory / file_name)
+
     return manifest
 
 

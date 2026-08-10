@@ -74,6 +74,26 @@ function isSha256(value: unknown): value is string {
   return typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
 }
 
+export async function verifyBinaryVotePayload(
+  buffer: ArrayBuffer,
+  metadata: VoteBinaryFileMetadata,
+  fileName = metadata.file,
+): Promise<void> {
+  const subtle = globalThis.crypto?.subtle
+  if (subtle === undefined) {
+    throw new Error(`${fileName} cannot be verified because SHA-256 is unavailable.`)
+  }
+
+  const digest = await subtle.digest('SHA-256', buffer)
+  const actualSha256 = Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, '0'),
+  ).join('')
+
+  if (actualSha256 !== metadata.binarySha256) {
+    throw new Error(`${fileName} does not match its manifest SHA-256.`)
+  }
+}
+
 function parseFileMetadata(
   value: unknown,
   expectedVoteType: VoteType,

@@ -3,6 +3,7 @@ import type { GermanyStatesGeoJson } from '../lib/map/germany-map.ts'
 import {
   decodeBinaryVoteEntries,
   parseVoteDataManifest,
+  verifyBinaryVotePayload,
   type VoteBinaryFileMetadata,
 } from '../lib/data/binary-vote-format.ts'
 import type { Party, VoteEntry, VoteType } from '../models/index.ts'
@@ -181,12 +182,12 @@ function basename(path: string): string {
   return separatorIndex === -1 ? path : path.slice(separatorIndex + 1)
 }
 
-function decodeVoteFile(
+async function decodeVoteFile(
   buffer: ArrayBuffer,
   metadata: VoteBinaryFileMetadata,
   expectedVoteType: VoteType,
   fileName: string,
-): VoteEntry[] {
+): Promise<VoteEntry[]> {
   if (metadata.file !== basename(fileName)) {
     throw new ElectionDataLoadError(
       `${fileName} does not match the file declared by the vote-data manifest.`,
@@ -194,6 +195,7 @@ function decodeVoteFile(
   }
 
   try {
+    await verifyBinaryVotePayload(buffer, metadata, fileName)
     return decodeBinaryVoteEntries(
       buffer,
       metadata,
@@ -407,18 +409,20 @@ export async function loadElectionData(
     )
   }
 
-  const firstVotes = decodeVoteFile(
-    firstVotesBinary,
-    voteManifest.files.firstVotes,
-    '1',
-    files.firstVotes,
-  )
-  const secondVotes = decodeVoteFile(
-    secondVotesBinary,
-    voteManifest.files.secondVotes,
-    '2',
-    files.secondVotes,
-  )
+  const [firstVotes, secondVotes] = await Promise.all([
+    decodeVoteFile(
+      firstVotesBinary,
+      voteManifest.files.firstVotes,
+      '1',
+      files.firstVotes,
+    ),
+    decodeVoteFile(
+      secondVotesBinary,
+      voteManifest.files.secondVotes,
+      '2',
+      files.secondVotes,
+    ),
+  ])
 
   if (!isGermanyStatesGeoJson(germanyStatesJson)) {
     throw new ElectionDataLoadError(
