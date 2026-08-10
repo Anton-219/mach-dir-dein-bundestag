@@ -1,13 +1,11 @@
 import { isGermanyStatesGeoJson } from '../lib/map/germany-map.ts'
 import type { GermanyStatesGeoJson } from '../lib/map/germany-map.ts'
-import type {
-  AgeGroup,
-  ElectionMethod,
-  Gender,
-  Party,
-  VoteEntry,
-  VoteType,
-} from '../models/index.ts'
+import {
+  decodeBinaryVoteEntries,
+  parseVoteDataManifest,
+  type VoteBinaryFileMetadata,
+} from '../lib/data/binary-vote-format.ts'
+import type { Party, VoteEntry, VoteType } from '../models/index.ts'
 import {
   DEFAULT_ELECTION_YEAR,
   type ElectionYear,
@@ -19,6 +17,7 @@ const sharedDataFiles = {
 } as const
 
 interface ElectionDataFiles {
+  voteManifest: string
   firstVotes: string
   secondVotes: string
   stateSeatContingents: string
@@ -26,38 +25,21 @@ interface ElectionDataFiles {
 
 const electionDataFiles: Readonly<Record<ElectionYear, ElectionDataFiles>> = {
   2021: {
-    firstVotes: 'btw2021/first_votes.json',
-    secondVotes: 'btw2021/second_votes.json',
+    voteManifest: 'btw2021/vote_data.json',
+    firstVotes: 'btw2021/first_votes.bin',
+    secondVotes: 'btw2021/second_votes.bin',
     stateSeatContingents: 'state_seat_contingents_2021.json',
   },
   2025: {
-    firstVotes: 'btw2025/first_votes.json',
-    secondVotes: 'btw2025/second_votes.json',
+    voteManifest: 'btw2025/vote_data.json',
+    firstVotes: 'btw2025/first_votes.bin',
+    secondVotes: 'btw2025/second_votes.bin',
     stateSeatContingents: 'state_seat_contingents_2025.json',
   },
 }
 
 const HISTORICAL_STATE_SEAT_CONTINGENT_SCHEMA_VERSION = 1
 const HISTORICAL_STATE_SEAT_COUNT = 598
-
-const genders = ['m', 'w'] as const satisfies readonly Gender[]
-const ageGroups = [
-  '18-24',
-  '25-34',
-  '35-44',
-  '45-59',
-  '60-69',
-  '70+',
-] as const satisfies readonly AgeGroup[]
-const legacyAgeGroupAliases: Readonly<Record<string, AgeGroup>> = {
-  '45-54': '45-59',
-  '55-64': '60-69',
-  '65+': '70+',
-}
-const electionMethods = [
-  'postal',
-  'in-person',
-] as const satisfies readonly ElectionMethod[]
 
 type JsonFetcher = typeof fetch
 type JsonRecord = Record<string, unknown>
@@ -93,28 +75,6 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value)
 }
 
-function isOneOf<T extends string>(
-  value: unknown,
-  allowedValues: readonly T[],
-): value is T {
-  return (
-    typeof value === 'string' &&
-    (allowedValues as readonly string[]).includes(value)
-  )
-}
-
-function normalizeAgeGroup(value: unknown): AgeGroup | undefined {
-  if (isOneOf(value, ageGroups)) {
-    return value
-  }
-
-  if (typeof value !== 'string') {
-    return undefined
-  }
-
-  return legacyAgeGroupAliases[value]
-}
-
 function isParty(value: unknown): value is Party {
   return (
     isRecord(value) &&
@@ -123,43 +83,6 @@ function isParty(value: unknown): value is Party {
     typeof value.color === 'string' &&
     isFiniteNumber(value.seatPosition)
   )
-}
-
-function normalizeVoteEntry(
-  value: unknown,
-  expectedVoteType: VoteType,
-): VoteEntry | undefined {
-  if (!isRecord(value)) {
-    return undefined
-  }
-
-  const ageGroup = normalizeAgeGroup(value.ageGroup)
-  if (
-    typeof value.districtId !== 'number' ||
-    !Number.isInteger(value.districtId) ||
-    value.districtId <= 0 ||
-    typeof value.state !== 'string' ||
-    !isOneOf(value.gender, genders) ||
-    ageGroup === undefined ||
-    typeof value.party !== 'string' ||
-    value.voteType !== expectedVoteType ||
-    !isOneOf(value.electionMethod, electionMethods) ||
-    !isFiniteNumber(value.votes) ||
-    value.votes < 0
-  ) {
-    return undefined
-  }
-
-  return {
-    districtId: value.districtId,
-    state: value.state,
-    gender: value.gender,
-    ageGroup,
-    party: value.party,
-    voteType: expectedVoteType,
-    electionMethod: value.electionMethod,
-    votes: value.votes,
-  }
 }
 
 function parseArray<T>(
@@ -182,16 +105,6 @@ function parseArray<T>(
   }
 
   return parsedItems as T[]
-}
-
-function parseVoteEntries(
-  value: unknown,
-  fileName: string,
-  expectedVoteType: VoteType,
-): VoteEntry[] {
-  return parseArray(value, fileName, (item) =>
-    normalizeVoteEntry(item, expectedVoteType),
-  )
 }
 
 function createDataUrl(fileName: string): string {
@@ -226,6 +139,70 @@ async function fetchJson(
   } catch (cause) {
     throw new ElectionDataLoadError(
       `${fileName} does not contain valid JSON.`,
+      { cause },
+    )
+  }
+}
+
+async function fetchBinary(
+  fileName: string,
+  fetcher: JsonFetcher,
+): Promise<ArrayBuffer> {
+  const dataUrl = createDataUrl(fileName)
+  let response: Response
+
+  try {
+    response = await fetcher(dataUrl)
+  } catch (cause) {
+    throw new ElectionDataLoadError(
+      `The election data file ${fileName} could not be requested.`,
+      { cause },
+    )
+  }
+
+  if (!response.ok) {
+    throw new ElectionDataLoadError(
+      `The election data file ${fileName} is missing or unavailable (HTTP ${response.status}).`,
+    )
+  }
+
+  try {
+    return await response.arrayBuffer()
+  } catch (cause) {
+    throw new ElectionDataLoadError(
+      `${fileName} does not contain readable binary data.`,
+      { cause },
+    )
+  }
+}
+
+function basename(path: string): string {
+  const separatorIndex = path.lastIndexOf('/')
+  return separatorIndex === -1 ? path : path.slice(separatorIndex + 1)
+}
+
+function decodeVoteFile(
+  buffer: ArrayBuffer,
+  metadata: VoteBinaryFileMetadata,
+  expectedVoteType: VoteType,
+  fileName: string,
+): VoteEntry[] {
+  if (metadata.file !== basename(fileName)) {
+    throw new ElectionDataLoadError(
+      `${fileName} does not match the file declared by the vote-data manifest.`,
+    )
+  }
+
+  try {
+    return decodeBinaryVoteEntries(
+      buffer,
+      metadata,
+      expectedVoteType,
+      fileName,
+    )
+  } catch (cause) {
+    throw new ElectionDataLoadError(
+      `${fileName} does not contain valid binary vote data.`,
       { cause },
     )
   }
@@ -406,27 +383,41 @@ export async function loadElectionData(
   const files = getElectionDataFiles(electionYear)
   const [
     partiesJson,
-    firstVotesJson,
-    secondVotesJson,
+    voteManifestJson,
+    firstVotesBinary,
+    secondVotesBinary,
     germanyStatesJson,
     stateSeatContingentsJson,
   ] = await Promise.all([
     fetchJson(sharedDataFiles.parties, fetcher),
-    fetchJson(files.firstVotes, fetcher),
-    fetchJson(files.secondVotes, fetcher),
+    fetchJson(files.voteManifest, fetcher),
+    fetchBinary(files.firstVotes, fetcher),
+    fetchBinary(files.secondVotes, fetcher),
     fetchJson(sharedDataFiles.germanyStates, fetcher),
     fetchJson(files.stateSeatContingents, fetcher),
   ])
 
-  const firstVotes = parseVoteEntries(
-    firstVotesJson,
-    files.firstVotes,
+  let voteManifest
+  try {
+    voteManifest = parseVoteDataManifest(voteManifestJson, files.voteManifest)
+  } catch (cause) {
+    throw new ElectionDataLoadError(
+      `${files.voteManifest} does not contain valid binary vote metadata.`,
+      { cause },
+    )
+  }
+
+  const firstVotes = decodeVoteFile(
+    firstVotesBinary,
+    voteManifest.files.firstVotes,
     '1',
+    files.firstVotes,
   )
-  const secondVotes = parseVoteEntries(
-    secondVotesJson,
-    files.secondVotes,
+  const secondVotes = decodeVoteFile(
+    secondVotesBinary,
+    voteManifest.files.secondVotes,
     '2',
+    files.secondVotes,
   )
 
   if (!isGermanyStatesGeoJson(germanyStatesJson)) {
