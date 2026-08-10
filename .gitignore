@@ -26,3 +26,8 @@ dist-ssr
 
 # Ignore generated and pure external files by the Python script.
 /scripts/data/*
+
+# Runtime vote assets are generated from the committed VoteEntry JSON files.
+/public/data/btw*/first_votes.bin
+/public/data/btw*/second_votes.bin
+/public/data/btw*/vote_data.json
