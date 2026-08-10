@@ -1,0 +1,42 @@
+name: Temporary vote asset export
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.head_ref == 'agent/binary-vote-runtime'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Export current binary assets
+        run: npm run prepare:vote-data
+
+      - name: Upload migration inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: vote-binary-migration
+          if-no-files-found: error
+          path: |
+            public/data/btw2021/first_votes.bin
+            public/data/btw2021/second_votes.bin
+            public/data/btw2021/vote_data.json
+            public/data/btw2025/first_votes.bin
+            public/data/btw2025/second_votes.bin
+            public/data/btw2025/vote_data.json
+            scripts/notebooks/btw2021/01_prepare_btw2021_vote_entries.ipynb
+            scripts/notebooks/btw2021/02_validate_btw2021_vote_entries.ipynb
+            scripts/notebooks/btw2025/01_prepare_btw2025_vote_entries.ipynb
+            scripts/notebooks/btw2025/02_validate_btw2025_vote_entries.ipynb
