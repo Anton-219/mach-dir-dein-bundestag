@@ -31,6 +31,6 @@ for (const [command, prefixArguments] of candidates) {
 
 console.error(
   'Python 3 is required to generate the compact runtime vote data. ' +
-    'Install Python 3 or run the exporter before starting the app.',
+    'Install Python 3 and rerun npm run prepare:vote-data.',
 )
 process.exit(1)
