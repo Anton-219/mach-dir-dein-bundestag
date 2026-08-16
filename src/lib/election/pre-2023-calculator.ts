@@ -2,7 +2,6 @@ import {
   allocateSainteLague,
   allocateSainteLagueWithMinimums,
 } from './allocate-sainte-lague.ts'
-import { DEFAULT_PARTY_QUALIFICATION_RULES } from './constants.ts'
 import {
   ElectoralSystemCalculationError,
   type DistrictWinner,
@@ -372,7 +371,7 @@ export const pre2023Calculator: ElectoralSystemCalculator = {
         party,
         input.scenario,
         input.directWinsByParty[party] ?? 0,
-        DEFAULT_PARTY_QUALIFICATION_RULES,
+        input.qualificationRules,
       ),
     )
     const eligiblePartySet = new Set(eligibleParties)

@@ -1,6 +1,7 @@
 import type { SeatResult } from '../../models/calculation-results.ts'
 import type { Party } from '../../models/json-contracts.ts'
 import { validateElectoralScenario } from './build-electoral-scenario.ts'
+import { DEFAULT_PARTY_QUALIFICATION_RULES } from './constants.ts'
 import {
   ELECTORAL_SYSTEM_IDS,
   ElectoralSystemCalculationError,
@@ -16,6 +17,7 @@ import { fixed630Calculator } from './fixed-630-calculator.ts'
 import { parallelCalculator } from './parallel-calculator.ts'
 import { pre2023Calculator } from './pre-2023-calculator.ts'
 import { resolveDistrictWinners } from './resolve-district-winners.ts'
+import type { PartyQualificationRules } from './types.ts'
 
 export const DEFAULT_ELECTORAL_SYSTEM_ID: ElectoralSystemId =
   'de-2023-fixed-630'
@@ -100,6 +102,24 @@ function deduplicateWarnings(
 
 function invalidResult(message: string): never {
   throw new RangeError(`Invalid electoral-system result: ${message}`)
+}
+
+function validateQualificationRules(rules: PartyQualificationRules): void {
+  if (
+    !Number.isFinite(rules.voteShareThreshold) ||
+    rules.voteShareThreshold < 0 ||
+    rules.voteShareThreshold > 1
+  ) {
+    throw new RangeError('The vote-share threshold must be between 0 and 1.')
+  }
+  if (
+    !Number.isInteger(rules.minimumDirectMandates) ||
+    rules.minimumDirectMandates < 0
+  ) {
+    throw new RangeError(
+      'The minimum direct-mandate count must be a non-negative integer.',
+    )
+  }
 }
 
 export function normalizeElectoralSystemResult(
@@ -193,13 +213,15 @@ export const DEFAULT_ELECTORAL_SYSTEM_REGISTRY = new ElectoralSystemRegistry([
   parallelCalculator,
 ])
 
-export function calculateElectoralSystem(
+function calculateElectoralSystemInternal(
   systemId: string,
   scenario: ElectoralScenario,
+  qualificationRules: PartyQualificationRules,
   supportingData?: ElectoralSystemSupportingData,
   registry: ElectoralSystemRegistry = DEFAULT_ELECTORAL_SYSTEM_REGISTRY,
 ): ElectoralSystemResult {
   validateElectoralScenario(scenario)
+  validateQualificationRules(qualificationRules)
   if (scenario.validSecondVotes <= 0) {
     throw new ElectoralSystemCalculationError(
       'NO_VALID_SECOND_VOTES',
@@ -212,6 +234,7 @@ export function calculateElectoralSystem(
     scenario,
     districtWinners: resolution.winners,
     directWinsByParty: resolution.directWinsByParty,
+    qualificationRules,
     supportingData,
   }
   const calculator = registry.get(systemId)
@@ -228,6 +251,37 @@ export function calculateElectoralSystem(
       warnings: [...resolution.warnings, ...calculated.warnings],
     },
     scenario,
+  )
+}
+
+export function calculateElectoralSystem(
+  systemId: string,
+  scenario: ElectoralScenario,
+  supportingData?: ElectoralSystemSupportingData,
+  registry: ElectoralSystemRegistry = DEFAULT_ELECTORAL_SYSTEM_REGISTRY,
+): ElectoralSystemResult {
+  return calculateElectoralSystemInternal(
+    systemId,
+    scenario,
+    DEFAULT_PARTY_QUALIFICATION_RULES,
+    supportingData,
+    registry,
+  )
+}
+
+export function calculateElectoralSystemWithQualificationRules(
+  systemId: string,
+  scenario: ElectoralScenario,
+  qualificationRules: PartyQualificationRules,
+  supportingData?: ElectoralSystemSupportingData,
+  registry: ElectoralSystemRegistry = DEFAULT_ELECTORAL_SYSTEM_REGISTRY,
+): ElectoralSystemResult {
+  return calculateElectoralSystemInternal(
+    systemId,
+    scenario,
+    qualificationRules,
+    supportingData,
+    registry,
   )
 }
 

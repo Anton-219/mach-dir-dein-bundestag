@@ -18,6 +18,7 @@ export interface TranslationTools {
   locale: Locale
   messages: MessageCatalog
   formatNumber: (value: number) => string
+  formatInputNumber: (value: number) => string
   formatPercent: (value: number) => string
   formatList: (values: readonly string[]) => string
   formatDate: (value: Date) => string
@@ -38,6 +39,10 @@ export function createTranslationTools(locale: Locale): TranslationTools {
   const localeTag = localeTags[locale]
   const messages = messageCatalogs[locale]
   const numberFormatter = new Intl.NumberFormat(localeTag)
+  const inputNumberFormatter = new Intl.NumberFormat(localeTag, {
+    useGrouping: false,
+    maximumFractionDigits: 6,
+  })
   const percentFormatter = new Intl.NumberFormat(localeTag, {
     style: 'percent',
     maximumFractionDigits: 1,
@@ -54,6 +59,7 @@ export function createTranslationTools(locale: Locale): TranslationTools {
     locale,
     messages,
     formatNumber: (value) => numberFormatter.format(value),
+    formatInputNumber: (value) => inputNumberFormatter.format(value),
     formatPercent: (value) => percentFormatter.format(value),
     formatList: (values) => listFormatter.format(values),
     formatDate: (value) => dateFormatter.format(value),

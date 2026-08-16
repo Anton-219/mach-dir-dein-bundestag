@@ -1,0 +1,37 @@
+@media (min-width: 58.01rem) and (min-height: 43.01rem) {
+  .analysis-shell > .workspace-column-left .filter-panel-heading {
+    margin-bottom: 0.34rem;
+  }
+
+  .analysis-shell > .workspace-column-left .filter-scenario-card {
+    margin-bottom: 0.36rem;
+    padding: 0.46rem 0.52rem;
+  }
+
+  .analysis-shell > .workspace-column-left .filter-scenario-empty {
+    margin-top: 0.28rem;
+  }
+
+  .analysis-shell > .workspace-column-left .filter-list {
+    gap: 0.34rem;
+  }
+
+  .analysis-shell > .workspace-column-left .inline-filter-card {
+    padding: 0.48rem;
+  }
+
+  .analysis-shell > .workspace-column-left .inline-filter-heading {
+    margin-bottom: 0.3rem;
+  }
+
+  .analysis-shell > .workspace-column-left .filter-value-button,
+  .analysis-shell > .workspace-column-left .inline-filter-card .filter-value-button {
+    min-height: 2.02rem;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .analysis-shell > .workspace-column-left .electoral-rules-strip {
+    margin-top: 0.3rem;
+    padding-top: 0.34rem;
+  }
+}

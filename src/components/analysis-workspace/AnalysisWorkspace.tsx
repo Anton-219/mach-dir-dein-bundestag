@@ -6,9 +6,10 @@ import { calculateMinimalWinningCoalitions } from '../../lib/coalitions/index.ts
 import {
   aggregateElectionResults,
   buildElectoralScenario,
-  calculateElectoralSystem,
+  calculateElectoralSystemWithQualificationRules,
   createElectoralScenarioReference,
   DEFAULT_ELECTORAL_SYSTEM_ID,
+  DEFAULT_PARTY_QUALIFICATION_RULES,
   toSeatResults,
   type ElectoralSystemId,
 } from '../../lib/election/index.ts'
@@ -78,10 +79,21 @@ export function AnalysisWorkspace({
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [electoralSystemId, setElectoralSystemId] =
     useState<ElectoralSystemId>(DEFAULT_ELECTORAL_SYSTEM_ID)
+  const [voteShareThreshold, setVoteShareThreshold] = useState<number>(
+    DEFAULT_PARTY_QUALIFICATION_RULES.voteShareThreshold,
+  )
   const [methodologyOpen, setMethodologyOpen] = useState(false)
   const [openFilter, setOpenFilter] = useState<FilterDimension | null>(null)
   const [highlightedState, setHighlightedState] = useState<string | null>(null)
   const [compactView, setCompactView] = useState<CompactView>('scenario')
+
+  const qualificationRules = useMemo(
+    () => ({
+      ...DEFAULT_PARTY_QUALIFICATION_RULES,
+      voteShareThreshold,
+    }),
+    [voteShareThreshold],
+  )
 
   const availableStates = useMemo(() => {
     if (dataState.status !== 'ready') {
@@ -174,14 +186,16 @@ export function AnalysisWorkspace({
         reference: electoralScenarioReference,
         inactiveStates: filters.states,
       })
-      const electoralSystemResult = calculateElectoralSystem(
-        electoralSystemId,
-        electoralScenario,
-        {
-          stateSeatContingents: dataState.data.stateSeatContingents,
-          stateSeatContingentYear: dataState.data.stateSeatContingentYear,
-        },
-      )
+      const electoralSystemResult =
+        calculateElectoralSystemWithQualificationRules(
+          electoralSystemId,
+          electoralScenario,
+          qualificationRules,
+          {
+            stateSeatContingents: dataState.data.stateSeatContingents,
+            stateSeatContingentYear: dataState.data.stateSeatContingentYear,
+          },
+        )
       const seatResults = toSeatResults(
         electoralSystemResult,
         dataState.data.parties,
@@ -243,7 +257,13 @@ export function AnalysisWorkspace({
         totalVotes,
       )
     }
-  }, [dataState, electoralScenarioReference, electoralSystemId, filters])
+  }, [
+    dataState,
+    electoralScenarioReference,
+    electoralSystemId,
+    filters,
+    qualificationRules,
+  ])
 
   const statePartyLandscape = useMemo(() => {
     if (dataState.status !== 'ready' || highlightedState === null) {
@@ -302,9 +322,11 @@ export function AnalysisWorkspace({
             states={availableStates}
             openFilter={openFilter}
             scenario={scenario}
+            voteShareThreshold={voteShareThreshold}
             onChange={setFilters}
             onOpenFilterChange={setOpenFilter}
             onReset={resetFilters}
+            onVoteShareThresholdChange={setVoteShareThreshold}
           />
           <DemographicPanel secondVotes={secondVotes} filters={filters} />
         </div>

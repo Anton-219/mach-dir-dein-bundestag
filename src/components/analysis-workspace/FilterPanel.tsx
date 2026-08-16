@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
   type ReactNode,
   type RefObject,
 } from 'react'
@@ -46,9 +47,11 @@ interface FilterPanelProps {
   states: readonly string[]
   openFilter: FilterDimension | null
   scenario?: ScenarioResult
+  voteShareThreshold: number
   onChange: (filters: FilterState) => void
   onOpenFilterChange: (dimension: FilterDimension | null) => void
   onReset: () => void
+  onVoteShareThresholdChange: (threshold: number) => void
 }
 
 interface FilterOption<T extends string> {
@@ -303,14 +306,100 @@ function InlineSelectionEditor<T extends string>({
   )
 }
 
+function thresholdPercentage(threshold: number): number {
+  const percentage = threshold * 100
+  return Math.round(percentage * 1_000_000) / 1_000_000
+}
+
+function formatThresholdInput(
+  threshold: number,
+  formatInputNumber: (value: number) => string,
+): string {
+  return formatInputNumber(thresholdPercentage(threshold))
+}
+
+function parseThresholdInput(value: string): number | undefined {
+  const normalized = value.trim().replace(',', '.')
+  if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(normalized)) {
+    return undefined
+  }
+
+  const percentage = Number(normalized)
+  if (!Number.isFinite(percentage) || percentage < 0 || percentage > 100) {
+    return undefined
+  }
+
+  return percentage / 100
+}
+
+function ElectoralThresholdControl({
+  threshold,
+  onChange,
+}: {
+  threshold: number
+  onChange: (threshold: number) => void
+}) {
+  const i18n = useI18n()
+  const { messages } = i18n
+  const [draft, setDraft] = useState<string | null>(null)
+  const percentUnit = i18n.formatPercent(1).replace(/[\d\s.,]/g, '')
+  const displayedValue =
+    draft ?? formatThresholdInput(threshold, i18n.formatInputNumber)
+
+  const handleInput = (value: string) => {
+    setDraft(value)
+    const nextThreshold = parseThresholdInput(value)
+    if (nextThreshold !== undefined) {
+      onChange(nextThreshold)
+    }
+  }
+
+  return (
+    <section
+      className="electoral-rules-strip"
+      aria-label={messages.filters.electoralRules}
+    >
+      <div className="electoral-rules-copy">
+        <span>{messages.filters.electoralRules}</span>
+        <strong>{messages.filters.voteShareThreshold}</strong>
+      </div>
+      <label className="electoral-threshold-input-shell">
+        <span className="visually-hidden">
+          {messages.filters.voteShareThreshold}
+        </span>
+        <input
+          type="text"
+          inputMode="decimal"
+          autoComplete="off"
+          spellCheck={false}
+          value={displayedValue}
+          onFocus={() =>
+            setDraft(formatThresholdInput(threshold, i18n.formatInputNumber))
+          }
+          onChange={(event) => handleInput(event.currentTarget.value)}
+          onBlur={() => setDraft(null)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              event.currentTarget.blur()
+            }
+          }}
+        />
+        <span aria-hidden="true">{percentUnit}</span>
+      </label>
+    </section>
+  )
+}
+
 export function FilterPanel({
   filters,
   states,
   openFilter,
   scenario,
+  voteShareThreshold,
   onChange,
   onOpenFilterChange,
   onReset,
+  onVoteShareThresholdChange,
 }: FilterPanelProps) {
   const i18n = useI18n()
   const { messages } = i18n
@@ -444,6 +533,11 @@ export function FilterPanel({
           }
         />
       </div>
+
+      <ElectoralThresholdControl
+        threshold={voteShareThreshold}
+        onChange={onVoteShareThresholdChange}
+      />
     </section>
   )
 }

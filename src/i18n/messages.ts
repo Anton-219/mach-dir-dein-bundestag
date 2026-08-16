@@ -136,6 +136,8 @@ export const englishMessages = {
     ageGroup: 'Age group',
     gender: 'Gender',
     votingMethod: 'Voting method',
+    electoralRules: 'Electoral rules',
+    voteShareThreshold: 'Electoral threshold',
     men: 'Men',
     women: 'Women',
     postalVoting: 'Postal voting',
@@ -347,7 +349,7 @@ export const englishMessages = {
         {
           label: '2021 state seat contingents',
           description:
-            'The historical distribution of the 598 initial seats among the federal states used by the 2021 model.',
+            'The historical distribution of the 598 initial seats among the federal states used by the pre-2023 model.',
           href: 'https://www.bundeswahlleiterin.de/mitteilungen/bundestagswahlen/2021/20210909_btw21-sitzkontingente.html',
         },
         {
@@ -629,6 +631,8 @@ export const germanMessages: MessageCatalog = {
     ageGroup: 'Altersgruppe',
     gender: 'Geschlecht',
     votingMethod: 'Wahlart',
+    electoralRules: 'Wahlregeln',
+    voteShareThreshold: 'Sperrklausel',
     men: 'Männer',
     women: 'Frauen',
     postalVoting: 'Briefwahl',
