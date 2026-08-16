@@ -94,6 +94,7 @@ export const fixed630Calculator: ElectoralSystemCalculator = {
         party,
         input.scenario,
         input.directWinsByParty[party] ?? 0,
+        input.qualificationRules,
       ),
     )
     const eligiblePartySet = new Set(eligibleParties)
