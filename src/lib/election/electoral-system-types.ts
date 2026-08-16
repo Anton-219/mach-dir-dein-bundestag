@@ -1,3 +1,5 @@
+import type { PartyQualificationRules } from './types.ts'
+
 export const ELECTORAL_SYSTEM_IDS = [
   'de-2021-bwahlg',
   'de-2023-fixed-630',
@@ -142,6 +144,7 @@ export interface ElectoralSystemCalculationInput {
   scenario: ElectoralScenario
   districtWinners: readonly DistrictWinner[]
   directWinsByParty: Readonly<Record<string, number>>
+  qualificationRules: PartyQualificationRules
   supportingData?: ElectoralSystemSupportingData
 }
 
