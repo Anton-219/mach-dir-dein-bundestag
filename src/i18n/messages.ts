@@ -349,7 +349,7 @@ export const englishMessages = {
         {
           label: '2021 state seat contingents',
           description:
-            'The historical distribution of the 598 initial seats among the federal states used by the 2021 model.',
+            'The historical distribution of the 598 initial seats among the federal states used by the pre-2023 model.',
           href: 'https://www.bundeswahlleiterin.de/mitteilungen/bundestagswahlen/2021/20210909_btw21-sitzkontingente.html',
         },
         {
@@ -916,9 +916,9 @@ export const germanMessages: MessageCatalog = {
     selectionLabel: 'Bundestagswahl',
     modelDataSources: {
       historicalContingents: (electionYear: number) =>
-        `Aufbereitete ${electionYear} Erst- und Zweitstimmendaten, Metadaten zur Parteienqualifikation und das hinterlegte Länder-Sitzkontingent von ${electionYear}.`,
+        `Aufbereitete Erst- und Zweitstimmendaten von ${electionYear}, Metadaten zur Parteienqualifikation und das hinterlegte Länder-Sitzkontingent von ${electionYear}.`,
       withoutContingents: (electionYear: number) =>
-        `Aufbereitete ${electionYear} Erst- und Zweitstimmendaten und Metadaten zur Parteienqualifikation. Das historische Länder-Sitzkontingent wird von diesem Modell nicht verwendet.`,
+        `Aufbereitete Erst- und Zweitstimmendaten von ${electionYear} und Metadaten zur Parteienqualifikation. Das historische Länder-Sitzkontingent wird von diesem Modell nicht verwendet.`,
     },
     years: {
       2021: {
