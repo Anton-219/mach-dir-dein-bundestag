@@ -79,7 +79,7 @@ export function AnalysisWorkspace({
   const [filters, setFilters] = useState<FilterState>(() => createEmptyFilterState())
   const [electoralSystemId, setElectoralSystemId] =
     useState<ElectoralSystemId>(DEFAULT_ELECTORAL_SYSTEM_ID)
-  const [voteShareThreshold, setVoteShareThreshold] = useState(
+  const [voteShareThreshold, setVoteShareThreshold] = useState<number>(
     DEFAULT_PARTY_QUALIFICATION_RULES.voteShareThreshold,
   )
   const [methodologyOpen, setMethodologyOpen] = useState(false)
