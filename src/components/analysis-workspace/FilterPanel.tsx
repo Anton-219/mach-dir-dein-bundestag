@@ -1,7 +1,6 @@
 import {
   useCallback,
   useEffect,
-  useId,
   useRef,
   useState,
   type ReactNode,
@@ -333,10 +332,10 @@ function ElectoralThresholdControl({
   threshold: number
   onChange: (threshold: number) => void
 }) {
-  const { messages } = useI18n()
-  const labelId = useId()
-  const helpId = useId()
+  const i18n = useI18n()
+  const { messages } = i18n
   const [draft, setDraft] = useState(() => formatThresholdInput(threshold))
+  const percentUnit = i18n.formatPercent(1).replace(/[\d\s.,]/g, '')
 
   const handleInput = (value: string) => {
     setDraft(value)
@@ -349,24 +348,20 @@ function ElectoralThresholdControl({
   return (
     <section
       className="electoral-rules-strip"
-      aria-labelledby={labelId}
-      aria-describedby={helpId}
+      aria-label={messages.electoralSystems.methodology.rules}
     >
       <div className="electoral-rules-copy">
-        <span>{messages.filters.electoralRules}</span>
-        <strong id={labelId}>{messages.filters.voteShareThreshold}</strong>
+        <span>{messages.electoralSystems.methodology.rules}</span>
+        <strong>{messages.parties.voteShare}</strong>
       </div>
       <label className="electoral-threshold-input-shell">
-        <span className="visually-hidden">
-          {messages.filters.voteShareThreshold}
-        </span>
+        <span className="visually-hidden">{messages.parties.voteShare}</span>
         <input
           type="text"
           inputMode="decimal"
           autoComplete="off"
           spellCheck={false}
           value={draft}
-          aria-describedby={helpId}
           onChange={(event) => handleInput(event.currentTarget.value)}
           onBlur={() => setDraft(formatThresholdInput(threshold))}
           onKeyDown={(event) => {
@@ -375,9 +370,8 @@ function ElectoralThresholdControl({
             }
           }}
         />
-        <span aria-hidden="true">{messages.filters.percentUnit}</span>
+        <span aria-hidden="true">{percentUnit}</span>
       </label>
-      <small id={helpId}>{messages.filters.voteShareThresholdHelp}</small>
     </section>
   )
 }
