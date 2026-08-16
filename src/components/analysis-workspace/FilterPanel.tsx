@@ -42,17 +42,6 @@ const electionMethodValues = [
   'in-person',
 ] as const satisfies readonly ElectionMethod[]
 
-const electoralThresholdCopy = {
-  de: {
-    rules: 'Wahlregeln',
-    threshold: 'Sperrklausel',
-  },
-  en: {
-    rules: 'Electoral rules',
-    threshold: 'Electoral threshold',
-  },
-} as const
-
 interface FilterPanelProps {
   filters: FilterState
   states: readonly string[]
@@ -317,9 +306,16 @@ function InlineSelectionEditor<T extends string>({
   )
 }
 
-function formatThresholdInput(threshold: number): string {
+function thresholdPercentage(threshold: number): number {
   const percentage = threshold * 100
-  return String(Math.round(percentage * 1_000_000) / 1_000_000)
+  return Math.round(percentage * 1_000_000) / 1_000_000
+}
+
+function formatThresholdInput(
+  threshold: number,
+  formatInputNumber: (value: number) => string,
+): string {
+  return formatInputNumber(thresholdPercentage(threshold))
 }
 
 function parseThresholdInput(value: string): number | undefined {
@@ -344,9 +340,11 @@ function ElectoralThresholdControl({
   onChange: (threshold: number) => void
 }) {
   const i18n = useI18n()
-  const copy = electoralThresholdCopy[i18n.locale]
-  const [draft, setDraft] = useState(() => formatThresholdInput(threshold))
+  const { messages } = i18n
+  const [draft, setDraft] = useState<string | null>(null)
   const percentUnit = i18n.formatPercent(1).replace(/[\d\s.,]/g, '')
+  const displayedValue =
+    draft ?? formatThresholdInput(threshold, i18n.formatInputNumber)
 
   const handleInput = (value: string) => {
     setDraft(value)
@@ -357,21 +355,29 @@ function ElectoralThresholdControl({
   }
 
   return (
-    <section className="electoral-rules-strip" aria-label={copy.rules}>
+    <section
+      className="electoral-rules-strip"
+      aria-label={messages.filters.electoralRules}
+    >
       <div className="electoral-rules-copy">
-        <span>{copy.rules}</span>
-        <strong>{copy.threshold}</strong>
+        <span>{messages.filters.electoralRules}</span>
+        <strong>{messages.filters.voteShareThreshold}</strong>
       </div>
       <label className="electoral-threshold-input-shell">
-        <span className="visually-hidden">{copy.threshold}</span>
+        <span className="visually-hidden">
+          {messages.filters.voteShareThreshold}
+        </span>
         <input
           type="text"
           inputMode="decimal"
           autoComplete="off"
           spellCheck={false}
-          value={draft}
+          value={displayedValue}
+          onFocus={() =>
+            setDraft(formatThresholdInput(threshold, i18n.formatInputNumber))
+          }
           onChange={(event) => handleInput(event.currentTarget.value)}
-          onBlur={() => setDraft(formatThresholdInput(threshold))}
+          onBlur={() => setDraft(null)}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
               event.currentTarget.blur()
