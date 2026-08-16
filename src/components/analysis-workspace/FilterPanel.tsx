@@ -42,6 +42,17 @@ const electionMethodValues = [
   'in-person',
 ] as const satisfies readonly ElectionMethod[]
 
+const electoralThresholdCopy = {
+  de: {
+    rules: 'Wahlregeln',
+    threshold: 'Sperrklausel',
+  },
+  en: {
+    rules: 'Electoral rules',
+    threshold: 'Electoral threshold',
+  },
+} as const
+
 interface FilterPanelProps {
   filters: FilterState
   states: readonly string[]
@@ -333,7 +344,7 @@ function ElectoralThresholdControl({
   onChange: (threshold: number) => void
 }) {
   const i18n = useI18n()
-  const { messages } = i18n
+  const copy = electoralThresholdCopy[i18n.locale]
   const [draft, setDraft] = useState(() => formatThresholdInput(threshold))
   const percentUnit = i18n.formatPercent(1).replace(/[\d\s.,]/g, '')
 
@@ -346,16 +357,13 @@ function ElectoralThresholdControl({
   }
 
   return (
-    <section
-      className="electoral-rules-strip"
-      aria-label={messages.electoralSystems.methodology.rules}
-    >
+    <section className="electoral-rules-strip" aria-label={copy.rules}>
       <div className="electoral-rules-copy">
-        <span>{messages.electoralSystems.methodology.rules}</span>
-        <strong>{messages.parties.voteShare}</strong>
+        <span>{copy.rules}</span>
+        <strong>{copy.threshold}</strong>
       </div>
       <label className="electoral-threshold-input-shell">
-        <span className="visually-hidden">{messages.parties.voteShare}</span>
+        <span className="visually-hidden">{copy.threshold}</span>
         <input
           type="text"
           inputMode="decimal"
