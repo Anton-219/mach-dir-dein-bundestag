@@ -289,6 +289,80 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.electoral-rules-strip {
+  flex: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.16rem 0.65rem;
+  align-items: center;
+  margin-top: 0.45rem;
+  padding: 0.45rem 0.15rem 0.05rem;
+  border-top: 1px solid var(--border);
+}
+
+.electoral-rules-copy {
+  min-width: 0;
+  display: flex;
+  gap: 0.42rem;
+  align-items: baseline;
+}
+
+.electoral-rules-copy span {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.electoral-rules-copy strong {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.electoral-threshold-input-shell {
+  display: inline-flex;
+  gap: 0.28rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+
+.electoral-threshold-input-shell input {
+  width: 3.4rem;
+  height: 1.65rem;
+  padding: 0.18rem 0.34rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.42rem;
+  background: var(--panel-background);
+  color: var(--ink);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+  text-align: right;
+}
+
+.electoral-threshold-input-shell input:focus-visible {
+  outline: 2px solid #6d8998;
+  outline-offset: 2px;
+}
+
+.electoral-rules-strip small {
+  grid-column: 1 / -1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.51rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .filter-help {
   margin: auto 0 0;
   padding-top: 0.65rem;
@@ -391,6 +465,11 @@
 
   .inline-filter-card-wide .filter-option-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .electoral-rules-strip small {
+    overflow: visible;
+    white-space: normal;
   }
 
   .active-filter-list {
