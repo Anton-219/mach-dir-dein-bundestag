@@ -1,5 +1,8 @@
 import { allocateSainteLague } from './allocate-sainte-lague.ts'
-import { FIXED_630_PARLIAMENT_SEATS } from './constants.ts'
+import {
+  DEFAULT_PARTY_QUALIFICATION_RULES,
+  FIXED_630_PARLIAMENT_SEATS,
+} from './constants.ts'
 import type {
   DistrictWinner,
   ElectoralScenario,
@@ -94,7 +97,7 @@ export const fixed630Calculator: ElectoralSystemCalculator = {
         party,
         input.scenario,
         input.directWinsByParty[party] ?? 0,
-        input.qualificationRules,
+        input.qualificationRules ?? DEFAULT_PARTY_QUALIFICATION_RULES,
       ),
     )
     const eligiblePartySet = new Set(eligibleParties)
