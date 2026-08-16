@@ -27,6 +27,13 @@ test('provides complete German and English presentation tools', () => {
 
   assert.equal(german.messages.header.title, 'Mach dir deinen Bundestag')
   assert.equal(english.messages.header.title, 'Build Your Bundestag')
+  assert.equal(german.messages.filters.electoralRules, 'Wahlregeln')
+  assert.equal(german.messages.filters.voteShareThreshold, 'Sperrklausel')
+  assert.equal(english.messages.filters.electoralRules, 'Electoral rules')
+  assert.equal(
+    english.messages.filters.voteShareThreshold,
+    'Electoral threshold',
+  )
   assert.equal(german.stateName('Bayern'), 'Bayern')
   assert.equal(english.stateName('Bayern'), 'Bavaria')
   assert.equal(
@@ -68,6 +75,10 @@ test('uses locale-specific number and percentage formatting', () => {
 
   assert.equal(german.formatNumber(1234567), '1.234.567')
   assert.equal(english.formatNumber(1234567), '1,234,567')
+  assert.equal(german.formatInputNumber(5.5), '5,5')
+  assert.equal(english.formatInputNumber(5.5), '5.5')
+  assert.equal(german.formatInputNumber(1234.56789), '1234,56789')
+  assert.equal(english.formatInputNumber(1234.56789), '1234.56789')
   assert.match(german.formatPercent(0.125), /12,5/)
   assert.match(english.formatPercent(0.125), /12\.5/)
 })
