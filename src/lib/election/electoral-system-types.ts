@@ -144,7 +144,7 @@ export interface ElectoralSystemCalculationInput {
   scenario: ElectoralScenario
   districtWinners: readonly DistrictWinner[]
   directWinsByParty: Readonly<Record<string, number>>
-  qualificationRules: PartyQualificationRules
+  qualificationRules?: PartyQualificationRules
   supportingData?: ElectoralSystemSupportingData
 }
 
