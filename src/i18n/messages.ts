@@ -136,6 +136,8 @@ export const englishMessages = {
     ageGroup: 'Age group',
     gender: 'Gender',
     votingMethod: 'Voting method',
+    electoralRules: 'Electoral rules',
+    voteShareThreshold: 'Electoral threshold',
     men: 'Men',
     women: 'Women',
     postalVoting: 'Postal voting',
@@ -629,6 +631,8 @@ export const germanMessages: MessageCatalog = {
     ageGroup: 'Altersgruppe',
     gender: 'Geschlecht',
     votingMethod: 'Wahlart',
+    electoralRules: 'Wahlregeln',
+    voteShareThreshold: 'Sperrklausel',
     men: 'Männer',
     women: 'Frauen',
     postalVoting: 'Briefwahl',
@@ -912,9 +916,9 @@ export const germanMessages: MessageCatalog = {
     selectionLabel: 'Bundestagswahl',
     modelDataSources: {
       historicalContingents: (electionYear: number) =>
-        `Aufbereitete Erst- und Zweitstimmendaten von ${electionYear}, Metadaten zur Parteienqualifikation und das hinterlegte Länder-Sitzkontingent von ${electionYear}.`,
+        `Aufbereitete ${electionYear} Erst- und Zweitstimmendaten, Metadaten zur Parteienqualifikation und das hinterlegte Länder-Sitzkontingent von ${electionYear}.`,
       withoutContingents: (electionYear: number) =>
-        `Aufbereitete Erst- und Zweitstimmendaten von ${electionYear} und Metadaten zur Parteienqualifikation. Das historische Länder-Sitzkontingent wird von diesem Modell nicht verwendet.`,
+        `Aufbereitete ${electionYear} Erst- und Zweitstimmendaten und Metadaten zur Parteienqualifikation. Das historische Länder-Sitzkontingent wird von diesem Modell nicht verwendet.`,
     },
     years: {
       2021: {
