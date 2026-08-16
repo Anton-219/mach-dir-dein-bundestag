@@ -8,6 +8,7 @@ import {
 } from '../../src/lib/election/build-electoral-scenario.ts'
 import {
   calculateElectoralSystem,
+  calculateElectoralSystemWithQualificationRules,
   ElectoralSystemRegistry,
   ElectoralSystemRegistryError,
   normalizeElectoralSystemResult,
@@ -233,6 +234,74 @@ test('reproduces the documented 630-seat 2021 aggregate reference', () => {
       'DIE LINKE': 34,
       SSW: 1,
     },
+  )
+})
+
+test('applies a configurable second-vote threshold to the seat allocation', () => {
+  const scenario: ElectoralScenario = {
+    mode: 'unfiltered-reference',
+    validSecondVotes: 100,
+    parties: {
+      A: { secondVotes: 94, isNationalMinorityParty: false },
+      B: { secondVotes: 6, isNationalMinorityParty: false },
+    },
+    states: [
+      {
+        state: 'Alpha',
+        isActive: true,
+        validFirstVotes: 2,
+        validSecondVotes: 100,
+        secondVotesByParty: { A: 94, B: 6 },
+      },
+    ],
+    districts: [
+      {
+        districtId: 1,
+        state: 'Alpha',
+        validFirstVotes: 1,
+        firstVotesByParty: { A: 1 },
+      },
+      {
+        districtId: 2,
+        state: 'Alpha',
+        validFirstVotes: 1,
+        firstVotesByParty: { A: 1 },
+      },
+    ],
+  }
+
+  const defaultResult = calculateElectoralSystem(
+    'de-2023-fixed-630',
+    scenario,
+  )
+  const raisedThresholdResult = calculateElectoralSystemWithQualificationRules(
+    'de-2023-fixed-630',
+    scenario,
+    {
+      voteShareThreshold: 0.07,
+      minimumDirectMandates: 3,
+      thresholdExemptParties: [],
+      excludedParties: [],
+    },
+  )
+
+  assert.equal(
+    defaultResult.parties.find((party) => party.party === 'B')
+      ?.eligibleForListSeats,
+    true,
+  )
+  assert.equal(
+    raisedThresholdResult.parties.find((party) => party.party === 'B')
+      ?.eligibleForListSeats,
+    false,
+  )
+  assert.equal(
+    raisedThresholdResult.parties.find((party) => party.party === 'B')?.totalSeats,
+    0,
+  )
+  assert.equal(
+    raisedThresholdResult.parties.find((party) => party.party === 'A')?.totalSeats,
+    630,
   )
 })
 
